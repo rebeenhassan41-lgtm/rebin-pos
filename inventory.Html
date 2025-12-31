@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مەخزەنی گشتی - Rebin System</title>
+    <style>
+        :root { 
+            --primary: #2c3e50; 
+            --accent: #3498db; 
+            --success: #27ae60; 
+            --bg: #f0f2f5;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; margin: 0; text-align: right; }
+        .container { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            max-width: 1100px; 
+            margin: auto; 
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header h1 { margin: 0; color: var(--primary); font-size: 24px; }
+        .back-btn {
+            text-decoration: none;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background: #34495e; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; border-radius: 10px; overflow: hidden; }
+        th { background: var(--primary); color: white; padding: 15px; font-size: 15px; }
+        td { padding: 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 16px; }
+        tr:hover { background-color: #f9f9f9; }
+        
+        .currency-badge { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; color: white; text-transform: uppercase; }
+        .usd { background: #27ae60; } 
+        .iqd { background: #2980b9; } 
+        .irr { background: #e67e22; }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #e74c3c;
+            transition: 0.2s;
+        }
+        .delete-btn:hover { transform: scale(1.2); }
+        
+        .stock-count { font-weight: bold; color: var(--success); }
+        .out-of-stock { color: #e74c3c !important; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📊 مەخزەنی گشتی کاڵاکان</h1>
+        <a href="index.html" class="back-btn">گەڕانەوە بۆ داشبۆرد</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ناوی کاڵا</th>
+                <th>کارتۆنی ماوە</th>
+                <th>دانەی ماوە</th>
+                <th>نرخی کڕین (کارتۆن)</th>
+                <th>دراو</th>
+                <th>کردار</th>
+            </tr>
+        </thead>
+        <tbody id="inventoryTable">
+            <tr><td colspan="6">لەکاتی بارکردنی داتاکان...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // هێنانی داتا لە سێرڤەر (MongoDB)
+    async function loadInventory() {
+        try {
+            const response = await fetch('http://127.0.0.1:3000/api/stock');
+            const stock = await response.json();
+            const table = document.getElementById('inventoryTable');
+            table.innerHTML = "";
+
+            if (stock.length === 0) {
+                table.innerHTML = "<tr><td colspan='6'>هیچ کاڵایەک لە مەخزەن نییە</td></tr>";
+                return;
+            }
+
+            stock.forEach(item => {
+                const cartonQty = (item.totalPcs / item.pcsPerBox).toFixed(1);
+                const isLow = item.totalPcs <= 0;
+                
+                table.innerHTML += `
+                    <tr class="${isLow ? 'out-of-stock' : ''}">
+                        <td><b>${item.name}</b></td>
+                        <td>${cartonQty}</td>
+                        <td class="stock-count ${isLow ? 'out-of-stock' : ''}">${item.totalPcs}</td>
+                        <td>${item.price.toLocaleString()}</td>
+                        <td><span class="currency-badge ${item.curr.toLowerCase()}">${item.curr}</span></td>
+                        <td><button class="delete-btn" onclick="deleteItem('${item._id}')">🗑️</button></td>
+                    </tr>`;
+            });
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById('inventoryTable').innerHTML = "<tr><td colspan='6' style='color:red;'>هەڵە لە پەیوەندی سێرڤەر!</td></tr>";
+        }
+    }
+
+    // سڕینەوەی کاڵا لە ڕێگەی سێرڤەرەوە
+    async function deleteItem(id) { 
+        if(confirm("ئایا دڵنیای لە سڕینەوەی ئەم کاڵایە؟")){ 
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/api/stock/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    loadInventory(); 
+                }
+            } catch (error) {
+                alert("نەتوانرا بسڕێتەوە");
+            }
+        } 
+    }
+
+    window.onload = loadInventory;
+</script>
+</body>
+</html>

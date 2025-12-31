@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ڕێبین سیستم - فرۆشتن</title>
+    <style>
+        :root { --p: #2c3e50; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; text-align: right; }
+        .container { background: white; padding: 25px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .back-btn { text-decoration: none; background: var(--p); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; }
+        input, select, button { padding: 12px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
+        button { background: var(--success); color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
+        button:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: var(--p); color: white; padding: 12px; }
+        td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+        .totals { margin-top: 20px; padding: 15px; background: #eee; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="index.html" class="back-btn">🏠 گەڕانەوە</a>
+        <h2 style="margin: 0; color: var(--p);">سیستەمی فرۆشتن</h2>
+    </div>
+
+    <div class="grid">
+        <div><label>100$ بە دینار:</label><input type="number" id="rateIQD" value="152000" oninput="calculateCurrency()"></div>
+        <div><label>100$ بە تمەن:</label><input type="number" id="rateTMN" value="6100000" oninput="calculateCurrency()"></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 2fr 1fr 1fr 1fr auto;">
+        <div><label>کاڵا:</label><select id="itemSelect" onchange="updatePrice()"><option>چاوەڕێ بکە...</option></select></div>
+        <div><label>کارتۆن:</label><input type="number" id="cartonQty" value="0"></div>
+        <div><label>دانە:</label><input type="number" id="pieceQty" value="0"></div>
+        <div><label>نرخی دانە ($):</label><input type="number" id="sellPrice" step="0.01"></div>
+        <button onclick="addToInvoice()" style="margin-top: 24px;">+ زیادکردن</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ناوی کاڵا</th>
+                <th>بڕ (دانە)</th>
+                <th>نرخ ($)</th>
+                <th>کۆی گشتی ($)</th>
+            </tr>
+        </thead>
+        <tbody id="invoiceTable"></tbody>
+    </table>
+
+    <div class="totals">
+        <h3 id="totalUSD">کۆی گشتی: 0 $</h3>
+        <h4 id="totalIQD" style="color: #2980b9;">بە دینار: 0 د.ع</h4>
+        <h4 id="totalTMN" style="color: #16a085;">بە تمەن: 0 ت.م</h4>
+    </div>
+</div>
+
+<script>
+    let allStock = [];
+    let invoiceItems = [];
+    let totalUSDValue = 0;
+    const API_URL = 'http://localhost:3000/api'; // لێرە گۆڕیمان بۆ localhost
+
+    // هێنانی کاڵاکان لە سێرڤەر
+    async function loadItems() {
+        try {
+            console.log("هەوڵی هێنانی داتا دەدرێت...");
+            const response = await fetch(`${API_URL}/stock`);
+            if (!response.ok) throw new Error("سێرڤەر وەڵامی نییە");
+            
+            allStock = await response.json();
+            const select = document.getElementById('itemSelect');
+            
+            select.innerHTML = '<option value="">هەڵبژاردن...</option>';
+            allStock.forEach(item => {
+                let opt = document.createElement('option');
+                opt.value = item.name;
+                opt.innerText = `${item.name} (ماوە: ${item.totalPcs || 0})`;
+                select.appendChild(opt);
+            });
+            console.log("داتاکان هاتن:", allStock);
+        } catch (error) {
+            console.error("Error:", error);
+            alert("⚠️ کێشە: ناتوانم پەیوەندی بە سێرڤەر بکەم. دڵنیابە node server.js کارایە.");
+        }
+    }
+
+    function updatePrice() {
+        const name = document.getElementById('itemSelect').value;
+        const item = allStock.find(i => i.name === name);
+        if(item) {
+            const pBox = item.pcsPerBox || 1;
+            document.getElementById('sellPrice').value = (item.price / pBox).toFixed(2);
+        }
+    }
+
+    async function addToInvoice() {
+        const name = document.getElementById('itemSelect').value;
+        const cQty = parseFloat(document.getElementById('cartonQty').value) || 0;
+        const pQty = parseFloat(document.getElementById('pieceQty').value) || 0;
+        const price = parseFloat(document.getElementById('sellPrice').value) || 0;
+        
+        const item = allStock.find(i => i.name === name);
+        if (!item) return alert("تکایە کاڵا هەڵبژێرە");
+
+        const totalPieces = (cQty * (item.pcsPerBox || 1)) + pQty;
+        if (totalPieces <= 0) return alert("بڕی فرۆشتن دیاری بکە");
+        if (totalPieces > item.totalPcs) return alert("ئەو بڕە لە مەخزەن نییە!");
+
+        try {
+            const response = await fetch(`${API_URL}/sell`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name: name, qty: totalPieces })
+            });
+
+            if (response.ok) {
+                invoiceItems.push({ name, qty: totalPieces, price, subTotal: totalPieces * price });
+                updateInvoiceTable();
+                loadItems(); // تازەکردنەوەی مەخزەن
+                document.getElementById('cartonQty').value = 0;
+                document.getElementById('pieceQty').value = 0;
+            } else {
+                alert("فرۆشتن سەرکەوتوو نەبوو");
+            }
+        } catch (error) {
+            alert("پەیوەندی سێرڤەر بڕدرا");
+        }
+    }
+
+    function updateInvoiceTable() {
+        const tbody = document.getElementById('invoiceTable');
+        tbody.innerHTML = "";
+        totalUSDValue = 0;
+        invoiceItems.forEach(item => {
+            totalUSDValue += item.subTotal;
+            tbody.innerHTML += `<tr><td>${item.name}</td><td>${item.qty}</td><td>${item.price.toFixed(2)}</td><td>${item.subTotal.toFixed(2)}</td></tr>`;
+        });
+        calculateCurrency();
+    }
+
+    function calculateCurrency() {
+        const rateIQD = parseFloat(document.getElementById('rateIQD').value) || 0;
+        const rateTMN = parseFloat(document.getElementById('rateTMN').value) || 0;
+        document.getElementById('totalUSD').innerText = `کۆی گشتی: ${totalUSDValue.toFixed(2)} $`;
+        document.getElementById('totalIQD').innerText = `بە دینار: ${(totalUSDValue * rateIQD / 100).toLocaleString()} د.ع`;
+        document.getElementById('totalTMN').innerText = `بە تمەن: ${(totalUSDValue * rateTMN / 100).toLocaleString()} ت.م`;
+    }
+
+    window.onload = loadItems;
+</script>
+</body>
+</html>

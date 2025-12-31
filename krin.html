@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>کڕینی کاڵا - Rebin System</title>
+    <style>
+        :root { --p: #2c3e50; --s: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; text-align: right; }
+        .box { background: white; padding: 25px; border-radius: 20px; max-width: 900px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .input-group { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        input, select, button { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; width: 100%; box-sizing: border-box; }
+        button { background: var(--s); color: white; cursor: pointer; border: none; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #219150; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 10px; overflow: hidden; }
+        th { background: var(--p); color: white; padding: 12px; }
+        td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; background: #fff; }
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; background: var(--p); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
+        h2 { color: var(--p); border-bottom: 2px solid var(--s); padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <a href="index.html" class="back-btn">⬅️ گەڕانەوە بۆ سەرەکی</a>
+    <h2>📥 داخڵکردنی کڕین بۆ مەخزەن</h2>
+    
+    <div class="input-group">
+        <div><label>ناوی کاڵا</label><input type="text" id="itemName" placeholder="بۆ نموونە: مریشک"></div>
+        <div><label>کارتۆن</label><input type="number" id="qty" placeholder="0"></div>
+        <div><label>دانە لە کارتۆن</label><input type="number" id="pcs" placeholder="0"></div>
+        <div><label>نرخی کارتۆن</label><input type="number" id="price" placeholder="0"></div>
+    </div>
+    
+    <div class="input-group">
+        <div><label>دراو</label>
+            <select id="currency">
+                <option value="USD">دۆلار ($)</option>
+                <option value="IQD">دینار (د.ع)</option>
+                <option value="IRR">تمەن (ت.م)</option>
+            </select>
+        </div>
+        <div style="display: flex; align-items: flex-end;">
+            <button onclick="savePurchase()" style="height: 45px;">زیادکردن بۆ مەخزەن +</button>
+        </div>
+    </div>
+
+    <table id="tempTable">
+        <thead>
+            <tr>
+                <th>ناوی کاڵا</th>
+                <th>کارتۆن</th>
+                <th>کۆی دانە</th>
+                <th>نرخی کارتۆن</th>
+                <th>دراو</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    async function savePurchase() {
+        const name = document.getElementById('itemName').value.trim();
+        const boxQty = parseFloat(document.getElementById('qty').value) || 0;
+        const perBox = parseFloat(document.getElementById('pcs').value) || 0;
+        const boxPrice = parseFloat(document.getElementById('price').value) || 0;
+        const curr = document.getElementById('currency').value;
+
+        if (!name || boxQty <= 0 || perBox <= 0 || boxPrice <= 0) {
+            alert("تکایە هەموو خانەکان بە دروستی پڕ بکەرەوە");
+            return;
+        }
+
+        const itemData = {
+            name: name,
+            totalPcs: (boxQty * perBox),
+            price: boxPrice,
+            curr: curr,
+            pcsPerBox: perBox
+        };
+
+        try {
+            const response = await fetch('http://127.0.0.1:3000/api/stock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(itemData)
+            });
+
+            if (response.ok) {
+                const tbody = document.querySelector('#tempTable tbody');
+                const row = `<tr>
+                    <td><b>${name}</b></td>
+                    <td>${boxQty}</td>
+                    <td>${boxQty * perBox}</td>
+                    <td>${boxPrice.toLocaleString()}</td>
+                    <td>${curr}</td>
+                </tr>`;
+                tbody.innerHTML = row + tbody.innerHTML; // تازەترین کڕین دەخاتە سەرەوە
+
+                // پاککردنەوەی خانەکان
+                document.getElementById('itemName').value = "";
+                document.getElementById('qty').value = "";
+                document.getElementById('price').value = "";
+                
+                console.log("✅ کاڵا سەیڤ بوو لە مۆنگۆ");
+            } else {
+                alert("❌ کێشەیەک لە پەیوەندی سێرڤەر هەبوو");
+            }
+        } catch (error) {
+            alert("❌ هەڵە: سێرڤەر ڕەن نەکراوە!");
+        }
+    }
+</script>
+
+</body>
+</html>
