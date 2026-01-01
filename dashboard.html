@@ -7,84 +7,40 @@
         :root { --p: #2c3e50; --s: #27ae60; --blue: #2980b9; --orange: #e67e22; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; text-align: center; }
         .container { max-width: 1000px; margin: auto; }
-        h1 { color: var(--p); margin-bottom: 40px; }
-        
-        .grid-menu { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 20px; 
-            margin-top: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-decoration: none;
-            color: var(--p);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
+        .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; text-decoration: none; color: var(--p); box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
         .card:hover { transform: translateY(-10px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .card span { font-size: 50px; margin-bottom: 15px; }
-        .card h3 { margin: 10px 0; }
-
         .krin { border-bottom: 5px solid var(--s); }
         .froshtn { border-bottom: 5px solid var(--orange); }
         .makhzan { border-bottom: 5px solid var(--blue); }
         .raport { border-bottom: 5px solid var(--p); }
+        .logout-btn { margin-top: 40px; padding: 10px 20px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>📊 سیستەمی بەڕێوەبردنی ڕێبین</h1>
-
     <div class="grid-menu">
-        <a href="krin.html" class="card krin">
-            <span>📥</span>
-            <h3>کڕینی کاڵا</h3>
-            <p>داخڵکردنی پسوولەی نوێ</p>
-        </a>
-
-        <a href="sales.html" class="card froshtn">
-            <span>📤</span>
-            <h3>فرۆشتنی کاڵا</h3>
-            <p>دەرکردنی پسوولەی فرۆشتن</p>
-        </a>
-
-        <a href="dashboard.html" class="card makhzan">
-            <span>📦</span>
-            <h3>مەخزەن</h3>
-            <p>بینینی بڕی کاڵاکان</p>
-        </a>
-
-        <a href="raport.html" class="card raport">
-            <span>📜</span>
-            <h3>ڕاپۆرتەکان</h3>
-            <p>کۆی کڕین و فرۆشتن</p>
-        </a>
+        <a href="krin.html" class="card krin"><span>📥</span><h3>کڕینی کاڵا</h3><p>وەصڵی نوێ</p></a>
+        <a href="sales.html" class="card froshtn"><span>📤</span><h3>فرۆشتنی کاڵا</h3><p>وەصڵی فرۆشتن</p></a>
+        <a href="inventory.html" class="card makhzan"><span>📦</span><h3>مەخزەن</h3><p>بڕی کاڵاکان</p></a>
+        <a href="reports.html" class="card raport"><span>📜</span><h3>ڕاپۆرتەکان</h3><p>ئاماری گشتی</p></a>
     </div>
+    <button class="logout-btn" onclick="logout()">چوونە دەرەوە 🚪</button>
 </div>
 
 <script>
-    // پشکنینی سێرڤەر بۆ دڵنیابوونەوە لەوەی داتاکان دەخوێنێتەوە
-    async function checkServer() {
-        try {
-            const response = await fetch('http://localhost:3000/api/stock');
-            if(response.ok) {
-                console.log("✅ سێرڤەر ئامادەیە");
-            }
-        } catch (error) {
-            console.warn("سێرڤەر نەکراوەتەوە");
-        }
+    // پاراستنی لاپەڕە: ئەگەر لۆگین نەبووبوو بیگەڕێنەوە
+    if(localStorage.getItem("rebinAuth") !== "true") {
+        window.location.href = "index.html";
     }
-    checkServer();
-</script>
 
+    function logout() {
+        localStorage.removeItem("rebinAuth");
+        window.location.href = "index.html";
+    }
+</script>
 </body>
 </html>
