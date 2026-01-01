@@ -7,32 +7,21 @@
     <style>
         :root { --main: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
-        .container { max-width: 1300px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        
-        /* Form Styling */
+        .container { max-width: 1350px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .header-box { background: var(--main); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 12px; margin-bottom: 25px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 12px; margin-bottom: 25px; }
         label { font-weight: bold; font-size: 13px; margin-bottom: 5px; display: block; color: #444; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
+        .barcode-field { background: #fff9db; border: 2px solid #f1c40f !important; }
         .btn-save { background: var(--success); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; transition: 0.3s; }
-        .btn-save:hover { background: #219150; }
-
-        /* Advanced Search Section */
         .search-area { background: #e8f4f8; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 15px; align-items: flex-end; }
-        .search-input { border: 2px solid var(--accent) !important; font-size: 16px !important; }
-
-        /* Table Design */
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: #f1f2f6; color: #333; padding: 12px; font-size: 13px; border-bottom: 2px solid #ddd; }
+        th { background: #f1f2f6; padding: 12px; font-size: 13px; border-bottom: 2px solid #ddd; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
-        
         .btn-action { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: white; margin: 2px; }
-        .btn-print { background: #34495e; }
-        .btn-del { background: #e74c3c; }
-        .badge { padding: 3px 7px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-
+        .btn-print { background: #34495e; } .btn-del { background: #e74c3c; }
         @media print { .no-print { display: none; } .print-area { display: block !important; } }
     </style>
 </head>
@@ -45,6 +34,7 @@
     </div>
 
     <div class="form-grid">
+        <div><label>🔢 بارکۆد</label><input type="text" id="barcode" class="barcode-field" placeholder="بۆ نموونە: 1234567" onkeypress="handleBarcode(event)"></div>
         <div><label>ناوی بازرگان</label><input type="text" id="merchant" placeholder="کۆمپانیای فلانی"></div>
         <div><label>بابەت (کاڵا)</label><input type="text" id="itemName" placeholder="مریشک، زەیت..."></div>
         <div><label>کارتۆن</label><input type="number" id="qty" placeholder="0"></div>
@@ -64,11 +54,11 @@
 
     <div class="search-area">
         <div>
-            <label>🔎 گەڕان بەپێی (ناوی بازرگان یان ناوی بابەت)</label>
-            <input type="text" id="textSearch" class="search-input" onkeyup="filterInvoices()" placeholder="بۆ نموونە: کۆمپانیای ڕێبین...">
+            <label>🔎 گەڕان (بازرگان، بابەت، بارکۆد)</label>
+            <input type="text" id="textSearch" onkeyup="filterInvoices()" placeholder="بنووسە بۆ گەڕان...">
         </div>
         <div>
-            <label>📅 فلتەری بەروار (تاریخ)</label>
+            <label>📅 فلتەری بەروار</label>
             <input type="date" id="dateSearch" onchange="filterInvoices()">
         </div>
     </div>
@@ -78,12 +68,12 @@
             <thead>
                 <tr>
                     <th>بەروار</th>
+                    <th>بارکۆد</th>
                     <th>بازرگان</th>
                     <th>بابەت</th>
-                    <th>بڕ (کارتۆن)</th>
-                    <th>کڕین (ک.)</th>
-                    <th>فرۆشی تاک</th>
-                    <th>فرۆشی کۆ</th>
+                    <th>کارتۆن</th>
+                    <th>کڕین</th>
+                    <th>تاک/کۆ</th>
                     <th>دراو</th>
                     <th>کردارەکان</th>
                 </tr>
@@ -96,11 +86,24 @@
 <div id="printZone" class="print-area" style="display:none; direction:rtl; padding:40px; font-family:Tahoma;"></div>
 
 <script>
-    window.onload = loadInvoices;
+    window.onload = function() {
+        if(localStorage.getItem("rebinAuth") !== "true") window.location.href = "index.html";
+        loadInvoices();
+        document.getElementById('barcode').focus();
+    };
+
+    // ئەگەر ئینتەری کرد لە بارکۆد، بچێتە سەر خانەی دواتر
+    function handleBarcode(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('merchant').focus();
+        }
+    }
 
     function saveInvoice() {
         const inv = {
             id: Date.now(),
+            barcode: document.getElementById('barcode').value || "---",
             merchant: document.getElementById('merchant').value || "دیاری نەکراو",
             name: document.getElementById('itemName').value,
             qty: parseFloat(document.getElementById('qty').value) || 0,
@@ -115,15 +118,14 @@
 
         if(!inv.name || inv.qty <= 0) return alert("تکایە ناوی بابەت و بڕەکە پڕ بکەرەوە");
 
-        // نوێکردنەوەی مەخزەن
         let stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
         stock[inv.name] = { 
+            barcode: inv.barcode,
             totalPcs: (stock[inv.name]?.totalPcs || 0) + (inv.qty * inv.pcs),
             retail: inv.retailPrice, wholesale: inv.wholesalePrice, curr: inv.curr, pcsPerBox: inv.pcs 
         };
         localStorage.setItem('rebinStock', JSON.stringify(stock));
 
-        // سەیڤکردنی وەسڵ
         let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
         invoices.push(inv);
         localStorage.setItem('rebinInvoices', JSON.stringify(invoices));
@@ -141,13 +143,13 @@
         const body = document.getElementById('listBody');
         body.innerHTML = data.reverse().map(i => `
             <tr>
-                <td style="font-size:11px;">${i.fullDate}</td>
+                <td style="font-size:10px;">${i.fullDate}</td>
+                <td><small>${i.barcode}</small></td>
                 <td><b>${i.merchant}</b></td>
                 <td>${i.name}</td>
-                <td><span class="badge" style="background:#eee;">${i.qty} ک.</span></td>
+                <td>${i.qty}</td>
                 <td>${i.buyPrice}</td>
-                <td style="color:green;">${i.retailPrice}</td>
-                <td style="color:blue;">${i.wholesalePrice}</td>
+                <td>${i.retailPrice} / ${i.wholesalePrice}</td>
                 <td><b>${i.curr}</b></td>
                 <td>
                     <button class="btn-action btn-print" onclick="printInvoice(${i.id})">🖨️</button>
@@ -161,9 +163,8 @@
         const text = document.getElementById('textSearch').value.toLowerCase();
         const date = document.getElementById('dateSearch').value;
         const all = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-
         const filtered = all.filter(i => {
-            const matchText = i.name.toLowerCase().includes(text) || i.merchant.toLowerCase().includes(text);
+            const matchText = i.name.toLowerCase().includes(text) || i.merchant.toLowerCase().includes(text) || i.barcode.includes(text);
             const matchDate = date ? i.dateOnly === date : true;
             return matchText && matchDate;
         });
@@ -171,7 +172,7 @@
     }
 
     function deleteInvoice(id) {
-        if(confirm("ئایا دڵنیای لە سڕینەوە؟")){
+        if(confirm("دڵنیای؟")){
             let invs = JSON.parse(localStorage.getItem('rebinInvoices')).filter(x => x.id !== id);
             localStorage.setItem('rebinInvoices', JSON.stringify(invs));
             loadInvoices();
@@ -182,19 +183,15 @@
         const i = JSON.parse(localStorage.getItem('rebinInvoices')).find(x => x.id === id);
         const zone = document.getElementById('printZone');
         zone.innerHTML = `
-            <div style="border:3px double #000; padding:20px; text-align:center;">
-                <h2>ڕێبین سیستم - وەصڵی کڕین</h2>
-                <hr>
-                <div style="text-align:right; line-height:2;">
-                    <p><b>بەروار:</b> ${i.fullDate}</p>
-                    <p><b>بازرگان:</b> ${i.merchant}</p>
-                    <p><b>بابەت:</b> ${i.name}</p>
-                    <p><b>بڕ:</b> ${i.qty} کارتۆن (${i.qty * i.pcs} دانە)</p>
-                    <p><b>نرخی کڕین:</b> ${i.buyPrice} ${i.curr}</p>
-                    <p><b>نرخی فرۆشی تاک:</b> ${i.retailPrice} ${i.curr}</p>
-                    <p><b>نرخی فرۆشی کۆ:</b> ${i.wholesalePrice} ${i.curr}</p>
+            <div style="border:2px solid #000; padding:20px; text-align:center;">
+                <h2>ڕێبین سیستم - کڕین</h2>
+                <p>بارکۆد: ${i.barcode}</p>
+                <div style="text-align:right;">
+                    <p>بازرگان: ${i.merchant}</p>
+                    <p>بابەت: ${i.name}</p>
+                    <p>بڕ: ${i.qty} کارتۆن</p>
+                    <p>نرخ: ${i.buyPrice} ${i.curr}</p>
                 </div>
-                <br><p>واژووی کۆگا</p>
             </div>`;
         window.print();
     }
