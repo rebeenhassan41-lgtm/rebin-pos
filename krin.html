@@ -3,84 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>داخڵکردنی کڕین - Rebin System</title>
+    <title>داخڵکردنی کڕین (Cloud) - Rebin System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
-        .container { max-width: 1350px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        
-        /* Currency Exchange Bar */
-        .exchange-bar { background: #fff3cd; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #ffeeba; }
-        .exchange-content { display: none; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
-        .toggle-btn { cursor: pointer; color: #856404; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; }
-
-        .header-box { background: var(--main); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 12px; margin-bottom: 25px; }
-        label { font-weight: bold; font-size: 12px; margin-bottom: 5px; display: block; color: #444; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header-box { background: var(--main); color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
         input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        
-        .barcode-field { background: #fff9db; border: 2px solid #f1c40f !important; }
-        .btn-save { background: var(--success); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; transition: 0.3s; }
-        
+        .btn-save { background: var(--success); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
         .table-wrap { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: #f1f2f6; padding: 12px; font-size: 13px; border-bottom: 2px solid #ddd; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
-        
-        .btn-action { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: white; margin: 2px; }
-        .btn-print { background: #34495e; } .btn-del { background: #e74c3c; }
-
-        @media print { .no-print { display: none !important; } .print-area { display: block !important; } }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f1f2f6; padding: 12px; border-bottom: 2px solid #ddd; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        @media screen and (max-width: 600px) {
+            table thead { display: none; }
+            table tr { display: block; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 10px; padding: 10px; }
+            table td { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; }
+            table td::before { content: attr(data-label); font-weight: bold; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container no-print">
-    <div class="exchange-bar">
-        <div class="toggle-btn" onclick="toggleExchange()">💰 نرخی دراوەکان (کلیک بکە بۆ گۆڕین) ▼</div>
-        <div id="exchangeBox" class="exchange-content">
-            <div><label>1$ بەرامبەر دینار</label><input type="number" id="rateIQD" value="1500" onchange="saveRates()"></div>
-            <div><label>1$ بەرامبەر تمەن</label><input type="number" id="rateIRR" value="50000" onchange="saveRates()"></div>
-        </div>
-    </div>
-
+<div class="container">
     <div class="header-box">
-        <h2 style="margin:0;">📥 داخڵکردنی وەصڵی کڕین</h2>
-        <a href="dashboard.html" style="color:white; text-decoration:none; border:1px solid white; padding:5px 15px; border-radius:5px;">داشبۆرد</a>
+        <h2 style="margin:0;">📥 کڕین (سێرڤەری ئۆنلاین)</h2>
+        <a href="dashboard.html" style="color:white; text-decoration:none;">داشبۆرد</a>
     </div>
 
     <div class="form-grid">
-        <div><label>🔢 بارکۆد</label><input type="text" id="barcode" class="barcode-field" onkeypress="handleBarcode(event)"></div>
-        <div><label>🧾 ژمارەی وەسڵ</label><input type="text" id="invNo" placeholder="0000"></div>
-        <div><label>ناوی بازرگان</label><input type="text" id="merchant" placeholder="کۆمپانیا..."></div>
+        <div><label>🔢 بارکۆد</label><input type="text" id="barcode"></div>
+        <div><label>🧾 وەسڵ #</label><input type="text" id="invNo"></div>
+        <div><label>بازرگان</label><input type="text" id="merchant"></div>
         <div><label>بابەت</label><input type="text" id="itemName"></div>
         <div><label>کارتۆن</label><input type="number" id="qty" value="0"></div>
-        <div><label>دانە لە کارتۆن</label><input type="number" id="pcs" value="1"></div>
-        <div><label>نرخی کڕین (ک.)</label><input type="number" id="buyPrice" value="0"></div>
-        <div><label>فرۆشی تاک</label><input type="number" id="retailPrice" value="0"></div>
-        <div><label>فرۆشی کۆ</label><input type="number" id="wholesalePrice" value="0"></div>
+        <div><label>دانە</label><input type="number" id="pcs" value="1"></div>
+        <div><label>کڕین</label><input type="number" id="buyPrice" value="0"></div>
         <div><label>دراو</label>
             <select id="curr">
-                <option value="USD">دۆلار ($)</option>
-                <option value="IQD">دینار (د.ع)</option>
-                <option value="IRR">تمەن (ت.م)</option>
+                <option value="USD">دۆلار</option>
+                <option value="IQD">دینار</option>
             </select>
         </div>
     </div>
-    <button onclick="saveInvoice()" class="btn-save">تۆمارکردن و سەیڤکردن ✅</button>
+    <button onclick="saveInvoice()" id="saveBtn" class="btn-save">پاشکەوتکردن لەسەر سێرڤەر ☁️</button>
 
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
                     <th>بەروار</th>
-                    <th>وەسڵ #</th>
-                    <th>کۆمپانیا</th>
+                    <th>وەسڵ</th>
                     <th>بابەت</th>
-                    <th>کارتۆن</th>
-                    <th>کڕین</th>
-                    <th>دراو</th>
-                    <th>کردارەکان</th>
+                    <th>بڕ</th>
+                    <th>کردار</th>
                 </tr>
             </thead>
             <tbody id="listBody"></tbody>
@@ -88,110 +66,68 @@
     </div>
 </div>
 
-<div id="printZone" class="print-area" style="display:none; direction:rtl; padding:40px;"></div>
-
 <script>
-    window.onload = function() {
-        if(localStorage.getItem("rebinAuth") !== "true") window.location.href = "index.html";
-        loadRates();
-        loadInvoices();
-        document.getElementById('barcode').focus();
-    };
+    // 🔗 پەیوەندی بە سێرڤەرەکەی خۆتەوە
+    const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+    const SB_KEY = 'لێرە_ئەو_کۆدە_درێژەی_پێت_دا_دایبنێ'; // <--- کلیلە ئەنۆنەکە لێرە دابنێ
+    const supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    function toggleExchange() {
-        const box = document.getElementById('exchangeBox');
-        box.style.display = box.style.display === 'grid' ? 'none' : 'grid';
+    async function saveInvoice() {
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.innerText = "خەریکە سەیڤ دەبێت...";
+
+        const data = {
+            inv_no: document.getElementById('invNo').value,
+            barcode: document.getElementById('barcode').value,
+            merchant: document.getElementById('merchant').value,
+            item_name: document.getElementById('itemName').value,
+            qty: parseFloat(document.getElementById('qty').value),
+            pcs: parseFloat(document.getElementById('pcs').value),
+            buy_price: parseFloat(document.getElementById('buyPrice').value),
+            currency: document.getElementById('curr').value
+        };
+
+        const { error } = await supabase.from('invoices').insert([data]);
+
+        if (error) {
+            alert("کێشە: " + error.message);
+        } else {
+            alert("تۆمار کرا!");
+            loadInvoices();
+        }
+        btn.disabled = false;
+        btn.innerText = "پاشکەوتکردن لەسەر سێرڤەر ☁️";
     }
 
-    function saveRates() {
-        const rates = { iqd: document.getElementById('rateIQD').value, irr: document.getElementById('rateIRR').value };
-        localStorage.setItem('rebinRates', JSON.stringify(rates));
-    }
+    async function loadInvoices() {
+        const { data, error } = await supabase
+            .from('invoices')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    function loadRates() {
-        const rates = JSON.parse(localStorage.getItem('rebinRates'));
-        if(rates) {
-            document.getElementById('rateIQD').value = rates.iqd;
-            document.getElementById('rateIRR').value = rates.irr;
+        if (data) {
+            const body = document.getElementById('listBody');
+            body.innerHTML = data.map(i => `
+                <tr>
+                    <td data-label="بەروار">${new Date(i.created_at).toLocaleDateString()}</td>
+                    <td data-label="وەسڵ">${i.inv_no}</td>
+                    <td data-label="بابەت">${i.item_name}</td>
+                    <td data-label="بڕ">${i.qty}</td>
+                    <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td>
+                </tr>
+            `).join('');
         }
     }
 
-    function handleBarcode(e) { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('invNo').focus(); } }
-
-    function saveInvoice() {
-        const inv = {
-            id: Date.now(),
-            barcode: document.getElementById('barcode').value || "---",
-            invNo: document.getElementById('invNo').value || "---",
-            merchant: document.getElementById('merchant').value || "دیاری نەکراو",
-            name: document.getElementById('itemName').value,
-            qty: parseFloat(document.getElementById('qty').value) || 0,
-            pcs: parseFloat(document.getElementById('pcs').value) || 1,
-            buyPrice: document.getElementById('buyPrice').value,
-            retailPrice: document.getElementById('retailPrice').value,
-            wholesalePrice: document.getElementById('wholesalePrice').value,
-            curr: document.getElementById('curr').value,
-            dateOnly: new Date().toISOString().split('T')[0],
-            fullDate: new Date().toLocaleString('ku-IQ')
-        };
-
-        if(!inv.name || inv.qty <= 0) return alert("زانیارییەکان تەواو نین");
-
-        let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        invoices.push(inv);
-        localStorage.setItem('rebinInvoices', JSON.stringify(invoices));
-        
-        location.reload();
-    }
-
-    function loadInvoices() {
-        const data = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        const body = document.getElementById('listBody');
-        body.innerHTML = data.reverse().map(i => `
-            <tr>
-                <td>${i.dateOnly}</td>
-                <td><b>${i.invNo}</b></td>
-                <td>${i.merchant}</td>
-                <td>${i.name}</td>
-                <td>${i.qty}</td>
-                <td>${i.buyPrice}</td>
-                <td>${i.curr}</td>
-                <td>
-                    <button class="btn-action btn-print" onclick="printInvoice(${i.id})">🖨️</button>
-                    <button class="btn-action btn-del" onclick="deleteInvoice(${i.id})">🗑️</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function printInvoice(id) {
-        const i = JSON.parse(localStorage.getItem('rebinInvoices')).find(x => x.id === id);
-        const rates = JSON.parse(localStorage.getItem('rebinRates')) || {iqd:1500, irr:50000};
-        const zone = document.getElementById('printZone');
-        
-        zone.innerHTML = `
-            <div style="border:2px solid #000; padding:20px; font-family:Tahoma; text-align:center;">
-                <h2 style="margin:0;">ڕێبین سیستم - وەسڵی کڕین</h2>
-                <p>بەروار: ${i.fullDate} | وەسڵ #: ${i.invNo}</p>
-                <hr>
-                <div style="text-align:right; line-height:2;">
-                    <p>بازرگان: <b>${i.merchant}</b></p>
-                    <p>کاڵا: ${i.name} | بارکۆد: ${i.barcode}</p>
-                    <p>بڕ: ${i.qty} کارتۆن (${i.qty * i.pcs} دانە)</p>
-                    <p>نرخی کڕین: ${i.buyPrice} ${i.curr}</p>
-                    <small>نرخی گۆڕینەوە: 1$ = ${rates.iqd} د.ع | 1$ = ${rates.irr} ت.م</small>
-                </div>
-            </div>`;
-        window.print();
-    }
-
-    function deleteInvoice(id) {
-        if(confirm("دڵنیای؟")){
-            let invs = JSON.parse(localStorage.getItem('rebinInvoices')).filter(x => x.id !== id);
-            localStorage.setItem('rebinInvoices', JSON.stringify(invs));
+    async function deleteInvoice(id) {
+        if(confirm("دڵنیای لە سڕینەوە؟")) {
+            await supabase.from('invoices').delete().eq('id', id);
             loadInvoices();
         }
     }
+
+    window.onload = loadInvoices;
 </script>
 </body>
 </html>
