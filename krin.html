@@ -2,27 +2,25 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>کڕینی کاڵا و وەسڵ - Rebin System</title>
+    <title>کڕین - وەسڵی پێشکەوتوو</title>
     <style>
         :root { --p: #2c3e50; --s: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; direction: rtl; }
-        .box { background: white; padding: 25px; border-radius: 20px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        input, select, button { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; width: 100%; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 15px; direction: rtl; }
+        .box { background: white; padding: 20px; border-radius: 15px; max-width: 1100px; margin: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; }
+        .filter-section { background: #e8f4f8; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; align-items: flex-end; }
+        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
         button { background: var(--s); color: white; cursor: pointer; border: none; font-weight: bold; }
-        .search-box { margin: 20px 0; padding: 12px; border: 2px solid var(--p); border-radius: 8px; width: 100%; font-size: 16px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: var(--p); color: white; padding: 12px; }
-        td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
-        .print-btn { background: #3498db; padding: 5px 10px; font-size: 12px; }
-        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; background: var(--p); color: white; padding: 8px 20px; border-radius: 8px; }
+        .btn-print { background: #3498db; }
+        .btn-del { background: #e74c3c; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th { background: var(--p); color: white; padding: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; text-align: center; }
+        .back-btn { display: inline-block; margin-bottom: 10px; text-decoration: none; background: var(--p); color: white; padding: 8px 15px; border-radius: 5px; }
         
-        /* ستایلی تایبەت بۆ پرینت */
         @media print {
-            body * { visibility: hidden; }
-            .print-area, .print-area * { visibility: visible; }
-            .print-area { position: absolute; left: 0; top: 0; width: 100%; border: 1px solid black; padding: 20px; }
             .no-print { display: none; }
+            .print-area { display: block !important; }
         }
     </style>
 </head>
@@ -30,30 +28,35 @@
 
 <div class="box no-print">
     <a href="dashboard.html" class="back-btn">⬅️ گەڕانەوە</a>
-    <h2>📥 کڕینی نوێ و ئەرشیفی وەسڵەکان</h2>
+    <h3>📥 داخڵکردنی کڕین</h3>
     
     <div class="input-group">
-        <div><label>ناوی کاڵا</label><input type="text" id="itemName" placeholder="بۆ نموونە: برنج"></div>
-        <div><label>کارتۆن</label><input type="number" id="qty" placeholder="0"></div>
-        <div><label>دانە لە کارتۆن</label><input type="number" id="pcs" placeholder="0"></div>
-        <div><label>نرخی کارتۆن</label><input type="number" id="price" placeholder="0"></div>
+        <div><label>ناوی کاڵا</label><input type="text" id="itemName"></div>
+        <div><label>کارتۆن</label><input type="number" id="qty"></div>
+        <div><label>دانە لە کارتۆن</label><input type="number" id="pcs"></div>
+        <div><label>نرخی کارتۆن</label><input type="number" id="price"></div>
         <div><label>دراو</label>
             <select id="currency">
-                <option value="USD">دۆلار ($)</option>
-                <option value="IQD">دینار (د.ع)</option>
+                <option value="USD">USD ($)</option>
+                <option value="IQD">IQD (د.ع)</option>
             </select>
         </div>
+        <div><button onclick="savePurchase()" style="margin-top: 23px;">تۆمارکردن</button></div>
     </div>
-    <button onclick="savePurchase()" style="width: 100%; padding: 15px;">تۆمارکردن و پاشکەوتکردن +</button>
 
-    <input type="text" id="searchInput" class="search-box" onkeyup="searchTable()" placeholder="🔍 گەڕان بەپێی ناوی کاڵا، ڕۆژ، یان بەروار (نموونە: 2024-05-20)...">
+    <div class="filter-section">
+        <div><label>گەڕان بەپێی ناو</label><input type="text" id="searchName" onkeyup="filterData()" placeholder="ناوی کاڵا..."></div>
+        <div><label>لە بەرواری</label><input type="date" id="startDate" onchange="filterData()"></div>
+        <div><label>بۆ بەرواری</label><input type="date" id="endDate" onchange="filterData()"></div>
+        <div><button onclick="clearFilters()" class="btn-print">پاککردنەوەی فلتەر</button></div>
+    </div>
 
     <table id="invoiceTable">
         <thead>
             <tr>
-                <th>بەروار و کات</th>
+                <th>بەروار</th>
                 <th>ناوی کاڵا</th>
-                <th>بڕ (کارتۆن)</th>
+                <th>کارتۆن</th>
                 <th>کۆی دانە</th>
                 <th>نرخ</th>
                 <th>کردارەکان</th>
@@ -63,7 +66,7 @@
     </table>
 </div>
 
-<div id="printSection" class="print-area" style="display:none;"></div>
+<div id="printSection" class="print-area" style="display:none; padding: 40px; direction: rtl;"></div>
 
 <script>
     window.onload = loadInvoices;
@@ -72,77 +75,102 @@
         const name = document.getElementById('itemName').value.trim();
         const qty = parseFloat(document.getElementById('qty').value) || 0;
         const pcs = parseFloat(document.getElementById('pcs').value) || 0;
-        const price = parseFloat(document.getElementById('price').value) || 0;
+        const price = document.getElementById('price').value;
         const curr = document.getElementById('currency').value;
-        const date = new Date().toLocaleString('ku-IQ');
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0]; // تەنها بەروار بۆ گەڕان
+        const timeStr = now.toLocaleTimeString('ku-IQ');
 
-        if (!name || qty <= 0) { alert("تکایە زانیارییەکان تەواو بکە"); return; }
+        if (!name || qty <= 0) return alert("تکایە زانیارییەکان تەواو بکە");
 
-        // ١. نوێکردنەوەی مەخزەن
         let stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
-        if (stock[name]) { stock[name].totalPcs += (qty * pcs); } 
-        else { stock[name] = { totalPcs: (qty * pcs), price: price, curr: curr, pcsPerBox: pcs }; }
+        stock[name] = stock[name] ? { ...stock[name], totalPcs: stock[name].totalPcs + (qty * pcs) } : { totalPcs: (qty * pcs), price, curr, pcsPerBox: pcs };
         localStorage.setItem('rebinStock', JSON.stringify(stock));
 
-        // ٢. پاشکەوتکردنی وەسڵ
         let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        invoices.push({ id: Date.now(), date, name, qty, pcs, total: (qty * pcs), price, curr });
+        invoices.push({ id: Date.now(), date: dateStr, time: timeStr, name, qty, pcs, total: (qty * pcs), price, curr });
         localStorage.setItem('rebinInvoices', JSON.stringify(invoices));
 
-        alert("وەسڵەکە بە سەرکەوتوویی تۆمار کرا");
+        alert("تۆمارکرا");
         location.reload();
     }
 
     function loadInvoices() {
         const invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
+        displayData(invoices);
+    }
+
+    function displayData(data) {
         const tbody = document.getElementById('invoiceBody');
-        invoices.reverse().forEach(inv => {
+        tbody.innerHTML = "";
+        data.reverse().forEach(inv => {
             tbody.innerHTML += `
                 <tr>
-                    <td>${inv.date}</td>
+                    <td>${inv.date} <br> <small>${inv.time}</small></td>
                     <td><b>${inv.name}</b></td>
                     <td>${inv.qty}</td>
                     <td>${inv.total}</td>
                     <td>${inv.price} ${inv.curr}</td>
-                    <td><button class="print-btn" onclick="printInvoice(${inv.id})">🖨️ پرینت</button></td>
+                    <td>
+                        <button class="btn-print" onclick="printInv(${inv.id})">🖨️</button>
+                        <button class="btn-del" onclick="deleteInv(${inv.id})">🗑️</button>
+                    </td>
                 </tr>`;
         });
     }
 
-    function searchTable() {
-        let input = document.getElementById('searchInput').value.toLowerCase();
-        let rows = document.getElementById('invoiceBody').getElementsByTagName('tr');
-        for (let row of rows) {
-            row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+    function filterData() {
+        const nameInput = document.getElementById('searchName').value.toLowerCase();
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
+
+        let filtered = invoices.filter(inv => {
+            let matchesName = inv.name.toLowerCase().includes(nameInput);
+            let matchesDate = true;
+            if (start) matchesDate = matchesDate && (inv.date >= start);
+            if (end) matchesDate = matchesDate && (inv.date <= end);
+            return matchesName && matchesDate;
+        });
+
+        displayData(filtered);
+    }
+
+    function clearFilters() {
+        document.getElementById('searchName').value = "";
+        document.getElementById('startDate').value = "";
+        document.getElementById('endDate').value = "";
+        loadInvoices();
+    }
+
+    function deleteInv(id) {
+        if(confirm("دڵنیای لە سڕینەوەی ئەم وەسڵە؟ (بڕەکەی لە مەخزەن کەم نابێتەوە)")){
+            let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
+            invoices = invoices.filter(i => i.id !== id);
+            localStorage.setItem('rebinInvoices', JSON.stringify(invoices));
+            loadInvoices();
         }
     }
 
-    function printInvoice(id) {
+    function printInv(id) {
         const invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
         const inv = invoices.find(i => i.id === id);
-        const printSection = document.getElementById('printSection');
-        
-        printSection.innerHTML = `
-            <div style="text-align:center;">
-                <h2>ڕێبین سیستم بۆ بازرگانی</h2>
-                <p>وەسڵی کڕینی کاڵا</p>
+        const ps = document.getElementById('printSection');
+        ps.innerHTML = `
+            <div style="text-align:center; border: 2px solid #000; padding: 20px;">
+                <h2>ڕێبین سیستم - وەسڵی کڕین</h2>
                 <hr>
-                <p style="text-align:right;">بەروار: ${inv.date}</p>
-                <table border="1" style="width:100%; border-collapse:collapse;">
-                    <tr><th>ناوی کاڵا</th><td>${inv.name}</td></tr>
-                    <tr><th>بڕی کارتۆن</th><td>${inv.qty}</td></tr>
-                    <tr><th>دانە لە کارتۆن</th><td>${inv.pcs}</td></tr>
-                    <tr><th>کۆی گشتی دانە</th><td>${inv.total}</td></tr>
-                    <tr><th>نرخی کارتۆن</th><td>${inv.price} ${inv.curr}</td></tr>
-                </table>
-                <br>
-                <p>واژووی وەرگر</p>
-                <br>
-            </div>
-        `;
-        printSection.style.display = 'block';
+                <p>بەروار: ${inv.date} | کات: ${inv.time}</p>
+                <h3 style="background:#eee; padding:10px;">ناوی کاڵا: ${inv.name}</h3>
+                <p>بڕی کارتۆن: ${inv.qty} | دانە لە کارتۆن: ${inv.pcs}</p>
+                <p>کۆی گشتی دانە: ${inv.total}</p>
+                <p>نرخی کارتۆن: ${inv.price} ${inv.curr}</p>
+                <br><br>
+                <p>واژووی کۆگا</p>
+            </div>`;
+        ps.style.display = 'block';
         window.print();
-        printSection.style.display = 'none';
+        ps.style.display = 'none';
     }
 </script>
 </body>
