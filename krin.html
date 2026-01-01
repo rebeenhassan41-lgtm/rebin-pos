@@ -3,32 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بەڕێوەبردنی کڕین - Rebin System</title>
+    <title>داخڵکردنی کڕین - Rebin System</title>
     <style>
-        :root { --main: #2d3436; --accent: #0984e3; --success: #00b894; --bg: #f5f6fa; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 10px; direction: rtl; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        :root { --main: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        .container { max-width: 1300px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         
-        /* Form Section */
+        /* Form Styling */
         .header-box { background: var(--main); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; }
-        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; }
-        .btn-save { background: var(--success); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 22px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 12px; margin-bottom: 25px; }
+        label { font-weight: bold; font-size: 13px; margin-bottom: 5px; display: block; color: #444; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        
+        .btn-save { background: var(--success); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; transition: 0.3s; }
+        .btn-save:hover { background: #219150; }
 
         /* Advanced Search Section */
-        .search-area { background: #eef2f3; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 15px; align-items: flex-end; }
-        .search-input { border: 2px solid var(--accent) !important; font-size: 15px !important; }
+        .search-area { background: #e8f4f8; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 15px; align-items: flex-end; }
+        .search-input { border: 2px solid var(--accent) !important; font-size: 16px !important; }
 
         /* Table Design */
-        .table-responsive { overflow-x: auto; }
+        .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: #f1f2f6; padding: 12px; border-bottom: 2px solid #ddd; font-size: 14px; }
+        th { background: #f1f2f6; color: #333; padding: 12px; font-size: 13px; border-bottom: 2px solid #ddd; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
-        tr:hover { background: #f9f9f9; }
-
-        .btn-action { border: none; padding: 8px; border-radius: 5px; cursor: pointer; color: white; margin: 2px; }
-        .btn-p { background: #34495e; } .btn-d { background: #d63031; }
-        .back-btn { color: white; text-decoration: none; font-size: 14px; border: 1px solid white; padding: 5px 10px; border-radius: 5px; }
+        
+        .btn-action { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: white; margin: 2px; }
+        .btn-print { background: #34495e; }
+        .btn-del { background: #e74c3c; }
+        .badge { padding: 3px 7px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 
         @media print { .no-print { display: none; } .print-area { display: block !important; } }
     </style>
@@ -37,45 +40,51 @@
 
 <div class="container no-print">
     <div class="header-box">
-        <h3 style="margin:0;">📥 داخڵکردنی کڕینی نوێ</h3>
-        <a href="dashboard.html" class="back-btn">گەڕانەوە</a>
+        <h2 style="margin:0;">📥 داخڵکردنی وەصڵی کڕین</h2>
+        <a href="dashboard.html" style="color:white; text-decoration:none; border:1px solid white; padding:5px 15px; border-radius:5px;">داشبۆرد</a>
     </div>
 
     <div class="form-grid">
-        <div><label>ناوی کاڵا</label><input type="text" id="itemName"></div>
-        <div><label>کارتۆن</label><input type="number" id="qty"></div>
-        <div><label>دانە/کارتۆن</label><input type="number" id="pcs"></div>
-        <div><label>نرخی کارتۆن</label><input type="number" id="price"></div>
+        <div><label>ناوی بازرگان</label><input type="text" id="merchant" placeholder="کۆمپانیای فلانی"></div>
+        <div><label>بابەت (کاڵا)</label><input type="text" id="itemName" placeholder="مریشک، زەیت..."></div>
+        <div><label>کارتۆن</label><input type="number" id="qty" placeholder="0"></div>
+        <div><label>دانە لە کارتۆن</label><input type="number" id="pcs" placeholder="0"></div>
+        <div><label>نرخی کڕین (کارتۆن)</label><input type="number" id="buyPrice" placeholder="0"></div>
+        <div><label>فرۆشی تاک (دانە)</label><input type="number" id="retailPrice" placeholder="0"></div>
+        <div><label>فرۆشی کۆ (کارتۆن)</label><input type="number" id="wholesalePrice" placeholder="0"></div>
         <div><label>دراو</label>
             <select id="curr">
-                <option value="USD">USD ($)</option>
-                <option value="IQD">IQD (د.ع)</option>
-                <option value="IRR">IRR (تمەن)</option>
+                <option value="USD">دۆلار ($)</option>
+                <option value="IQD">دینار (د.ع)</option>
+                <option value="IRR">تمەن (ت.م)</option>
             </select>
         </div>
-        <button onclick="saveInv()" class="btn-save">تۆمارکردن</button>
     </div>
+    <button onclick="saveInvoice()" class="btn-save">تۆمارکردن و سەیڤکردن ✅</button>
 
     <div class="search-area">
         <div>
-            <label>🔎 گەڕانی خێرا (ناوی کاڵا یان نرخ)</label>
-            <input type="text" id="textSearch" class="search-input" onkeyup="filterNow()" placeholder="بنووسە بۆ گەڕان...">
+            <label>🔎 گەڕان بەپێی (ناوی بازرگان یان ناوی بابەت)</label>
+            <input type="text" id="textSearch" class="search-input" onkeyup="filterInvoices()" placeholder="بۆ نموونە: کۆمپانیای ڕێبین...">
         </div>
         <div>
-            <label>📅 فلتەری ڕۆژ</label>
-            <input type="date" id="dateSearch" onchange="filterNow()">
+            <label>📅 فلتەری بەروار (تاریخ)</label>
+            <input type="date" id="dateSearch" onchange="filterInvoices()">
         </div>
     </div>
 
-    <div class="table-responsive">
+    <div class="table-wrap">
         <table>
             <thead>
                 <tr>
                     <th>بەروار</th>
-                    <th>کاڵا</th>
-                    <th>کارتۆن</th>
-                    <th>کۆی دانە</th>
-                    <th>نرخ</th>
+                    <th>بازرگان</th>
+                    <th>بابەت</th>
+                    <th>بڕ (کارتۆن)</th>
+                    <th>کڕین (ک.)</th>
+                    <th>فرۆشی تاک</th>
+                    <th>فرۆشی کۆ</th>
+                    <th>دراو</th>
                     <th>کردارەکان</th>
                 </tr>
             </thead>
@@ -84,36 +93,48 @@
     </div>
 </div>
 
-<div id="printZone" class="print-area" style="display:none; direction:rtl;"></div>
+<div id="printZone" class="print-area" style="display:none; direction:rtl; padding:40px; font-family:Tahoma;"></div>
 
 <script>
-    window.onload = loadInv;
+    window.onload = loadInvoices;
 
-    function saveInv() {
-        const name = document.getElementById('itemName').value;
-        const q = parseFloat(document.getElementById('qty').value) || 0;
-        const p = parseFloat(document.getElementById('pcs').value) || 0;
-        const pr = document.getElementById('price').value;
-        const c = document.getElementById('curr').value;
-        const d = new Date();
-        const dateStr = d.toISOString().split('T')[0];
-        const fullDate = d.toLocaleString('ku-IQ');
+    function saveInvoice() {
+        const inv = {
+            id: Date.now(),
+            merchant: document.getElementById('merchant').value || "دیاری نەکراو",
+            name: document.getElementById('itemName').value,
+            qty: parseFloat(document.getElementById('qty').value) || 0,
+            pcs: parseFloat(document.getElementById('pcs').value) || 0,
+            buyPrice: document.getElementById('buyPrice').value,
+            retailPrice: document.getElementById('retailPrice').value,
+            wholesalePrice: document.getElementById('wholesalePrice').value,
+            curr: document.getElementById('curr').value,
+            dateOnly: new Date().toISOString().split('T')[0],
+            fullDate: new Date().toLocaleString('ku-IQ')
+        };
 
-        if(!name || q <= 0) return alert("تکایە خانەکان پڕ بکەرەوە");
+        if(!inv.name || inv.qty <= 0) return alert("تکایە ناوی بابەت و بڕەکە پڕ بکەرەوە");
 
+        // نوێکردنەوەی مەخزەن
         let stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
-        stock[name] = { totalPcs: (stock[name]?.totalPcs || 0) + (q * p), price: pr, curr: c, pcsPerBox: p };
+        stock[inv.name] = { 
+            totalPcs: (stock[inv.name]?.totalPcs || 0) + (inv.qty * inv.pcs),
+            retail: inv.retailPrice, wholesale: inv.wholesalePrice, curr: inv.curr, pcsPerBox: inv.pcs 
+        };
         localStorage.setItem('rebinStock', JSON.stringify(stock));
 
-        let invs = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        invs.push({ id: Date.now(), name, q, p, pr, c, dateOnly: dateStr, fullDate });
-        localStorage.setItem('rebinInvoices', JSON.stringify(invs));
+        // سەیڤکردنی وەسڵ
+        let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
+        invoices.push(inv);
+        localStorage.setItem('rebinInvoices', JSON.stringify(invoices));
 
+        alert("وەصڵەکە تۆمار کرا");
         location.reload();
     }
 
-    function loadInv() {
-        renderTable(JSON.parse(localStorage.getItem('rebinInvoices')) || []);
+    function loadInvoices() {
+        const data = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
+        renderTable(data);
     }
 
     function renderTable(data) {
@@ -121,52 +142,59 @@
         body.innerHTML = data.reverse().map(i => `
             <tr>
                 <td style="font-size:11px;">${i.fullDate}</td>
-                <td><b>${i.name}</b></td>
-                <td>${i.q}</td>
-                <td>${i.q * i.p}</td>
-                <td>${i.pr} ${i.c}</td>
+                <td><b>${i.merchant}</b></td>
+                <td>${i.name}</td>
+                <td><span class="badge" style="background:#eee;">${i.qty} ک.</span></td>
+                <td>${i.buyPrice}</td>
+                <td style="color:green;">${i.retailPrice}</td>
+                <td style="color:blue;">${i.wholesalePrice}</td>
+                <td><b>${i.curr}</b></td>
                 <td>
-                    <button class="btn-action btn-p" onclick="printThis(${i.id})">🖨️</button>
-                    <button class="btn-action btn-d" onclick="deleteThis(${i.id})">🗑️</button>
+                    <button class="btn-action btn-print" onclick="printInvoice(${i.id})">🖨️</button>
+                    <button class="btn-action btn-del" onclick="deleteInvoice(${i.id})">🗑️</button>
                 </td>
             </tr>
         `).join('');
     }
 
-    function filterNow() {
-        let text = document.getElementById('textSearch').value.toLowerCase();
-        let date = document.getElementById('dateSearch').value;
-        let invs = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
+    function filterInvoices() {
+        const text = document.getElementById('textSearch').value.toLowerCase();
+        const date = document.getElementById('dateSearch').value;
+        const all = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
 
-        let filtered = invs.filter(i => {
-            let matchText = i.name.toLowerCase().includes(text) || i.pr.toString().includes(text);
-            let matchDate = date ? i.dateOnly === date : true;
+        const filtered = all.filter(i => {
+            const matchText = i.name.toLowerCase().includes(text) || i.merchant.toLowerCase().includes(text);
+            const matchDate = date ? i.dateOnly === date : true;
             return matchText && matchDate;
         });
-
-        renderTable(filtered.reverse()); // reverse دووبارە بۆ ئەوەی ڕیزبەندی تێکنەچێت
+        renderTable(filtered);
     }
 
-    function deleteThis(id) {
-        if(confirm("سڕینەوەی وەسڵ؟")){
-            let invs = JSON.parse(localStorage.getItem('rebinInvoices')).filter(i => i.id !== id);
+    function deleteInvoice(id) {
+        if(confirm("ئایا دڵنیای لە سڕینەوە؟")){
+            let invs = JSON.parse(localStorage.getItem('rebinInvoices')).filter(x => x.id !== id);
             localStorage.setItem('rebinInvoices', JSON.stringify(invs));
-            loadInv();
+            loadInvoices();
         }
     }
 
-    function printThis(id) {
+    function printInvoice(id) {
         const i = JSON.parse(localStorage.getItem('rebinInvoices')).find(x => x.id === id);
-        document.getElementById('printZone').innerHTML = `
-            <div style="border:2px solid #000; padding:20px; text-align:center;">
-                <h2>ڕێبین سیستم - وەسڵی کڕین</h2>
+        const zone = document.getElementById('printZone');
+        zone.innerHTML = `
+            <div style="border:3px double #000; padding:20px; text-align:center;">
+                <h2>ڕێبین سیستم - وەصڵی کڕین</h2>
                 <hr>
-                <div style="text-align:right;">
-                    <p>بەروار: ${i.fullDate}</p>
-                    <p>کاڵا: ${i.name}</p>
-                    <p>بڕ: ${i.q} کارتۆن (${i.q * i.p} دانە)</p>
-                    <p>نرخ: ${i.pr} ${i.c}</p>
+                <div style="text-align:right; line-height:2;">
+                    <p><b>بەروار:</b> ${i.fullDate}</p>
+                    <p><b>بازرگان:</b> ${i.merchant}</p>
+                    <p><b>بابەت:</b> ${i.name}</p>
+                    <p><b>بڕ:</b> ${i.qty} کارتۆن (${i.qty * i.pcs} دانە)</p>
+                    <p><b>نرخی کڕین:</b> ${i.buyPrice} ${i.curr}</p>
+                    <p><b>نرخی فرۆشی تاک:</b> ${i.retailPrice} ${i.curr}</p>
+                    <p><b>نرخی فرۆشی کۆ:</b> ${i.wholesalePrice} ${i.curr}</p>
                 </div>
+                <br><p>واژووی کۆگا</p>
             </div>`;
         window.print();
     }
