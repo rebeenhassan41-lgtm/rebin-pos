@@ -2,105 +2,38 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ڕێبین سیستم - ڕاپۆرتی گشتی</title>
+    <title>ڕاپۆرتی گشتی - Rebin System</title>
     <style>
-        :root { --p: #2c3e50; --s: #e67e22; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; text-align: right; }
-        .container { background: white; padding: 25px; border-radius: 15px; max-width: 1200px; margin: auto; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .stat-card { padding: 20px; border-radius: 12px; color: white; text-align: center; }
-        .total-bg { background: var(--p); }
-        .debt-bg { background: var(--danger); }
-        .stock-bg { background: #8e44ad; }
-        .search-box { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; }
-        th { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; }
-        td { padding: 10px; text-align: center; border: 1px solid #ddd; }
-        .low-stock { background-color: #ffeaea !important; color: #c0392b; font-weight: bold; }
-        .section-title { margin-top: 30px; padding: 10px; background: #eee; border-right: 5px solid var(--p); }
-        .back-btn { text-decoration: none; background: var(--p); color: white; padding: 8px 15px; border-radius: 8px; display: inline-block; margin-bottom: 10px; }
-        input, select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+        body { font-family: Tahoma, sans-serif; background: #f4f7f6; padding: 20px; direction: rtl; }
+        .box { background: white; padding: 20px; border-radius: 15px; max-width: 800px; margin: auto; text-align: center; }
+        .stat { font-size: 24px; margin: 20px; color: #2c3e50; }
+        .back-btn { padding: 10px 20px; background: #2c3e50; color: white; text-decoration: none; border-radius: 8px; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <a href="index.html" class="back-btn">⬅️ گەڕانەوە بۆ سەرەکی</a>
-    <h2 style="text-align: center;">📊 سیستەمی کۆنترۆڵ و ڕاپۆرتی گشتی</h2>
-
-    <div class="stats-grid">
-        <div class="stat-card total-bg"><h3>کۆی فرۆشتن</h3><div id="grandTotal">0 $</div></div>
-        <div class="stat-card debt-bg"><h3>کۆی قەرزەکان</h3><div id="totalDebt">0 $</div></div>
-        <div class="stat-card stock-bg"><h3>سەرمایەی مەخزەن</h3><div id="stockValue">0 $</div></div>
-    </div>
-
-    <div class="search-box">
-        <div><label>گەڕان بەپێی ناو:</label><input type="text" id="searchName" onkeyup="loadReportData()" placeholder="ناوی کڕیار..."></div>
-        <div><label>لە بەرواری:</label><input type="date" id="startDate" onchange="loadReportData()"></div>
-        <div><label>بۆ بەرواری:</label><input type="date" id="endDate" onchange="loadReportData()"></div>
-    </div>
-
-    <h3 class="section-title" style="border-color: #8e44ad;">📦 دۆخی مەخزەن و سەرمایە</h3>
-    <table>
-        <thead>
-            <tr><th>ناوی کاڵا</th><th>کارتۆن</th><th>دانە</th><th>نرخی کڕینی کارتۆن</th><th>کۆی نرخ ($)</th><th>دۆخ</th></tr>
-        </thead>
-        <tbody id="stockTable"></tbody>
-    </table>
-
-    <h3 class="section-title">📝 مێژووی فرۆشتنەکان</h3>
-    <p style="color: gray; font-size: 0.9em;">(تێبینی: مێژووی فرۆشتن لە داهاتوودا لە داتابەیس زیاد دەکەین)</p>
-    <table>
-        <thead>
-            <tr><th>بەروار</th><th>کڕیار</th><th>کاڵا</th><th>بڕ</th><th>جۆر</th><th>کۆی گشتی</th></tr>
-        </thead>
-        <tbody id="historyTable">
-            <tr><td colspan="6">داتای فرۆشتن لەم وەشەنەدا تەنها لە کاتی فرۆشتن دیارە</td></tr>
-        </tbody>
-    </table>
+<div class="box">
+    <h1>📈 ڕاپۆرتی کورتی مەخزەن</h1>
+    <div id="result" class="stat">چاوەڕێ بکە...</div>
+    <br><br>
+    <a href="dashboard.html" class="back-btn">گەڕانەوە</a>
 </div>
 
 <script>
-    async function loadReportData() {
-        try {
-            // هێنانی داتا لە سێرڤەر (مۆنگۆ)
-            const response = await fetch('http://127.0.0.1:3000/api/stock');
-            const stockItems = await response.json();
-
-            let sTable = document.getElementById('stockTable');
-            sTable.innerHTML = "";
-            let totalInventoryValue = 0;
-
-            stockItems.forEach(item => {
-                let totalPcs = item.totalPcs;
-                let pcsPerBox = item.pcsPerBox;
-                let boxPrice = item.price; // نرخی یەک کارتۆن
-
-                // حیسابکردنی سەرمایە: (کۆی دانە دابەشی دانەی ناو کارتۆن) * نرخی کارتۆن
-                let currentStockValue = (totalPcs / pcsPerBox) * boxPrice;
-                totalInventoryValue += currentStockValue;
-
-                let isLow = totalPcs <= 10;
-                
-                sTable.innerHTML += `
-                    <tr class="${isLow ? 'low-stock' : ''}">
-                        <td><b>${item.name}</b></td>
-                        <td>${(totalPcs / pcsPerBox).toFixed(1)}</td>
-                        <td>${totalPcs}</td>
-                        <td>${boxPrice.toLocaleString()} $</td>
-                        <td>${currentStockValue.toFixed(2)} $</td>
-                        <td>${isLow ? '⚠️ کەمە' : '✅ باشە'}</td>
-                    </tr>`;
-            });
-
-            document.getElementById('stockValue').innerText = totalInventoryValue.toLocaleString(undefined, {minimumFractionDigits: 2}) + " $";
-
-        } catch (error) {
-            console.error("Error loading report:", error);
+    function showReport() {
+        const stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
+        let totalItems = Object.keys(stock).length;
+        let totalQty = 0;
+        
+        for (let item in stock) {
+            totalQty += stock[item].totalPcs;
         }
-    }
 
-    window.onload = loadReportData;
+        document.getElementById('result').innerHTML = `
+            کۆی جۆری کاڵاکان: ${totalItems} <br>
+            کۆی هەموو دانەکان لە مەخزەن: ${totalQty} دانە
+        `;
+    }
+    window.onload = showReport;
 </script>
 </body>
 </html>
