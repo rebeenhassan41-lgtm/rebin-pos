@@ -5,16 +5,17 @@
     <title>کڕینی کاڵا - Rebin System</title>
     <style>
         :root { --p: #2c3e50; --s: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; text-align: right; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; text-align: right; direction: rtl; }
         .box { background: white; padding: 25px; border-radius: 20px; max-width: 900px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .input-group { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--p); }
         input, select, button { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; width: 100%; box-sizing: border-box; }
-        button { background: var(--s); color: white; cursor: pointer; border: none; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #219150; }
+        button { background: var(--s); color: white; cursor: pointer; border: none; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #219150; transform: translateY(-2px); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 10px; overflow: hidden; }
         th { background: var(--p); color: white; padding: 12px; }
         td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; background: #fff; }
-        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; background: var(--p); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; background: var(--p); color: white; padding: 8px 20px; border-radius: 8px; font-weight: bold; }
         h2 { color: var(--p); border-bottom: 2px solid var(--s); padding-bottom: 10px; }
     </style>
 </head>
@@ -40,7 +41,7 @@
             </select>
         </div>
         <div style="display: flex; align-items: flex-end;">
-            <button onclick="savePurchase()" style="height: 45px;">زیادکردن بۆ مەخزەن +</button>
+            <button onclick="savePurchase()">زیادکردن بۆ مەخزەن +</button>
         </div>
     </div>
 
@@ -71,13 +72,13 @@
             return;
         }
 
-        // ١. وەرگرتنی مەخزەنی ئێستا لە براوسەرەکە
+        // ١. وەرگرتنی مەخزەنی ئێستا لە براوسەرەکە (Local Storage)
         let stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
 
-        // ٢. ئەگەر کاڵاکە پێشتر هەبوو، بڕەکەی زیاد دەکەین، ئەگەر نا دروستی دەکەین
+        // ٢. ئەگەر کاڵاکە پێشتر هەبوو، بڕەکەی زیاد دەکەین
         if (stock[name]) {
             stock[name].totalPcs += (boxQty * perBox);
-            stock[name].price = boxPrice; // نوێکردنەوەی نرخ بۆ کۆتا کڕین
+            stock[name].price = boxPrice;
             stock[name].curr = curr;
         } else {
             stock[name] = {
@@ -88,10 +89,10 @@
             };
         }
 
-        // ٣. سەیڤکردنەوەی مەخزەنە نوێیەکە
+        // ٣. سەیڤکردن لەناو مۆبایل/براوسەر
         localStorage.setItem('rebinStock', JSON.stringify(stock));
 
-        // ٤. پیشاندان لە خشتە کاتییەکەدا
+        // ٤. نیشاندان لە خشتەکە
         const tbody = document.querySelector('#tempTable tbody');
         const row = `<tr>
             <td><b>${name}</b></td>
@@ -107,7 +108,7 @@
         document.getElementById('qty').value = "";
         document.getElementById('price').value = "";
         
-        alert("✅ کاڵاکە بە سەرکەوتوویی چوو بۆ مەخزەن");
+        alert("✅ " + name + " بە سەرکەوتوویی زیادکرا بۆ مەخزەن");
     }
 </script>
 
