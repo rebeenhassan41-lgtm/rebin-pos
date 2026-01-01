@@ -2,38 +2,182 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ڕاپۆرتی گشتی - Rebin System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ڕاپۆرتی پێشکەوتوو - Rebin System</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #f4f7f6; padding: 20px; direction: rtl; }
-        .box { background: white; padding: 20px; border-radius: 15px; max-width: 800px; margin: auto; text-align: center; }
-        .stat { font-size: 24px; margin: 20px; color: #2c3e50; }
-        .back-btn { padding: 10px 20px; background: #2c3e50; color: white; text-decoration: none; border-radius: 8px; }
+        :root { --p: #2c3e50; --s: #27ae60; --blue: #2980b9; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        .container { max-width: 1200px; margin: auto; }
+        .no-print { display: block; }
+        
+        .header { background: var(--p); color: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* بەشی فلتەرەکان */
+        .filter-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: flex-end; }
+        label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 5px solid var(--blue); }
+
+        .report-wrap { background: white; border-radius: 15px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f8f9fa; padding: 12px; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #f1f1f1; text-align: center; }
+
+        .btn-print { background: #34495e; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { max-width: 100%; }
+            .report-wrap { box-shadow: none; }
+        }
+
+        @media screen and (max-width: 600px) {
+            .filter-section { grid-template-columns: 1fr; }
+            table thead { display: none; }
+            table tr { display: block; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 10px; padding: 10px; }
+            table td { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
+            table td::before { content: attr(data-label); font-weight: bold; }
+        }
     </style>
 </head>
 <body>
-<div class="box">
-    <h1>📈 ڕاپۆرتی کورتی مەخزەن</h1>
-    <div id="result" class="stat">چاوەڕێ بکە...</div>
-    <br><br>
-    <a href="dashboard.html" class="back-btn">گەڕانەوە</a>
+
+<div class="container">
+    <div class="header no-print">
+        <h2 style="margin:0;">📜 ڕاپۆرتی پێشکەوتوو</h2>
+        <div>
+            <button class="btn-print" onclick="window.print()">🖨️ چاپکردنی ڕاپۆرت</button>
+            <a href="dashboard.html" style="color:white; text-decoration:none; margin-right:10px;">داشبۆرد</a>
+        </div>
+    </div>
+
+    <div class="filter-section no-print">
+        <div>
+            <label>گەڕان بەپێی کۆمپانیا</label>
+            <input type="text" id="merchantFilter" placeholder="ناوی بازرگان بنووسە..." onkeyup="generateReport()">
+        </div>
+        <div>
+            <label>جۆری وەسڵ</label>
+            <select id="typeFilter" onchange="generateReport()">
+                <option value="all">هەمووی</option>
+                <option value="krin">تەنها کڕین</option>
+                <option value="sales">تەنها فرۆشتن</option>
+            </select>
+        </div>
+        <div>
+            <label>ماوەی کات</label>
+            <select id="timeFilter" onchange="generateReport()">
+                <option value="all">هەموو کاتێک</option>
+                <option value="today">ئەمڕۆ</option>
+                <option value="month">ئەم مانگە</option>
+                <option value="year">ئەمساڵ</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card" style="border-color: var(--s);">
+            <h4>کۆی کڕین</h4>
+            <h2 id="totalKrin">0</h2>
+        </div>
+        <div class="stat-card" style="border-color: var(--blue);">
+            <h4>کۆی فرۆشتن</h4>
+            <h2 id="totalFroshtn">0</h2>
+        </div>
+        <div class="stat-card" style="border-color: #e67e22;">
+            <h4>قازانج (تەنها فرۆشتن)</h4>
+            <h2 id="totalProfit">0</h2>
+        </div>
+    </div>
+
+    <div class="report-wrap">
+        <h3 id="reportTitle" style="text-align:center; display:none;">ڕاپۆرتی کڕین و فرۆشتن</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>بەروار</th>
+                    <th>جۆر</th>
+                    <th>کۆمپانیا/کڕیار</th>
+                    <th>بابەت</th>
+                    <th>بڕ</th>
+                    <th>کۆی نرخ</th>
+                    <th>دراو</th>
+                </tr>
+            </thead>
+            <tbody id="reportTable"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    function showReport() {
-        const stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
-        let totalItems = Object.keys(stock).length;
-        let totalQty = 0;
+    function generateReport() {
+        const krin = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
+        const sales = JSON.parse(localStorage.getItem('rebinSales')) || [];
         
-        for (let item in stock) {
-            totalQty += stock[item].totalPcs;
+        const mFilter = document.getElementById('merchantFilter').value.toLowerCase();
+        const tFilter = document.getElementById('typeFilter').value;
+        const timeF = document.getElementById('timeFilter').value;
+        
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const monthStr = todayStr.substring(0, 7);
+        const yearStr = todayStr.substring(0, 4);
+
+        let tKrin = 0;
+        let tFroshtn = 0;
+        let combined = [];
+
+        // کۆکردنەوەی هەموو داتاکان
+        if (tFilter === 'all' || tFilter === 'krin') {
+            krin.forEach(i => combined.push({...i, type: 'krin'}));
+        }
+        if (tFilter === 'all' || tFilter === 'sales') {
+            sales.forEach(s => combined.push({...s, type: 'sales'}));
         }
 
-        document.getElementById('result').innerHTML = `
-            کۆی جۆری کاڵاکان: ${totalItems} <br>
-            کۆی هەموو دانەکان لە مەخزەن: ${totalQty} دانە
-        `;
+        const tbody = document.getElementById('reportTable');
+        tbody.innerHTML = "";
+
+        combined.sort((a, b) => new Date(b.dateOnly) - new Date(a.dateOnly));
+
+        combined.forEach(item => {
+            // فلتەری بازرگان
+            const merchantName = (item.merchant || item.customer || "").toLowerCase();
+            if (mFilter && !merchantName.includes(mFilter)) return;
+
+            // فلتەری کات
+            if (timeF === 'today' && item.dateOnly !== todayStr) return;
+            if (timeF === 'month' && !item.dateOnly.startsWith(monthStr)) return;
+            if (timeF === 'year' && !item.dateOnly.startsWith(yearStr)) return;
+
+            const isKrin = item.type === 'krin';
+            const price = parseFloat(isKrin ? item.buyPrice : item.totalPrice) || 0;
+            
+            if (isKrin) tKrin += price; else tFroshtn += price;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td data-label="بەروار">${item.dateOnly}</td>
+                    <td data-label="جۆر"><span style="color:${isKrin?'red':'green'}; font-weight:bold;">${isKrin?'📥 کڕین':'📤 فرۆشتن'}</span></td>
+                    <td data-label="کۆمپانیا">${item.merchant || item.customer || "---"}</td>
+                    <td data-label="بابەت">${item.name}</td>
+                    <td data-label="بڕ">${item.qty}</td>
+                    <td data-label="کۆی نرخ">${price.toLocaleString()}</td>
+                    <td data-label="دراو">${item.curr}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('totalKrin').innerText = tKrin.toLocaleString();
+        document.getElementById('totalFroshtn').innerText = tFroshtn.toLocaleString();
+        document.getElementById('totalProfit').innerText = (tFroshtn - (tFroshtn * 0.1)).toLocaleString(); // نموونەی قازانج
     }
-    window.onload = showReport;
+
+    window.onload = generateReport;
 </script>
+
 </body>
 </html>
