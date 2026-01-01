@@ -2,175 +2,168 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>کڕین - وەسڵی پێشکەوتوو</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بەڕێوەبردنی وەسڵەکان - Rebin System</title>
     <style>
-        :root { --p: #2c3e50; --s: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 15px; direction: rtl; }
-        .box { background: white; padding: 20px; border-radius: 15px; max-width: 1100px; margin: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; }
-        .filter-section { background: #e8f4f8; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; align-items: flex-end; }
-        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
-        button { background: var(--s); color: white; cursor: pointer; border: none; font-weight: bold; }
-        .btn-print { background: #3498db; }
-        .btn-del { background: #e74c3c; margin-top: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th { background: var(--p); color: white; padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; text-align: center; }
-        .back-btn { display: inline-block; margin-bottom: 10px; text-decoration: none; background: var(--p); color: white; padding: 8px 15px; border-radius: 5px; }
+        :root { --main: #0984e3; --success: #00b894; --bg: #dfe6e9; --text: #2d3436; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; direction: rtl; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        @media print {
-            .no-print { display: none; }
-            .print-area { display: block !important; }
-        }
+        /* شێوازی فۆرمەکە */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 30px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; transition: 0.3s; }
+        input:focus { border-color: var(--main); outline: none; box-shadow: 0 0 5px rgba(9, 132, 227, 0.2); }
+        
+        .btn-add { background: var(--success); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 23px; }
+        
+        /* بەشی گەڕانی پڕۆفیشناڵ */
+        .search-container { position: relative; margin-bottom: 20px; }
+        .search-bar { width: 100%; padding: 15px 45px 15px 15px; border-radius: 50px; border: 2px solid var(--main); font-size: 16px; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%230984e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat right 15px center; }
+
+        /* خشتەی داتا */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 10px; overflow: hidden; }
+        th { background: var(--main); color: white; padding: 15px; font-size: 14px; }
+        td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
+        tr:hover { background-color: #f1f2f6; }
+        
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-qty { background: #e17055; color: white; }
+        
+        .actions button { padding: 8px; border: none; border-radius: 5px; cursor: pointer; margin: 0 2px; }
+        .btn-print { background: #636e72; color: white; }
+        .btn-del { background: #d63031; color: white; }
+
+        .back-link { text-decoration: none; color: var(--main); font-weight: bold; display: inline-block; margin-bottom: 15px; }
+
+        @media print { .no-print { display: none; } .print-only { display: block !important; } }
     </style>
 </head>
 <body>
 
-<div class="box no-print">
-    <a href="dashboard.html" class="back-btn">⬅️ گەڕانەوە</a>
-    <h3>📥 داخڵکردنی کڕین</h3>
-    
-    <div class="input-group">
-        <div><label>ناوی کاڵا</label><input type="text" id="itemName"></div>
-        <div><label>کارتۆن</label><input type="number" id="qty"></div>
-        <div><label>دانە لە کارتۆن</label><input type="number" id="pcs"></div>
-        <div><label>نرخی کارتۆن</label><input type="number" id="price"></div>
+<div class="container no-print">
+    <a href="dashboard.html" class="back-link">⬅️ گەڕانەوە بۆ داشبۆرد</a>
+    <h2 style="margin-top:0;">📦 بەڕێوەبردنی کڕین و ئەرشیفی زیرەک</h2>
+
+    <div class="form-grid">
+        <div><label>ناوی کاڵا</label><input type="text" id="itemName" placeholder="نموونە: مریشک"></div>
+        <div><label>کارتۆن</label><input type="number" id="qty" placeholder="0"></div>
+        <div><label>دانە لە کارتۆن</label><input type="number" id="pcs" placeholder="0"></div>
+        <div><label>نرخی کڕین</label><input type="number" id="price" placeholder="0"></div>
         <div><label>دراو</label>
             <select id="currency">
-                <option value="USD">USD ($)</option>
-                <option value="IQD">IQD (د.ع)</option>
+                <option value="USD">دۆلار ($)</option>
+                <option value="IQD">دینار (د.ع)</option>
             </select>
         </div>
-        <div><button onclick="savePurchase()" style="margin-top: 23px;">تۆمارکردن</button></div>
+        <div><button onclick="savePurchase()" class="btn-add">تۆمارکردنی وەسڵ</button></div>
     </div>
 
-    <div class="filter-section">
-        <div><label>گەڕان بەپێی ناو</label><input type="text" id="searchName" onkeyup="filterData()" placeholder="ناوی کاڵا..."></div>
-        <div><label>لە بەرواری</label><input type="date" id="startDate" onchange="filterData()"></div>
-        <div><label>بۆ بەرواری</label><input type="date" id="endDate" onchange="filterData()"></div>
-        <div><button onclick="clearFilters()" class="btn-print">پاککردنەوەی فلتەر</button></div>
+    <div class="search-container">
+        <input type="text" id="smartSearch" class="search-bar" onkeyup="smartFilter()" placeholder="لێرە بگەڕێ (ناوی کاڵا، بەروار، یان نرخ)...">
     </div>
 
-    <table id="invoiceTable">
+    <table id="mainTable">
         <thead>
             <tr>
-                <th>بەروار</th>
+                <th>بەروار و کات</th>
                 <th>ناوی کاڵا</th>
                 <th>کارتۆن</th>
                 <th>کۆی دانە</th>
-                <th>نرخ</th>
+                <th>نرخی کڕین</th>
                 <th>کردارەکان</th>
             </tr>
         </thead>
-        <tbody id="invoiceBody"></tbody>
+        <tbody id="invoiceList"></tbody>
     </table>
 </div>
 
-<div id="printSection" class="print-area" style="display:none; padding: 40px; direction: rtl;"></div>
+<div id="printArea" class="print-only" style="display:none; direction:rtl;"></div>
 
 <script>
-    window.onload = loadInvoices;
+    window.onload = loadData;
 
     function savePurchase() {
-        const name = document.getElementById('itemName').value.trim();
-        const qty = parseFloat(document.getElementById('qty').value) || 0;
-        const pcs = parseFloat(document.getElementById('pcs').value) || 0;
-        const price = document.getElementById('price').value;
-        const curr = document.getElementById('currency').value;
-        const now = new Date();
-        const dateStr = now.toISOString().split('T')[0]; // تەنها بەروار بۆ گەڕان
-        const timeStr = now.toLocaleTimeString('ku-IQ');
+        const item = {
+            id: Date.now(),
+            name: document.getElementById('itemName').value.trim(),
+            qty: parseFloat(document.getElementById('qty').value) || 0,
+            pcs: parseFloat(document.getElementById('pcs').value) || 0,
+            price: document.getElementById('price').value,
+            curr: document.getElementById('currency').value,
+            date: new Date().toLocaleString('ku-IQ')
+        };
 
-        if (!name || qty <= 0) return alert("تکایە زانیارییەکان تەواو بکە");
+        if(!item.name || item.qty <= 0) return alert("تکایە زانیارییەکان تەواو بکە");
 
+        // سەیڤکردن لە مەخزەن
         let stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
-        stock[name] = stock[name] ? { ...stock[name], totalPcs: stock[name].totalPcs + (qty * pcs) } : { totalPcs: (qty * pcs), price, curr, pcsPerBox: pcs };
+        stock[item.name] = { 
+            totalPcs: (stock[item.name]?.totalPcs || 0) + (item.qty * item.pcs),
+            price: item.price, curr: item.curr, pcsPerBox: item.pcs 
+        };
         localStorage.setItem('rebinStock', JSON.stringify(stock));
 
+        // سەیڤکردن لە وەسڵەکان
         let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        invoices.push({ id: Date.now(), date: dateStr, time: timeStr, name, qty, pcs, total: (qty * pcs), price, curr });
+        invoices.push(item);
         localStorage.setItem('rebinInvoices', JSON.stringify(invoices));
 
-        alert("تۆمارکرا");
         location.reload();
     }
 
-    function loadInvoices() {
+    function loadData() {
         const invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        displayData(invoices);
+        const list = document.getElementById('invoiceList');
+        list.innerHTML = invoices.reverse().map(inv => `
+            <tr>
+                <td style="font-size:12px;">${inv.date}</td>
+                <td><strong>${inv.name}</strong></td>
+                <td><span class="badge badge-qty">${inv.qty} کارتۆن</span></td>
+                <td>${inv.qty * inv.pcs} دانە</td>
+                <td>${inv.price} ${inv.curr}</td>
+                <td class="actions">
+                    <button class="btn-print" onclick="printMe(${inv.id})">🖨️</button>
+                    <button class="btn-del" onclick="deleteMe(${inv.id})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
     }
 
-    function displayData(data) {
-        const tbody = document.getElementById('invoiceBody');
-        tbody.innerHTML = "";
-        data.reverse().forEach(inv => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${inv.date} <br> <small>${inv.time}</small></td>
-                    <td><b>${inv.name}</b></td>
-                    <td>${inv.qty}</td>
-                    <td>${inv.total}</td>
-                    <td>${inv.price} ${inv.curr}</td>
-                    <td>
-                        <button class="btn-print" onclick="printInv(${inv.id})">🖨️</button>
-                        <button class="btn-del" onclick="deleteInv(${inv.id})">🗑️</button>
-                    </td>
-                </tr>`;
+    function smartFilter() {
+        let val = document.getElementById('smartSearch').value.toLowerCase();
+        let rows = document.querySelectorAll('#invoiceList tr');
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
         });
     }
 
-    function filterData() {
-        const nameInput = document.getElementById('searchName').value.toLowerCase();
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
-        let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-
-        let filtered = invoices.filter(inv => {
-            let matchesName = inv.name.toLowerCase().includes(nameInput);
-            let matchesDate = true;
-            if (start) matchesDate = matchesDate && (inv.date >= start);
-            if (end) matchesDate = matchesDate && (inv.date <= end);
-            return matchesName && matchesDate;
-        });
-
-        displayData(filtered);
-    }
-
-    function clearFilters() {
-        document.getElementById('searchName').value = "";
-        document.getElementById('startDate').value = "";
-        document.getElementById('endDate').value = "";
-        loadInvoices();
-    }
-
-    function deleteInv(id) {
-        if(confirm("دڵنیای لە سڕینەوەی ئەم وەسڵە؟ (بڕەکەی لە مەخزەن کەم نابێتەوە)")){
-            let invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-            invoices = invoices.filter(i => i.id !== id);
-            localStorage.setItem('rebinInvoices', JSON.stringify(invoices));
-            loadInvoices();
+    function deleteMe(id) {
+        if(confirm("ئایا دڵنیای لە سڕینەوە؟")){
+            let invs = JSON.parse(localStorage.getItem('rebinInvoices')).filter(i => i.id !== id);
+            localStorage.setItem('rebinInvoices', JSON.stringify(invs));
+            loadData();
         }
     }
 
-    function printInv(id) {
-        const invoices = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        const inv = invoices.find(i => i.id === id);
-        const ps = document.getElementById('printSection');
-        ps.innerHTML = `
-            <div style="text-align:center; border: 2px solid #000; padding: 20px;">
-                <h2>ڕێبین سیستم - وەسڵی کڕین</h2>
+    function printMe(id) {
+        const inv = JSON.parse(localStorage.getItem('rebinInvoices')).find(i => i.id === id);
+        const area = document.getElementById('printArea');
+        area.innerHTML = `
+            <div style="border:3px double #000; padding:30px; text-align:center;">
+                <h1>ڕێبین سیستم بۆ بازرگانی</h1>
+                <p>وەسڵی کڕینی کاڵا</p>
                 <hr>
-                <p>بەروار: ${inv.date} | کات: ${inv.time}</p>
-                <h3 style="background:#eee; padding:10px;">ناوی کاڵا: ${inv.name}</h3>
-                <p>بڕی کارتۆن: ${inv.qty} | دانە لە کارتۆن: ${inv.pcs}</p>
-                <p>کۆی گشتی دانە: ${inv.total}</p>
-                <p>نرخی کارتۆن: ${inv.price} ${inv.curr}</p>
+                <div style="text-align:right;">
+                    <p><b>بەروار:</b> ${inv.date}</p>
+                    <p><b>ناوی کاڵا:</b> ${inv.name}</p>
+                    <p><b>بڕ:</b> ${inv.qty} کارتۆن (${inv.qty * inv.pcs} دانە)</p>
+                    <p><b>نرخ:</b> ${inv.price} ${inv.curr}</p>
+                </div>
                 <br><br>
                 <p>واژووی کۆگا</p>
             </div>`;
-        ps.style.display = 'block';
         window.print();
-        ps.style.display = 'none';
     }
 </script>
 </body>
