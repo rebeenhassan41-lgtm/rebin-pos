@@ -21,7 +21,7 @@
 <body>
 
 <div class="box">
-    <a href="index.html" class="back-btn">⬅️ گەڕانەوە بۆ سەرەکی</a>
+    <a href="dashboard.html" class="back-btn">⬅️ گەڕانەوە بۆ داشبۆرد</a>
     <h2>📥 داخڵکردنی کڕین بۆ مەخزەن</h2>
     
     <div class="input-group">
@@ -59,7 +59,7 @@
 </div>
 
 <script>
-    async function savePurchase() {
+    function savePurchase() {
         const name = document.getElementById('itemName').value.trim();
         const boxQty = parseFloat(document.getElementById('qty').value) || 0;
         const perBox = parseFloat(document.getElementById('pcs').value) || 0;
@@ -71,44 +71,43 @@
             return;
         }
 
-        const itemData = {
-            name: name,
-            totalPcs: (boxQty * perBox),
-            price: boxPrice,
-            curr: curr,
-            pcsPerBox: perBox
-        };
+        // ١. وەرگرتنی مەخزەنی ئێستا لە براوسەرەکە
+        let stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
 
-        try {
-            const response = await fetch('http://127.0.0.1:3000/api/stock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(itemData)
-            });
-
-            if (response.ok) {
-                const tbody = document.querySelector('#tempTable tbody');
-                const row = `<tr>
-                    <td><b>${name}</b></td>
-                    <td>${boxQty}</td>
-                    <td>${boxQty * perBox}</td>
-                    <td>${boxPrice.toLocaleString()}</td>
-                    <td>${curr}</td>
-                </tr>`;
-                tbody.innerHTML = row + tbody.innerHTML; // تازەترین کڕین دەخاتە سەرەوە
-
-                // پاککردنەوەی خانەکان
-                document.getElementById('itemName').value = "";
-                document.getElementById('qty').value = "";
-                document.getElementById('price').value = "";
-                
-                console.log("✅ کاڵا سەیڤ بوو لە مۆنگۆ");
-            } else {
-                alert("❌ کێشەیەک لە پەیوەندی سێرڤەر هەبوو");
-            }
-        } catch (error) {
-            alert("❌ هەڵە: سێرڤەر ڕەن نەکراوە!");
+        // ٢. ئەگەر کاڵاکە پێشتر هەبوو، بڕەکەی زیاد دەکەین، ئەگەر نا دروستی دەکەین
+        if (stock[name]) {
+            stock[name].totalPcs += (boxQty * perBox);
+            stock[name].price = boxPrice; // نوێکردنەوەی نرخ بۆ کۆتا کڕین
+            stock[name].curr = curr;
+        } else {
+            stock[name] = {
+                totalPcs: (boxQty * perBox),
+                price: boxPrice,
+                curr: curr,
+                pcsPerBox: perBox
+            };
         }
+
+        // ٣. سەیڤکردنەوەی مەخزەنە نوێیەکە
+        localStorage.setItem('rebinStock', JSON.stringify(stock));
+
+        // ٤. پیشاندان لە خشتە کاتییەکەدا
+        const tbody = document.querySelector('#tempTable tbody');
+        const row = `<tr>
+            <td><b>${name}</b></td>
+            <td>${boxQty}</td>
+            <td>${boxQty * perBox}</td>
+            <td>${boxPrice.toLocaleString()}</td>
+            <td>${curr}</td>
+        </tr>`;
+        tbody.innerHTML = row + tbody.innerHTML;
+
+        // ٥. پاککردنەوەی خانەکان
+        document.getElementById('itemName').value = "";
+        document.getElementById('qty').value = "";
+        document.getElementById('price').value = "";
+        
+        alert("✅ کاڵاکە بە سەرکەوتوویی چوو بۆ مەخزەن");
     }
 </script>
 
