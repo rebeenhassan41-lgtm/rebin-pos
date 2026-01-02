@@ -11,12 +11,16 @@
         .header { background: var(--accent); color: white; padding: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .form-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #ddd; }
         input, select, button { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
-        .btn-add { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-add { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-add:hover { background: #219150; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
         th { background: #f8f9fa; color: var(--main); }
         .btn-back { background: var(--main); color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
-        .total-qerz { font-size: 20px; font-weight: bold; color: #c0392b; margin-top: 20px; text-align: left; }
+        .totals-container { display: flex; justify-content: space-between; margin-top: 20px; padding: 15px; background: #eee; border-radius: 10px; }
+        .total-item { font-size: 18px; font-weight: bold; }
+        .usd { color: #27ae60; }
+        .iqd { color: #c0392b; }
     </style>
 </head>
 <body>
@@ -37,7 +41,7 @@
             </select>
         </div>
         <div><label>تێبینی</label><input type="text" id="qerzNote" placeholder="وەسڵ یان مێژوو"></div>
-        <button class="btn-add" onclick="saveQerz()">➕ تۆمارکردن</button>
+        <button class="btn-add" onclick="saveQerz()" id="saveBtn">➕ تۆمارکردن</button>
     </div>
 
     <table>
@@ -55,7 +59,11 @@
             <tr><td colspan="6">خەریکە بار دەکرێت...</td></tr>
         </tbody>
     </table>
-    <div class="total-qerz" id="totalDisplay">کۆی گشتی قەرزەکان: 0 $</div>
+
+    <div class="totals-container">
+        <div class="total-item usd" id="totalUSD">کۆی گشتی دۆلار: 0 $</div>
+        <div class="total-item iqd" id="totalIQD">کۆی گشتی دینار: 0 د.ع</div>
+    </div>
 </div>
 
 <script>
@@ -63,53 +71,82 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
+    // پشکنینی لۆگین
     if (localStorage.getItem("rebeenAuth") !== "true") { window.location.href = "index.html"; }
 
     async function saveQerz() {
-        const name = document.getElementById('kriarName').value;
+        const btn = document.getElementById('saveBtn');
+        const name = document.getElementById('kriarName').value.trim();
         const amount = parseFloat(document.getElementById('qerzAmount').value);
-        if(!name || amount <= 0) return alert("زانیارییەکان تەواو نین");
+        const curr = document.getElementById('qerzCurr').value;
+        const note = document.getElementById('qerzNote').value;
+
+        if(!name || amount <= 0) return alert("تکایە ناو و بڕی پارە بە دروستی بنووسە");
+
+        btn.disabled = true;
+        btn.innerText = "خەریکە تۆمار دەبێت...";
 
         const { error } = await _supabase.from('qerzi_kriar').insert([{
             name: name,
             amount: amount,
-            currency: document.getElementById('qerzCurr').value,
-            note: document.getElementById('qerzNote').value
+            currency: curr,
+            note: note
         }]);
 
-        if(error) alert("هەڵە: " + error.message);
-        else {
-            alert("قەرزەکە تۆمار کرا");
+        if(error) {
+            alert("هەڵە: " + error.message);
+        } else {
             document.getElementById('kriarName').value = "";
             document.getElementById('qerzAmount').value = "0";
+            document.getElementById('qerzNote').value = "";
             loadQerz();
         }
+        btn.disabled = false;
+        btn.innerText = "➕ تۆمارکردن";
     }
 
     async function loadQerz() {
         const { data, error } = await _supabase.from('qerzi_kriar').select('*').order('created_at', {ascending: false});
-        if(data) {
-            let totalUSD = 0;
-            const body = document.getElementById('qerzTable');
-            body.innerHTML = data.map(q => {
-                if(q.currency === "USD") totalUSD += q.amount;
-                return `<tr>
-                    <td>${new Date(q.created_at).toLocaleDateString('ku-IQ')}</td>
-                    <td>${q.name}</td>
-                    <td>${q.amount.toLocaleString()}</td>
-                    <td>${q.currency}</td>
-                    <td>${q.note || '-'}</td>
-                    <td><button onclick="deleteQerz(${q.id})" style="color:red; cursor:pointer; border:none; background:none;">🗑️</button></td>
-                </tr>`;
-            }).join('');
-            document.getElementById('totalDisplay').innerText = "کۆی گشتی قەرز (دۆلار): " + totalUSD.toLocaleString() + " $";
+        
+        if (error) {
+            console.error(error);
+            return;
         }
+
+        const body = document.getElementById('qerzTable');
+        if(!data || data.length === 0) {
+            body.innerHTML = '<tr><td colspan="6">هیچ قەرزێک تۆمار نەکراوە</td></tr>';
+            document.getElementById('totalUSD').innerText = "کۆی گشتی دۆلار: 0 $";
+            document.getElementById('totalIQD').innerText = "کۆی گشتی دینار: 0 د.ع";
+            return;
+        }
+
+        let totalUSD = 0;
+        let totalIQD = 0;
+
+        body.innerHTML = data.map(q => {
+            if(q.currency === "USD") totalUSD += q.amount;
+            if(q.currency === "IQD") totalIQD += q.amount;
+
+            return `<tr>
+                <td>${new Date(q.created_at).toLocaleDateString('ku-IQ')}</td>
+                <td><b>${q.name}</b></td>
+                <td>${q.amount.toLocaleString()}</td>
+                <td>${q.currency === 'USD' ? '$ دۆلار' : 'د.ع دینار'}</td>
+                <td>${q.note || '-'}</td>
+                <td><button onclick="deleteQerz(${q.id})" style="color:red; cursor:pointer; border:none; background:none; font-size:18px;">🗑️</button></td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('totalUSD').innerText = "کۆی گشتی دۆلار: " + totalUSD.toLocaleString() + " $";
+        document.getElementById('totalIQD').innerText = "کۆی گشتی دینار: " + totalIQD.toLocaleString() + " د.ع";
     }
 
     async function deleteQerz(id) {
-        if(confirm("دڵنیای لە سڕینەوە؟")) {
-            await _supabase.from('qerzi_kriar').delete().eq('id', id);
-            loadQerz();
+        if(confirm("دڵنیای لە سڕینەوەی ئەم قەرزە؟")) {
+            const { error } = await _supabase.from('qerzi_kriar').delete().eq('id', id);
+            if(!error) loadQerz();
+            else alert("سڕینەوە سەرکەوتوو نەبوو");
         }
     }
 
