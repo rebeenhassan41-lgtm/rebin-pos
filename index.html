@@ -2,41 +2,40 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>چوونەژوورەوە</title>
+    <title>چوونەژوورەوە - سیستەمی ڕێبین</title>
     <style>
         body { font-family: Tahoma; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 40px; border-radius: 15px; text-align: center; }
-        input { display: block; width: 100%; margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
-        button { width: 100%; padding: 10px; background: #27ae60; color: white; border: none; cursor: pointer; }
-        .link-fix { margin-top: 20px; font-size: 12px; color: #7f8c8d; }
+        .box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        input { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #219150; }
+        h2 { color: #2c3e50; }
     </style>
 </head>
 <body>
 
     <div class="box">
-        <h2>سیستەمی ڕێبین</h2>
-        <input type="text" id="user" placeholder="rebeen">
-        <input type="password" id="pass" placeholder="6202">
+        <h2>🔑 چوونەژوورەوە</h2>
+        <input type="text" id="user" placeholder="ناوی بەکارهێنەر">
+        <input type="password" id="pass" placeholder="پاسوۆرد">
         <button onclick="login()">چوونە ژوورەوە</button>
-        
-        <div class="link-fix">
-            <p>ئەگەر دوگمەکە کاری نەکرد، <a href="dashboard.html" style="color: blue;">لێرە کلیک بکە</a></p>
-        </div>
     </div>
 
     <script>
+        // ئەگەر پێشتر لۆگین بووبێت، ڕاستەوخۆ بچێتە داشبۆرد
+        if(localStorage.getItem("rebeenAuth") === "true") {
+            window.location.href = "dashboard.html";
+        }
+
         function login() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
 
             if(u === "rebeen" && p === "6202") {
                 localStorage.setItem("rebeenAuth", "true");
-                // هەوڵدان بۆ چوونە ژوورەوە بە ٣ شێوازی جیاواز بۆ دڵنیایی
                 window.location.href = "dashboard.html";
-                window.location.replace("dashboard.html");
-                location.assign("dashboard.html");
             } else {
-                alert("ناو یان پاسۆرد هەڵەیە");
+                alert("ناو یان پاسۆرد هەڵەیە!");
             }
         }
     </script>
