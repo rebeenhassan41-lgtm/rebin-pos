@@ -2,93 +2,122 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>وەسڵی فرۆشتن - Rebin System</title>
+    <title>ڕێبین سیستم - فرۆشتنی پێشکەوتوو</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --danger: #e74c3c; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; text-align: right; }
-        .box { background: white; padding: 25px; border-radius: 20px; max-width: 900px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .input-group { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        input, button { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; width: 100%; box-sizing: border-box; }
-        button { background: var(--danger); color: white; cursor: pointer; border: none; font-weight: bold; }
+        :root { --p: #2c3e50; --s: #e67e22; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; direction: rtl; }
+        .container { background: white; padding: 25px; border-radius: 15px; max-width: 1100px; margin: auto; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        .setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #eee; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .entry-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
+        button { background: var(--success); color: white; border: none; font-weight: bold; cursor: pointer; height: 40px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: var(--p); color: white; padding: 12px; }
-        td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
-        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; background: var(--p); color: white; padding: 8px 15px; border-radius: 8px; }
+        th { background: var(--p); color: white; padding: 10px; font-size: 14px; }
+        td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+        .total-section { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; text-align: left; }
+        .no-print { margin-bottom: 10px; }
+        @media print { .no-print { display: none; } .container { box-shadow: none; width: 100%; } }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <a href="dashboard.html" class="back-btn">⬅️ گەڕانەوە</a>
-    <h2>📤 وەسڵی فرۆشتن (کەمکردنەوە لە مەخزەن)</h2>
-    
-    <div class="input-group">
-        <div><label>ناوی کاڵا</label><input type="text" id="itemName" placeholder="ناوی کاڵا بنووسە"></div>
-        <div><label>بڕی فرۆشراو (دانە)</label><input type="number" id="sellQty" placeholder="0"></div>
-        <div style="display: flex; align-items: flex-end;">
-            <button onclick="makeSale()">فرۆشتن و کەمکردن ⬇️</button>
-        </div>
+<div class="container">
+    <div class="no-print" style="display: flex; justify-content: space-between;">
+        <button onclick="location.href='dashboard.html'" style="width:auto; background:var(--p);">⬅️ گەڕانەوە</button>
+        <button onclick="window.print()" style="width:auto; background:var(--p);">🖨️ چاپکردنی وەسڵ</button>
     </div>
 
-    <table id="salesTable">
+    <h2 style="text-align: center; color: var(--p);">وەسڵی فرۆشتن</h2>
+
+    <div class="setup-grid no-print">
+        <div><label>ناوی کڕیار:</label><input type="text" id="customerName" placeholder="کڕیار"></div>
+        <div><label>جۆری فرۆشتن:</label>
+            <select id="saleType"><option value="نەقد">نەقد</option><option value="قەرز">قەرز</option></select>
+        </div>
+        <div><label>100$ بە دینار:</label><input type="number" id="rateIQD" value="152000"></div>
+    </div>
+
+    <div class="entry-grid no-print">
+        <div><label>کاڵا:</label><select id="itemSelect"></select></div>
+        <div><label>کارتۆن:</label><input type="number" id="cartonQty" value="0"></div>
+        <div><label>دانە:</label><input type="number" id="pieceQty" value="0"></div>
+        <div><label>نرخ ($):</label><input type="number" id="sellPrice" placeholder="0.00"></div>
+        <button onclick="addToInvoice()">+ زیادکردن</button>
+    </div>
+
+    <table>
         <thead>
             <tr>
                 <th>ناوی کاڵا</th>
-                <th>بڕی فرۆشراو</th>
-                <th>بارودۆخ</th>
+                <th>بڕ</th>
+                <th>نرخ ($)</th>
+                <th>کۆی گشتی ($)</th>
             </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="invoiceTable"></tbody>
     </table>
+
+    <div class="total-section">
+        <h3 id="totalUSD">کۆی گشتی: 0 $</h3>
+        <h4 id="totalIQD" style="color: #8e44ad;">بە دینار: 0 د.ع</h4>
+    </div>
 </div>
 
 <script>
-    function makeSale() {
-        const name = document.getElementById('itemName').value.trim();
-        const qty = parseInt(document.getElementById('sellQty').value) || 0;
+    const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        if (!name || qty <= 0) {
-            alert("تکایە ناوی کاڵا و بڕی فرۆشتن بنووسە");
-            return;
-        }
+    let invoiceItems = [];
 
-        // ١. وەرگرتنی مەخزەن
-        let stock = JSON.parse(localStorage.getItem('rebinStock')) || {};
-
-        // ٢. پشکنین: ئایا کاڵاکە لە مەخزەن هەیە؟
-        if (!stock[name]) {
-            alert("ئەم کاڵایە لە مەخزەن بوونی نییە!");
-            return;
-        }
-
-        // ٣. پشکنین: ئایا بڕی پێویستمان هەیە؟
-        if (stock[name].totalPcs < qty) {
-            alert("بڕی پێویست لە مەخزەن نییە! تەنها " + stock[name].totalPcs + " دانە ماوە.");
-            return;
-        }
-
-        // ٤. کەمکردنەوە لە مەخزەن
-        stock[name].totalPcs -= qty;
-
-        // ٥. سەیڤکردنەوەی مەخزەن
-        localStorage.setItem('rebinStock', JSON.stringify(stock));
-
-        // ٦. زیادکردن بۆ خشتەی وەسڵەکە
-        const tbody = document.querySelector('#salesTable tbody');
-        const row = `<tr>
-            <td><b>${name}</b></td>
-            <td>${qty} دانە</td>
-            <td style="color:green;">✅ فرۆشرا</td>
-        </tr>`;
-        tbody.innerHTML = row + tbody.innerHTML;
-
-        // پاککردنەوە
-        document.getElementById('itemName').value = "";
-        document.getElementById('sellQty').value = "";
-        
-        alert("فرۆشتن سەرکەوتوو بوو و لە مەخزەن کەمکرایەوە.");
+    // پشکنینی لۆگین
+    if (localStorage.getItem("rebeenAuth") !== "true") {
+        window.location.href = "index.html";
     }
-</script>
 
+    async function loadItemsFromDB() {
+        const { data, error } = await _supabase.from('invoices').select('item_name, buy_price');
+        if (data) {
+            let select = document.getElementById('itemSelect');
+            select.innerHTML = '<option value="">هەڵبژاردنی کاڵا...</option>';
+            let uniqueItems = [...new Set(data.map(i => i.item_name))];
+            uniqueItems.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name;
+                opt.innerText = name;
+                select.appendChild(opt);
+            });
+        }
+    }
+
+    function addToInvoice() {
+        const name = document.getElementById('itemSelect').value;
+        const cQty = parseFloat(document.getElementById('cartonQty').value) || 0;
+        const pQty = parseFloat(document.getElementById('pieceQty').value) || 0;
+        const price = parseFloat(document.getElementById('sellPrice').value) || 0;
+
+        if (!name || (cQty === 0 && pQty === 0)) return;
+
+        const total = (cQty + pQty) * price; // ئەمە نموونەیە، دەکرێ بەپێی کارتۆن بێت
+        invoiceItems.push({ name, cQty, pQty, price, total });
+        updateTable();
+    }
+
+    function updateTable() {
+        const body = document.getElementById('invoiceTable');
+        let totalUSD = 0;
+        body.innerHTML = invoiceItems.map(i => {
+            totalUSD += i.total;
+            return `<tr><td>${i.name}</td><td>${i.cQty}ک، ${i.pQty}د</td><td>${i.price}</td><td>${i.total}</td></tr>`;
+        }).join('');
+
+        const rate = document.getElementById('rateIQD').value;
+        document.getElementById('totalUSD').innerText = `کۆی گشتی: ${totalUSD} $`;
+        document.getElementById('totalIQD').innerText = `بە دینار: ${(totalUSD * (rate/100)).toLocaleString()} د.ع`;
+    }
+
+    window.onload = loadItemsFromDB;
+</script>
 </body>
 </html>
