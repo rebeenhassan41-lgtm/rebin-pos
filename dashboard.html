@@ -3,123 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>داشبۆرد - سیستەمی ڕێبین</title>
+    <title>ڕاپۆرتی گشتی - Rebin System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-        .header { background: #2c3e50; color: white; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .container { padding: 30px; }
-        .grid-container { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
-            gap: 20px; 
-            max-width: 1200px; 
-            margin: 0 auto;
-        }
-        .card { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 20px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08); 
-            text-align: center;
-            cursor: pointer; 
-            transition: 0.3s;
-            text-decoration: none;
-            color: #2c3e50;
-            border-bottom: 5px solid transparent;
-        }
-        .card:hover { 
-            transform: translateY(-10px); 
-            background: #ffffff;
-        }
-        .card h2 { margin: 15px 0 5px 0; font-size: 19px; }
-        .card p { color: #7f8c8d; font-size: 13px; margin: 0; }
-        .icon { font-size: 45px; }
-        
-        /* ڕەنگەکان بۆ جیاکردنەوەی بەشەکان */
-        .buy { border-top: 5px solid #3498db; }
-        .sell { border-top: 5px solid #2ecc71; }
-        .inv { border-top: 5px solid #f1c40f; }
-        .rep { border-top: 5px solid #9b59b6; }
-        .receive { border-top: 5px solid #e67e22; } /* شایەنی وەرگرتنەوە */
-        .pay { border-top: 5px solid #e74c3c; }    /* شایەنی سەرفکردن */
-
-        .logout-btn { 
-            background: #e74c3c; 
-            color: white; 
-            border: none; 
-            padding: 12px 30px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            margin: 40px 0;
-            font-weight: bold;
-        }
+        :root { --main: #2c3e50; --accent: #9b59b6; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: var(--main); color: white; padding: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-card h3 { margin: 0; color: #7f8c8d; font-size: 16px; }
+        .stat-card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; color: var(--main); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f8f9fa; color: #2c3e50; }
+        .btn-back { background: #7f8c8d; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; }
     </style>
 </head>
 <body>
 
+<div class="container">
     <div class="header">
-        <h1>سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
-        <p>بەخێرهاتی بۆ ژووری کۆنترۆڵ</p>
+        <h2 style="margin:0;">📊 ڕاپۆرتی گشتی کڕین</h2>
+        <a href="dashboard.html" class="btn-back">گەرانەوە بۆ داشبۆرد</a>
     </div>
 
-    <div class="container">
-        <div class="grid-container">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>کۆی گشتی بابەتەکان</h3>
+            <p id="totalItems">0</p>
+        </div>
+        <div class="stat-card" style="border-top: 5px solid #27ae60;">
+            <h3>کۆی بڕی کڕین (دۆلار)</h3>
+            <p id="totalUSD">0 $</p>
+        </div>
+        <div class="stat-card" style="border-top: 5px solid #f1c40f;">
+            <h3>کۆی بڕی کڕین (دینار)</h3>
+            <p id="totalIQD">0 ع.د</p>
+        </div>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>بەروار</th>
+                    <th>ناوی بابەت</th>
+                    <th>وەسڵ</th>
+                    <th>بڕ</th>
+                    <th>نرخ</th>
+                    <th>دراو</th>
+                </tr>
+            </thead>
+            <tbody id="reportTable">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    // پشکنینی لۆگین
+    if (localStorage.getItem("rebeenAuth") !== "true") {
+        window.location.href = "index.html";
+    }
+
+    async function loadReport() {
+        const { data, error } = await _supabase
+            .from('invoices')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        if (data) {
+            let totalUSD = 0;
+            let totalIQD = 0;
+            const tableBody = document.getElementById('reportTable');
             
-            <a href="krin.html" class="card buy">
-                <div class="icon">📥</div>
-                <h2>کڕین</h2>
-                <p>تۆمارکردنی کاڵای نوێ</p>
-            </a>
+            tableBody.innerHTML = data.map(item => {
+                // حیسابکردنی کۆی گشتی
+                const price = item.buy_price || 0;
+                const qty = item.qty || 0;
+                const total = price * qty;
 
-            <a href="sales.html" class="card sell">
-                <div class="icon">💰</div>
-                <h2>فرۆشتن</h2>
-                <p>وەسڵی نوێ و بازاڕ</p>
-            </a>
+                if (item.currency === "USD") totalUSD += total;
+                else totalIQD += total;
 
-            <a href="inventory.html" class="card inv">
-                <div class="icon">📦</div>
-                <h2>کۆگا</h2>
-                <p>مەوجود و کاڵاکان</p>
-            </a>
+                return `
+                    <tr>
+                        <td>${new Date(item.created_at).toLocaleDateString('ku-IQ')}</td>
+                        <td>${item.item_name}</td>
+                        <td>${item.inv_no}</td>
+                        <td>${qty}</td>
+                        <td>${price.toLocaleString()}</td>
+                        <td>${item.currency}</td>
+                    </tr>
+                `;
+            }).join('');
 
-            <a href="report.html" class="card rep">
-                <div class="icon">📊</div>
-                <h2>ڕاپۆرت</h2>
-                <p>حسابات و قازانج</p>
-            </a>
-
-            <a href="qerzi_kriar.html" class="card receive">
-                <div class="icon">🤝</div>
-                <h2>شایەنی وەرگرتنەوە</h2>
-                <p>قەرزی کڕیارەکان</p>
-            </a>
-
-            <a href="qerzi_bazrgan.html" class="card pay">
-                <div class="icon">💸</div>
-                <h2>شایەنی سەرف کردن</h2>
-                <p>قەرزی بازرگانەکان</p>
-            </a>
-
-        </div>
-
-        <div style="text-align: center;">
-            <button class="logout-btn" onclick="logout()">🛑 چوونە دەرەوە</button>
-        </div>
-    </div>
-
-    <script>
-        if (localStorage.getItem("rebeenAuth") !== "true") {
-            window.location.href = "index.html";
+            document.getElementById('totalItems').innerText = data.length;
+            document.getElementById('totalUSD').innerText = totalUSD.toLocaleString() + " $";
+            document.getElementById('totalIQD').innerText = totalIQD.toLocaleString() + " دینار";
         }
+    }
 
-        function logout() {
-            if(confirm("دڵنیای لە چوونە دەرەوە؟")) {
-                localStorage.removeItem("rebeenAuth");
-                window.location.href = "index.html";
-            }
-        }
-    </script>
+    loadReport();
+</script>
 
 </body>
 </html>
