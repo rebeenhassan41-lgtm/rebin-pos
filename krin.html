@@ -26,7 +26,7 @@
     <div class="header-box">
         <h2 style="margin:0;">📥 کڕین</h2>
         <div id="userBadge" class="user-info">خەریکی پشکنین...</div>
-        <a href="index.html" style="color:white; text-decoration:none;">داشبۆرد</a>
+        <a href="dashboard.html" style="color:white; text-decoration:none; font-weight:bold;">🏠 گەڕانەوە بۆ داشبۆرد</a>
     </div>
 
     <div class="form-grid">
@@ -69,15 +69,23 @@
 
     let currentUser = null;
 
-    // پشکنینی چوونە ژوورەوە
+    // پشکنینی لۆگین بە هەردوو ڕێگاکە
     async function checkAuth() {
-        const { data: { user } } = await _supabase.auth.getUser();
-        if (!user) {
-            window.location.href = "login.html";
-        } else {
-            currentUser = user;
-            document.getElementById('userBadge').innerText = "بەکارهێنەر: " + user.email;
+        const isSimpleAuth = localStorage.getItem("rebeenAuth");
+
+        if (isSimpleAuth === "true") {
+            currentUser = { email: "rebeen@system" };
+            document.getElementById('userBadge').innerText = "بەکارهێنەر: rebeen";
             loadInvoices();
+        } else {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) {
+                window.location.href = "index.html"; 
+            } else {
+                currentUser = user;
+                document.getElementById('userBadge').innerText = "بەکارهێنەر: " + user.email;
+                loadInvoices();
+            }
         }
     }
 
@@ -103,7 +111,7 @@
             pcs: parseFloat(document.getElementById('pcs').value) || 0,
             buy_price: parseFloat(document.getElementById('buyPrice').value) || 0,
             currency: document.getElementById('curr').value,
-            created_by: currentUser.email // پاشکەوتکردنی ناوی بەکارهێنەر
+            created_by: currentUser.email
         };
 
         const { error } = await _supabase.from('invoices').insert([data]);
@@ -146,7 +154,6 @@
         }
     }
 
-    // دەستپێکردن بە پشکنینی Auth
     checkAuth();
 </script>
 </body>
