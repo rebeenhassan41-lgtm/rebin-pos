@@ -5,42 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبۆرد - سیستەمی ڕێبین</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+        .header { background: #2c3e50; color: white; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .container { padding: 30px; }
         .grid-container { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
             gap: 20px; 
-            max-width: 1000px; 
+            max-width: 1200px; 
             margin: 0 auto;
         }
         .card { 
             background: white; 
-            padding: 40px; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08); 
             text-align: center;
             cursor: pointer; 
             transition: 0.3s;
             text-decoration: none;
             color: #2c3e50;
-            display: block;
+            border-bottom: 5px solid transparent;
         }
         .card:hover { 
             transform: translateY(-10px); 
-            background: #27ae60; 
-            color: white; 
+            background: #ffffff;
         }
-        .card i { font-size: 40px; margin-bottom: 15px; display: block; }
+        .card h2 { margin: 15px 0 5px 0; font-size: 19px; }
+        .card p { color: #7f8c8d; font-size: 13px; margin: 0; }
+        .icon { font-size: 45px; }
+        
+        /* ڕەنگەکان بۆ جیاکردنەوەی بەشەکان */
+        .buy { border-top: 5px solid #3498db; }
+        .sell { border-top: 5px solid #2ecc71; }
+        .inv { border-top: 5px solid #f1c40f; }
+        .rep { border-top: 5px solid #9b59b6; }
+        .receive { border-top: 5px solid #e67e22; } /* شایەنی وەرگرتنەوە */
+        .pay { border-top: 5px solid #e74c3c; }    /* شایەنی سەرفکردن */
+
         .logout-btn { 
             background: #e74c3c; 
             color: white; 
             border: none; 
-            padding: 12px 25px; 
-            border-radius: 8px; 
+            padding: 12px 30px; 
+            border-radius: 10px; 
             cursor: pointer; 
-            margin-top: 30px;
+            margin: 40px 0;
             font-weight: bold;
         }
     </style>
@@ -48,44 +58,66 @@
 <body>
 
     <div class="header">
-        <h1>بەخێربێیت کاک ڕێبین 👋</h1>
-        <p>داشبۆردی سەرەکی سیستەم</p>
+        <h1>سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
+        <p>بەخێرهاتی بۆ ژووری کۆنترۆڵ</p>
     </div>
 
     <div class="container">
         <div class="grid-container">
             
-            <a href="krin.html" class="card">
-                <h2>📥 بەشی کڕین</h2>
-                <p>داخڵکردنی کاڵای نوێ</p>
+            <a href="krin.html" class="card buy">
+                <div class="icon">📥</div>
+                <h2>کڕین</h2>
+                <p>تۆمارکردنی کاڵای نوێ</p>
             </a>
 
-            <a href="sales.html" class="card">
-                <h2>💰 بەشی فرۆشتن</h2>
-                <p>دروستکردنی وەسڵی نوێ</p>
+            <a href="sales.html" class="card sell">
+                <div class="icon">💰</div>
+                <h2>فرۆشتن</h2>
+                <p>وەسڵی نوێ و بازاڕ</p>
             </a>
 
-            <a href="inventory.html" class="card">
-                <h2>📦 کۆگا</h2>
-                <p>سەیرکردنی مەوجود</p>
+            <a href="inventory.html" class="card inv">
+                <div class="icon">📦</div>
+                <h2>کۆگا</h2>
+                <p>مەوجود و کاڵاکان</p>
+            </a>
+
+            <a href="report.html" class="card rep">
+                <div class="icon">📊</div>
+                <h2>ڕاپۆرت</h2>
+                <p>حسابات و قازانج</p>
+            </a>
+
+            <a href="qerzi_kriar.html" class="card receive">
+                <div class="icon">🤝</div>
+                <h2>شایەنی وەرگرتنەوە</h2>
+                <p>قەرزی کڕیارەکان</p>
+            </a>
+
+            <a href="qerzi_bazrgan.html" class="card pay">
+                <div class="icon">💸</div>
+                <h2>شایەنی سەرف کردن</h2>
+                <p>قەرزی بازرگانەکان</p>
             </a>
 
         </div>
 
         <div style="text-align: center;">
-            <button class="logout-btn" onclick="logout()">چوونە دەرەوە</button>
+            <button class="logout-btn" onclick="logout()">🛑 چوونە دەرەوە</button>
         </div>
     </div>
 
     <script>
-        // پشکنینی لۆگین
         if (localStorage.getItem("rebeenAuth") !== "true") {
             window.location.href = "index.html";
         }
 
         function logout() {
-            localStorage.removeItem("rebeenAuth");
-            window.location.href = "index.html";
+            if(confirm("دڵنیای لە چوونە دەرەوە؟")) {
+                localStorage.removeItem("rebeenAuth");
+                window.location.href = "index.html";
+            }
         }
     </script>
 
