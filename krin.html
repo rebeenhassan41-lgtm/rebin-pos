@@ -18,15 +18,16 @@
         th { background: #f1f2f6; padding: 12px; border-bottom: 2px solid #ddd; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
         .user-info { font-size: 12px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 5px; }
+        .btn-dash { background: #e67e22; color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-box">
-        <h2 style="margin:0;">📥 کڕین</h2>
-        <div id="userBadge" class="user-info">خەریکی پشکنین...</div>
-        <a href="dashboard.html" style="color:white; text-decoration:none; font-weight:bold;">🏠 گەڕانەوە بۆ داشبۆرد</a>
+        <h2 style="margin:0;">📥 کڕین (تۆمارکردن)</h2>
+        <div id="userBadge" class="user-info">بەکارهێنەر: rebeen</div>
+        <a href="dashboard.html" class="btn-dash">🏠 گەڕانەوە بۆ داشبۆرد</a>
     </div>
 
     <div class="form-grid">
@@ -36,7 +37,7 @@
         <div><label>بابەت</label><input type="text" id="itemName"></div>
         <div><label>کارتۆن</label><input type="number" id="qty" value="0"></div>
         <div><label>دانە</label><input type="number" id="pcs" value="1"></div>
-        <div><label>کڕین</label><input type="number" id="buyPrice" value="0"></div>
+        <div><label>نرخی کڕین</label><input type="number" id="buyPrice" value="0"></div>
         <div><label>دراو</label>
             <select id="curr">
                 <option value="USD">دۆلار</option>
@@ -54,10 +55,13 @@
                     <th>وەسڵ</th>
                     <th>بابەت</th>
                     <th>بڕ</th>
+                    <th>نرخ</th>
                     <th>کردار</th>
                 </tr>
             </thead>
-            <tbody id="listBody"></tbody>
+            <tbody id="listBody">
+                <tr><td colspan="6">خەریکە داتاکان بار دەکرێن...</td></tr>
+            </tbody>
         </table>
     </div>
 </div>
@@ -67,25 +71,10 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    let currentUser = null;
-
-    // پشکنینی لۆگین بە هەردوو ڕێگاکە
-    async function checkAuth() {
-        const isSimpleAuth = localStorage.getItem("rebeenAuth");
-
-        if (isSimpleAuth === "true") {
-            currentUser = { email: "rebeen@system" };
-            document.getElementById('userBadge').innerText = "بەکارهێنەر: rebeen";
-            loadInvoices();
-        } else {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) {
-                window.location.href = "index.html"; 
-            } else {
-                currentUser = user;
-                document.getElementById('userBadge').innerText = "بەکارهێنەر: " + user.email;
-                loadInvoices();
-            }
+    // پشکنینی لۆگین (بە شێوەیەکی سادە بۆ ئەوەی فڕێت نەداتە دەرەوە)
+    function checkLogin() {
+        if (localStorage.getItem("rebeenAuth") !== "true") {
+            window.location.href = "index.html";
         }
     }
 
@@ -111,7 +100,7 @@
             pcs: parseFloat(document.getElementById('pcs').value) || 0,
             buy_price: parseFloat(document.getElementById('buyPrice').value) || 0,
             currency: document.getElementById('curr').value,
-            created_by: currentUser.email
+            created_by: "rebeen"
         };
 
         const { error } = await _supabase.from('invoices').insert([data]);
@@ -137,24 +126,27 @@
             const body = document.getElementById('listBody');
             body.innerHTML = data.map(i => `
                 <tr>
-                    <td>${new Date(i.created_at).toLocaleDateString()}</td>
+                    <td>${new Date(i.created_at).toLocaleDateString('ku-IQ')}</td>
                     <td>${i.inv_no || ''}</td>
                     <td>${i.item_name || ''}</td>
-                    <td>${i.qty || 0}</td>
-                    <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td>
+                    <td>${i.qty} کارتۆن</td>
+                    <td>${i.buy_price} ${i.currency}</td>
+                    <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer; font-size:18px;">🗑️</button></td>
                 </tr>
             `).join('');
         }
     }
 
     async function deleteInvoice(id) {
-        if(confirm("دڵنیای لە سڕینەوە؟")) {
-            await _supabase.from('invoices').delete().eq('id', id);
-            loadInvoices();
+        if(confirm("دڵنیای لە سڕینەوەی ئەم بابەتە؟")) {
+            const { error } = await _supabase.from('invoices').delete().eq('id', id);
+            if(!error) loadInvoices();
         }
     }
 
-    checkAuth();
+    // دەسپێکردن
+    checkLogin();
+    loadInvoices();
 </script>
 </body>
 </html>
