@@ -67,11 +67,10 @@
 </div>
 
 <script>
-    // 🔗 زانیارییەکان ڕاست کراونەتەوە
+    // 🔗 پەیوەندی بە سێرڤەر
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
-    const SB_KEY = 'لێرە_ئەو_کۆدە_درێژەی_پێت_دا_دایبنێ'; // <--- لێرە کۆدەکە دابنێ
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
 
-    // تێبینی: لێرە نابێت بنووسرێت supabase = supabase
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     async function saveInvoice() {
@@ -102,10 +101,9 @@
 
         if (error) {
             alert("کێشە: " + error.message);
-            console.log(error);
         } else {
             alert("تۆمار کرا!");
-            document.getElementById('itemName').value = ""; // پاککردنەوەی خانەکە
+            document.getElementById('itemName').value = ""; 
             loadInvoices();
         }
         btn.disabled = false;
