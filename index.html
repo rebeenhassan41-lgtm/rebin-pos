@@ -2,36 +2,43 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>چوونەژوورەوە - Rebin System</title>
     <style>
         body { font-family: Tahoma, sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 350px; }
-        h2 { color: #2c3e50; margin-bottom: 25px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .login-box { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 320px; }
+        h2 { color: #2c3e50; margin-bottom: 25px; font-size: 22px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
         button:hover { background: #219150; }
+        .error-msg { color: red; font-size: 14px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
     <div class="login-box">
-        <h2>سیستەمی ڕێبین</h2>
+        <h2>🔑 سیستەمی ڕێبین</h2>
         <input type="text" id="user" placeholder="ناوی بەکارهێنەر">
         <input type="password" id="pass" placeholder="پاسوۆرد">
         <button onclick="login()">چوونەژوورەوە</button>
+        <div id="error" class="error-msg">ناو یان پاسوۆرد هەڵەیە!</div>
     </div>
 
     <script>
         function login() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
+            const u = document.getElementById('user').value.trim();
+            const p = document.getElementById('pass').value.trim();
+            const errorDiv = document.getElementById('error');
+
+            // تێبینی: لێرەدا دەبێت ناوی ئەو فایلە بنووسیت کە دەتەوێت دوای لۆگین بۆی بچیت
+            // ئەگەر فایلی دووەمت ناوی index.html بوو، ئەوە بیکە بە index.html
             if(u === "rebeen" && p === "6202") {
                 localStorage.setItem("rebeenAuth", "true");
-                window.location.href = "dashboard.html";
+                window.location.replace("dashboard.html"); // یان "index.html"
             } else {
-                alert("ناو یان پاسوۆرد هەڵەیە!");
+                errorDiv.style.display = "block";
+                setTimeout(() => { errorDiv.style.display = "none"; }, 3000);
             }
         }
     </script>
 </body>
 </html>
-
