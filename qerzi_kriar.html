@@ -1,1 +1,119 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>شایەنی وەرگرتنەوە - Rebin System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --main: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; direction: rtl; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: var(--accent); color: white; padding: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .form-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #ddd; }
+        input, select, button { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
+        .btn-add { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f8f9fa; color: var(--main); }
+        .btn-back { background: var(--main); color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
+        .total-qerz { font-size: 20px; font-weight: bold; color: #c0392b; margin-top: 20px; text-align: left; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0;">🤝 شایەنی وەرگرتنەوە (قەرزی کڕیار)</h2>
+        <a href="dashboard.html" class="btn-back">🏠 داشبۆرد</a>
+    </div>
+
+    <div class="form-box">
+        <div><label>ناوی کڕیار</label><input type="text" id="kriarName" placeholder="ناوی کڕیار بنووسە"></div>
+        <div><label>بڕی قەرز</label><input type="number" id="qerzAmount" value="0"></div>
+        <div><label>دراو</label>
+            <select id="qerzCurr">
+                <option value="USD">دۆلار ($)</option>
+                <option value="IQD">دینار (ع.د)</option>
+            </select>
+        </div>
+        <div><label>تێبینی</label><input type="text" id="qerzNote" placeholder="وەسڵ یان مێژوو"></div>
+        <button class="btn-add" onclick="saveQerz()">➕ تۆمارکردن</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>بەروار</th>
+                <th>ناوی کڕیار</th>
+                <th>بڕی قەرز</th>
+                <th>دراو</th>
+                <th>تێبینی</th>
+                <th>کردار</th>
+            </tr>
+        </thead>
+        <tbody id="qerzTable">
+            <tr><td colspan="6">خەریکە بار دەکرێت...</td></tr>
+        </tbody>
+    </table>
+    <div class="total-qerz" id="totalDisplay">کۆی گشتی قەرزەکان: 0 $</div>
+</div>
+
+<script>
+    const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    if (localStorage.getItem("rebeenAuth") !== "true") { window.location.href = "index.html"; }
+
+    async function saveQerz() {
+        const name = document.getElementById('kriarName').value;
+        const amount = parseFloat(document.getElementById('qerzAmount').value);
+        if(!name || amount <= 0) return alert("زانیارییەکان تەواو نین");
+
+        const { error } = await _supabase.from('qerzi_kriar').insert([{
+            name: name,
+            amount: amount,
+            currency: document.getElementById('qerzCurr').value,
+            note: document.getElementById('qerzNote').value
+        }]);
+
+        if(error) alert("هەڵە: " + error.message);
+        else {
+            alert("قەرزەکە تۆمار کرا");
+            document.getElementById('kriarName').value = "";
+            document.getElementById('qerzAmount').value = "0";
+            loadQerz();
+        }
+    }
+
+    async function loadQerz() {
+        const { data, error } = await _supabase.from('qerzi_kriar').select('*').order('created_at', {ascending: false});
+        if(data) {
+            let totalUSD = 0;
+            const body = document.getElementById('qerzTable');
+            body.innerHTML = data.map(q => {
+                if(q.currency === "USD") totalUSD += q.amount;
+                return `<tr>
+                    <td>${new Date(q.created_at).toLocaleDateString('ku-IQ')}</td>
+                    <td>${q.name}</td>
+                    <td>${q.amount.toLocaleString()}</td>
+                    <td>${q.currency}</td>
+                    <td>${q.note || '-'}</td>
+                    <td><button onclick="deleteQerz(${q.id})" style="color:red; cursor:pointer; border:none; background:none;">🗑️</button></td>
+                </tr>`;
+            }).join('');
+            document.getElementById('totalDisplay').innerText = "کۆی گشتی قەرز (دۆلار): " + totalUSD.toLocaleString() + " $";
+        }
+    }
+
+    async function deleteQerz(id) {
+        if(confirm("دڵنیای لە سڕینەوە؟")) {
+            await _supabase.from('qerzi_kriar').delete().eq('id', id);
+            loadQerz();
+        }
+    }
+
+    window.onload = loadQerz;
+</script>
+</body>
+</html>
