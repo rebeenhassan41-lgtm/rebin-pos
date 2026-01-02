@@ -5,38 +5,55 @@
     <title>چوونەژوورەوە - سیستەمی ڕێبین</title>
     <style>
         body { font-family: Tahoma; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        input { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        h2 { color: #2c3e50; margin-bottom: 25px; }
+        input { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
         button:hover { background: #219150; }
-        h2 { color: #2c3e50; }
+        .error-msg { color: red; font-size: 13px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="box">
-        <h2>🔑 چوونەژوورەوە</h2>
-        <input type="text" id="user" placeholder="ناوی بەکارهێنەر">
-        <input type="password" id="pass" placeholder="پاسوۆرد">
+        <h2>سیستەمی ڕێبین</h2>
+        <input type="text" id="user" placeholder="rebeen">
+        <input type="password" id="pass" placeholder="6202">
         <button onclick="login()">چوونە ژوورەوە</button>
+        <p id="error" class="error-msg">ناو یان پاسۆرد هەڵەیە!</p>
     </div>
 
     <script>
-        // ئەگەر پێشتر لۆگین بووبێت، ڕاستەوخۆ بچێتە داشبۆرد
+        // ئەگەر پێشتر لۆگین بووبێت
         if(localStorage.getItem("rebeenAuth") === "true") {
-            window.location.href = "dashboard.html";
+            goToDashboard();
         }
 
         function login() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
+            const errorElement = document.getElementById('error');
 
             if(u === "rebeen" && p === "6202") {
                 localStorage.setItem("rebeenAuth", "true");
-                window.location.href = "dashboard.html";
+                errorElement.style.display = "none";
+                goToDashboard();
             } else {
-                alert("ناو یان پاسۆرد هەڵەیە!");
+                errorElement.style.display = "block";
             }
+        }
+
+        // فەنکشن بۆ دۆزینەوەی داشبۆرد لە هەر شوێنێک بێت
+        function goToDashboard() {
+            // هەوڵی یەکەم: لە هەمان فۆڵدەر
+            window.location.href = "dashboard.html";
+            
+            // ئەگەر دوای نیو چرکە نەڕۆشتبوو، هەوڵی دووەم: لە ناو فۆڵدەری public
+            setTimeout(() => {
+                if(!window.location.href.includes("dashboard.html")) {
+                    window.location.href = "public/dashboard.html";
+                }
+            }, 500);
         }
     </script>
 </body>
