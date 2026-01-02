@@ -2,111 +2,52 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ڕێبین سیستم - داشبۆرد</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>چوونەژوورەوە - Rebin System</title>
     <style>
-        :root { --p: #2c3e50; --s: #27ae60; --blue: #2980b9; --orange: #e67e22; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 1000px; margin: auto; }
-        
-        .welcome-header { 
-            background: linear-gradient(135deg, var(--p), var(--blue)); 
-            color: white; 
-            padding: 30px; 
-            border-radius: 20px; 
-            margin-bottom: 30px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .welcome-header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
-
-        .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-top: 20px; }
-        .card { 
-            background: white; 
-            padding: 35px 20px; 
-            border-radius: 25px; 
-            text-decoration: none; 
-            color: var(--p); 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
-            transition: all 0.3s ease; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-        .card span { font-size: 55px; margin-bottom: 15px; }
-        .card h3 { margin: 10px 0; font-size: 20px; }
-        .card p { margin: 0; color: #7f8c8d; font-size: 14px; }
-        
-        .krin { border-bottom: 8px solid var(--s); }
-        .froshtn { border-bottom: 8px solid var(--orange); }
-        .makhzan { border-bottom: 8px solid var(--blue); }
-        .raport { border-bottom: 8px solid var(--p); }
-        
-        .logout-btn { 
-            margin-top: 50px; 
-            padding: 12px 30px; 
-            background: #e74c3c; 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 16px; 
-            transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
-        }
-        .logout-btn:hover { background: #c0392b; transform: scale(1.05); }
+        body { font-family: Tahoma, sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 320px; }
+        h2 { color: #2c3e50; margin-bottom: 25px; font-size: 22px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #219150; }
+        .error-msg { color: red; font-size: 14px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="welcome-header">
-        <h1>بەخێربێیت بۆ ڕێبین سیستم</h1>
+    <div class="login-box">
+        <h2>🔑 سیستەمی ڕێبین</h2>
+        <input type="text" id="user" placeholder="ناوی بەکارهێنەر">
+        <input type="password" id="pass" placeholder="پاسوۆرد">
+        <button onclick="login()">چوونەژوورەوە</button>
+        <div id="error" class="error-msg">ناو یان پاسوۆرد هەڵەیە!</div>
     </div>
 
-    <div class="grid-menu">
-        <a href="krin.html" class="card krin">
-            <span>📥</span>
-            <h3>کڕینی کاڵا</h3>
-            <p>تۆمارکردنی وەصڵی نوێ</p>
-        </a>
+    <script>
+        function login() {
+            // وەرگرتنی نرخەکان و لادانی بۆشایی زیادە
+            const u = document.getElementById('user').value.trim();
+            const p = document.getElementById('pass').value.trim();
+            const errorDiv = document.getElementById('error');
 
-        <a href="sales.html" class="card froshtn">
-            <span>📤</span>
-            <h3>فرۆشتنی کاڵا</h3>
-            <p>دەرکردنی وەصڵی فرۆشتن</p>
-        </a>
-
-        <a href="inventory.html" class="card makhzan">
-            <span>📦</span>
-            <h3>مەخزەن</h3>
-            <p>بینینی بڕی کاڵاکان</p>
-        </a>
-
-        <a href="reports.html" class="card raport">
-            <span>📜</span>
-            <h3>ڕاپۆرتەکان</h3>
-            <p>کۆی گشتی داتاکان</p>
-        </a>
-    </div>
-
-    <button class="logout-btn" onclick="logout()">چوونە دەرەوە 🚪</button>
-</div>
-
-<script>
-    // پاراستنی لاپەڕە
-    if(localStorage.getItem("rebinAuth") !== "true") {
-        window.location.href = "index.html";
-    }
-
-    function logout() {
-        if(confirm("دڵنیای لە چوونە دەرەوە؟")) {
-            localStorage.removeItem("rebinAuth");
-            window.location.href = "index.html";
+            // پشکنینی ناو و پاسۆرد
+            if(u === "rebeen" && p === "6202") {
+                // پاشکەوتکردنی لۆگین لە براوزەردا
+                localStorage.setItem("rebeenAuth", "true");
+                
+                // گواستنەوە بۆ لاپەڕەی داشبۆرد
+                window.location.href = "dashboard.html";
+            } else {
+                // پیشاندانی هەڵە ئەگەر زانیارییەکان هەڵە بوون
+                errorDiv.style.display = "block";
+                setTimeout(() => { errorDiv.style.display = "none"; }, 3000);
+            }
         }
-    }
-</script>
 
+        // ئەگەر پێشتر لۆگین بوو بوو، با ڕاستەوخۆ بچێتە داشبۆرد
+        if(localStorage.getItem("rebeenAuth") === "true") {
+            window.location.href = "dashboard.html";
+        }
+    </script>
 </body>
 </html>
