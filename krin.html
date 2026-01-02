@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>داخڵکردنی کڕین (Cloud) - Rebin System</title>
+    <title>داخڵکردنی کڕین - Rebin System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f8f9fa; }
@@ -17,19 +17,15 @@
         table { width: 100%; border-collapse: collapse; }
         th { background: #f1f2f6; padding: 12px; border-bottom: 2px solid #ddd; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        @media screen and (max-width: 600px) {
-            table thead { display: none; }
-            table tr { display: block; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 10px; padding: 10px; }
-            table td { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; }
-            table td::before { content: attr(data-label); font-weight: bold; }
-        }
+        .user-info { font-size: 12px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-box">
-        <h2 style="margin:0;">📥 کڕین (سێرڤەری ئۆنلاین)</h2>
+        <h2 style="margin:0;">📥 کڕین</h2>
+        <div id="userBadge" class="user-info">خەریکی پشکنین...</div>
         <a href="index.html" style="color:white; text-decoration:none;">داشبۆرد</a>
     </div>
 
@@ -67,11 +63,23 @@
 </div>
 
 <script>
-    // 🔗 پەیوەندی بە سێرڤەر
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
-
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    let currentUser = null;
+
+    // پشکنینی چوونە ژوورەوە
+    async function checkAuth() {
+        const { data: { user } } = await _supabase.auth.getUser();
+        if (!user) {
+            window.location.href = "login.html";
+        } else {
+            currentUser = user;
+            document.getElementById('userBadge').innerText = "بەکارهێنەر: " + user.email;
+            loadInvoices();
+        }
+    }
 
     async function saveInvoice() {
         const btn = document.getElementById('saveBtn');
@@ -94,7 +102,8 @@
             qty: parseFloat(document.getElementById('qty').value) || 0,
             pcs: parseFloat(document.getElementById('pcs').value) || 0,
             buy_price: parseFloat(document.getElementById('buyPrice').value) || 0,
-            currency: document.getElementById('curr').value
+            currency: document.getElementById('curr').value,
+            created_by: currentUser.email // پاشکەوتکردنی ناوی بەکارهێنەر
         };
 
         const { error } = await _supabase.from('invoices').insert([data]);
@@ -120,10 +129,10 @@
             const body = document.getElementById('listBody');
             body.innerHTML = data.map(i => `
                 <tr>
-                    <td data-label="بەروار">${new Date(i.created_at).toLocaleDateString()}</td>
-                    <td data-label="وەسڵ">${i.inv_no || ''}</td>
-                    <td data-label="بابەت">${i.item_name || ''}</td>
-                    <td data-label="بڕ">${i.qty || 0}</td>
+                    <td>${new Date(i.created_at).toLocaleDateString()}</td>
+                    <td>${i.inv_no || ''}</td>
+                    <td>${i.item_name || ''}</td>
+                    <td>${i.qty || 0}</td>
                     <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td>
                 </tr>
             `).join('');
@@ -137,7 +146,8 @@
         }
     }
 
-    window.onload = loadInvoices;
+    // دەستپێکردن بە پشکنینی Auth
+    checkAuth();
 </script>
 </body>
 </html>
