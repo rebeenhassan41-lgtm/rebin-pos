@@ -18,21 +18,19 @@
         td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
         .total-section { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; text-align: left; }
         
-        /* دیزاینی پرینت */
         @media print { 
             .no-print { display: none !important; } 
             body { background: white; padding: 0; }
             .container { box-shadow: none; width: 100%; max-width: 100%; border: none; }
-            th { background: #eee !important; color: black !important; }
         }
     </style>
 </head>
 <body>
 
-<div class="container" id="invoiceContent">
+<div class="container">
     <div class="no-print" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
         <button onclick="location.href='dashboard.html'" style="width:auto; background:var(--p); color:white;">⬅️ داشبۆرد</button>
-        <h2 style="margin:0; color: var(--p);">سیستەمی ڕێبین</h2>
+        <h2 style="margin:0; color: var(--p);">وەسڵی فرۆشتن</h2>
     </div>
 
     <div class="setup-grid">
@@ -102,17 +100,10 @@
         const cQty = parseFloat(document.getElementById('cartonQty').value) || 0;
         const pQty = parseFloat(document.getElementById('pieceQty').value) || 0;
         const price = parseFloat(document.getElementById('sellPrice').value) || 0;
-
         if (!name || (cQty === 0 && pQty === 0)) return;
-
         const total = (cQty + pQty) * price;
         invoiceItems.push({ name, cQty, pQty, price, total });
         updateTable();
-        
-        // پاککردنەوەی خانەکان بۆ کاڵای داهاتوو
-        document.getElementById('cartonQty').value = 0;
-        document.getElementById('pieceQty').value = 0;
-        document.getElementById('sellPrice').value = "";
     }
 
     function updateTable() {
@@ -122,48 +113,40 @@
             grandTotalUSD += i.total;
             return `<tr><td>${i.name}</td><td>${i.cQty} ک، ${i.pQty} د</td><td>${i.price} $</td><td>${i.total} $</td></tr>`;
         }).join('');
-
         const rate = document.getElementById('rateIQD').value;
-        document.getElementById('totalUSD').innerText = `کۆی گشتی: ${grandTotalUSD.toLocaleString()} $`;
+        document.getElementById('totalUSD').innerText = `کۆی گشتی: ${grandTotalUSD} $`;
         document.getElementById('totalIQD').innerText = `بە دینار: ${(grandTotalUSD * (rate/100)).toLocaleString()} د.ع`;
     }
 
     async function saveAndPrint() {
         const cName = document.getElementById('customerName').value.trim();
         const sType = document.getElementById('saleType').value;
-        
-        if (!cName || invoiceItems.length === 0) {
-            alert("تکایە ناوی کڕیار و کاڵاکان داخڵ بکە");
-            return;
-        }
+        if (!cName || invoiceItems.length === 0) return alert("زانیارییەکان تەواو نین");
 
         const btn = document.getElementById('saveBtn');
         btn.disabled = true;
-        btn.innerText = "خەریکە تۆمار دەبێت...";
 
-        // ١. ئەگەر قەرز بوو، بینێرە بۆ خشتەی قەرزی کڕیار
+        // ١. تۆمارکردنی وردەکاری وەسڵ بۆ بینینەوەی دواتر
+        const { data: saleData, error: saleError } = await _supabase.from('sale_details').insert([{
+            customer_name: cName,
+            items_json: invoiceItems,
+            total_usd: grandTotalUSD
+        }]).select();
+
+        if (saleError) return alert("هەڵە لە سێرڤەر: " + saleError.message);
+
+        // ٢. ئەگەر قەرز بوو، بینێرە بۆ لیستی قەرزەکان
         if (sType === "قەرز") {
-            const { error: qerzError } = await _supabase.from('qerzi_kriar').insert([{
+            await _supabase.from('qerzi_kriar').insert([{
                 name: cName,
                 amount: grandTotalUSD,
                 currency: "USD",
-                note: "وەسڵی فرۆشتنی قەرز - " + new Date().toLocaleDateString()
+                sale_id: saleData[0].id, // بەستنەوە بە وەسڵەکە
+                note: "وەسڵی قەرز - " + new Date().toLocaleDateString()
             }]);
-            
-            if (qerzError) {
-                alert("کێشە لە ناردنی قەرز هەبوو: " + qerzError.message);
-                btn.disabled = false;
-                return;
-            }
         }
 
-        // ٢. لێرە دەتوانیت کۆدی سەیڤکردنی وەسڵەکە بۆ خشتەی sales زیاد بکەیت ئەگەر هەتبێت
-
-        // ٣. پرینتکردن
-        alert(sType === "قەرز" ? "وەسڵەکە بە قەرز تۆمارکرا. ئێستا پرینت دەکرێت." : "وەسڵەکە بە نەقد تۆمارکرا.");
         window.print();
-        
-        // ٤. نوێکردنەوەی لاپەڕە بۆ وەسڵێکی نوێ
         location.reload();
     }
 
