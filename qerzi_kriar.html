@@ -6,63 +6,73 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; direction: rtl; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; direction: rtl; }
         .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .header { background: var(--accent); color: white; padding: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .form-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #ddd; }
-        input, select, button { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
-        .btn-add { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-add:hover { background: #219150; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
         th { background: #f8f9fa; color: var(--main); }
+        .customer-link { color: #2980b9; cursor: pointer; font-weight: bold; text-decoration: underline; }
         .btn-back { background: var(--main); color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
-        .totals-container { display: flex; justify-content: space-between; margin-top: 20px; padding: 15px; background: #eee; border-radius: 10px; }
-        .total-item { font-size: 18px; font-weight: bold; }
-        .usd { color: #27ae60; }
-        .iqd { color: #c0392b; }
+        
+        /* Modal Style - پەنجەرەی وەسڵ */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 500px; position: relative; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; background: white; }
+            .modal { position: absolute; background: white; }
+            .modal-content { margin: 0; width: 100%; box-shadow: none; border: none; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container no-print">
     <div class="header">
-        <h2 style="margin:0;">🤝 شایەنی وەرگرتنەوە (قەرزی کڕیار)</h2>
+        <h2 style="margin:0;">🤝 لیستی قەرزی کڕیارەکان</h2>
         <a href="dashboard.html" class="btn-back">🏠 داشبۆرد</a>
-    </div>
-
-    <div class="form-box">
-        <div><label>ناوی کڕیار</label><input type="text" id="kriarName" placeholder="ناوی کڕیار بنووسە"></div>
-        <div><label>بڕی قەرز</label><input type="number" id="qerzAmount" value="0"></div>
-        <div><label>دراو</label>
-            <select id="qerzCurr">
-                <option value="USD">دۆلار ($)</option>
-                <option value="IQD">دینار (ع.د)</option>
-            </select>
-        </div>
-        <div><label>تێبینی</label><input type="text" id="qerzNote" placeholder="وەسڵ یان مێژوو"></div>
-        <button class="btn-add" onclick="saveQerz()" id="saveBtn">➕ تۆمارکردن</button>
     </div>
 
     <table>
         <thead>
             <tr>
                 <th>بەروار</th>
-                <th>ناوی کڕیار</th>
+                <th>ناوی کڕیار (بۆ وەسڵ کلیک بکە)</th>
                 <th>بڕی قەرز</th>
-                <th>دراو</th>
                 <th>تێبینی</th>
-                <th>کردار</th>
             </tr>
         </thead>
         <tbody id="qerzTable">
-            <tr><td colspan="6">خەریکە بار دەکرێت...</td></tr>
+            <tr><td colspan="4">خەریکە بار دەکرێت...</td></tr>
         </tbody>
     </table>
+</div>
 
-    <div class="totals-container">
-        <div class="total-item usd" id="totalUSD">کۆی گشتی دۆلار: 0 $</div>
-        <div class="total-item iqd" id="totalIQD">کۆی گشتی دینار: 0 د.ع</div>
+<div id="invoiceModal" class="modal">
+    <div class="modal-content">
+        <div id="printArea">
+            <h2 style="text-align:center; color:var(--main);">وەسڵی فرۆشتنی قەرز</h2>
+            <hr>
+            <p id="invCustName" style="font-weight:bold;"></p>
+            <p id="invDate" style="font-size:12px; color:gray;"></p>
+            <table style="width:100%; border:1px solid #ddd; border-collapse:collapse; margin-top:15px;">
+                <thead>
+                    <tr style="background:#f4f4f4;">
+                        <th style="border:1px solid #ddd;">کاڵا</th>
+                        <th style="border:1px solid #ddd;">بڕ</th>
+                        <th style="border:1px solid #ddd;">کۆی گشتی</th>
+                    </tr>
+                </thead>
+                <tbody id="invItemsBody"></tbody>
+            </table>
+            <h3 id="invTotalUSD" style="text-align:left; margin-top:20px;"></h3>
+        </div>
+        <div class="no-print" style="margin-top:30px; display:flex; gap:10px;">
+            <button onclick="window.print()" style="flex:1; background:#27ae60; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">🖨️ پرینتکردنەوە</button>
+            <button onclick="closeModal()" style="flex:1; background:#c0392b; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">داخستن</button>
+        </div>
     </div>
 </div>
 
@@ -71,83 +81,52 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // پشکنینی لۆگین
-    if (localStorage.getItem("rebeenAuth") !== "true") { window.location.href = "index.html"; }
-
-    async function saveQerz() {
-        const btn = document.getElementById('saveBtn');
-        const name = document.getElementById('kriarName').value.trim();
-        const amount = parseFloat(document.getElementById('qerzAmount').value);
-        const curr = document.getElementById('qerzCurr').value;
-        const note = document.getElementById('qerzNote').value;
-
-        if(!name || amount <= 0) return alert("تکایە ناو و بڕی پارە بە دروستی بنووسە");
-
-        btn.disabled = true;
-        btn.innerText = "خەریکە تۆمار دەبێت...";
-
-        const { error } = await _supabase.from('qerzi_kriar').insert([{
-            name: name,
-            amount: amount,
-            currency: curr,
-            note: note
-        }]);
-
-        if(error) {
-            alert("هەڵە: " + error.message);
-        } else {
-            document.getElementById('kriarName').value = "";
-            document.getElementById('qerzAmount').value = "0";
-            document.getElementById('qerzNote').value = "";
-            loadQerz();
-        }
-        btn.disabled = false;
-        btn.innerText = "➕ تۆمارکردن";
-    }
-
     async function loadQerz() {
         const { data, error } = await _supabase.from('qerzi_kriar').select('*').order('created_at', {ascending: false});
-        
-        if (error) {
-            console.error(error);
-            return;
-        }
-
         const body = document.getElementById('qerzTable');
-        if(!data || data.length === 0) {
-            body.innerHTML = '<tr><td colspan="6">هیچ قەرزێک تۆمار نەکراوە</td></tr>';
-            document.getElementById('totalUSD').innerText = "کۆی گشتی دۆلار: 0 $";
-            document.getElementById('totalIQD').innerText = "کۆی گشتی دینار: 0 د.ع";
-            return;
+        
+        if (data) {
+            body.innerHTML = data.map(q => `
+                <tr>
+                    <td>${new Date(q.created_at).toLocaleDateString('ku-IQ')}</td>
+                    <td class="customer-link" onclick="viewInvoice('${q.sale_id}')">${q.name}</td>
+                    <td style="color:red; font-weight:bold;">${q.amount.toLocaleString()} $</td>
+                    <td>${q.note || '-'}</td>
+                </tr>
+            `).join('');
+        } else {
+            body.innerHTML = '<tr><td colspan="4">هیچ قەرزێک نییە</td></tr>';
         }
-
-        let totalUSD = 0;
-        let totalIQD = 0;
-
-        body.innerHTML = data.map(q => {
-            if(q.currency === "USD") totalUSD += q.amount;
-            if(q.currency === "IQD") totalIQD += q.amount;
-
-            return `<tr>
-                <td>${new Date(q.created_at).toLocaleDateString('ku-IQ')}</td>
-                <td><b>${q.name}</b></td>
-                <td>${q.amount.toLocaleString()}</td>
-                <td>${q.currency === 'USD' ? '$ دۆلار' : 'د.ع دینار'}</td>
-                <td>${q.note || '-'}</td>
-                <td><button onclick="deleteQerz(${q.id})" style="color:red; cursor:pointer; border:none; background:none; font-size:18px;">🗑️</button></td>
-            </tr>`;
-        }).join('');
-
-        document.getElementById('totalUSD').innerText = "کۆی گشتی دۆلار: " + totalUSD.toLocaleString() + " $";
-        document.getElementById('totalIQD').innerText = "کۆی گشتی دینار: " + totalIQD.toLocaleString() + " د.ع";
     }
 
-    async function deleteQerz(id) {
-        if(confirm("دڵنیای لە سڕینەوەی ئەم قەرزە؟")) {
-            const { error } = await _supabase.from('qerzi_kriar').delete().eq('id', id);
-            if(!error) loadQerz();
-            else alert("سڕینەوە سەرکەوتوو نەبوو");
+    async function viewInvoice(saleId) {
+        if (!saleId || saleId === 'null') {
+            alert("ئەم قەرزە بە دەست داخڵ کراوە و وەسڵی نییە");
+            return;
         }
+
+        const { data, error } = await _supabase.from('sale_details').select('*').eq('id', saleId).single();
+
+        if (data) {
+            document.getElementById('invCustName').innerText = "کڕیار: " + data.customer_name;
+            document.getElementById('invDate').innerText = "بەروار: " + new Date(data.created_at).toLocaleString('ku-IQ');
+            
+            const itemsHtml = data.items_json.map(i => `
+                <tr>
+                    <td style="border:1px solid #ddd; padding:8px;">${i.name}</td>
+                    <td style="border:1px solid #ddd; padding:8px;">${i.cQty}ک، ${i.pQty}د</td>
+                    <td style="border:1px solid #ddd; padding:8px;">${i.total}$</td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('invItemsBody').innerHTML = itemsHtml;
+            document.getElementById('invTotalUSD').innerText = "کۆی گشتی: " + data.total_usd.toLocaleString() + " $";
+            document.getElementById('invoiceModal').style.display = 'block';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('invoiceModal').style.display = 'none';
     }
 
     window.onload = loadQerz;
