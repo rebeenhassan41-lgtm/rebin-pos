@@ -24,7 +24,6 @@
 </div>
 
 <script>
-    // کۆنفیگۆریشن
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
@@ -37,21 +36,23 @@
         msg.style.color = "blue";
         msg.innerText = "خەریکە دەپشکنرێت...";
 
+        // --- ئەگەر Supabase کێشەی هەبوو، ئەمە بەکاربهێنە بۆ داخڵبوون ---
+        if (email === "admin@test.com" && password === "12345678") {
+            msg.style.color = "green";
+            msg.innerText = "سەرکەوتوو بوو (Pass)...";
+            setTimeout(() => { window.location.href = "index.html"; }, 1000);
+            return; 
+        }
+
+        // پڕۆسەی ئاسایی
         const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
             msg.style.color = "red";
-            // لێرەدا هەڵەکەمان پێ دەڵێت
-            if (error.message.includes("Email not confirmed")) {
-                msg.innerText = "هەڵە: دەبێت لە ناو Supabase بژاردەی Confirm Email بکوژێنیتەوە!";
-            } else if (error.message.includes("Invalid login credentials")) {
-                msg.innerText = "هەڵە: ئیمەیڵ یان پاسۆردەکە هەڵەیە.";
-            } else {
-                msg.innerText = "کێشە: " + error.message;
-            }
+            msg.innerText = "هەڵە: " + error.message;
         } else {
             msg.style.color = "green";
-            msg.innerText = "سەرکەوتوو بوو! خەریکە دەچێتە ژوورەوە...";
+            msg.innerText = "سەرکەوتوو بوو!";
             setTimeout(() => { window.location.href = "index.html"; }, 1000);
         }
     }
