@@ -30,7 +30,7 @@
 <div class="container">
     <div class="header-box">
         <h2 style="margin:0;">📥 کڕین (سێرڤەری ئۆنلاین)</h2>
-        <a href="dashboard.html" style="color:white; text-decoration:none;">داشبۆرد</a>
+        <a href="index.html" style="color:white; text-decoration:none;">داشبۆرد</a>
     </div>
 
     <div class="form-grid">
@@ -67,33 +67,45 @@
 </div>
 
 <script>
-    // 🔗 پەیوەندی بە سێرڤەرەکەی خۆتەوە
+    // 🔗 زانیارییەکان ڕاست کراونەتەوە
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
-    const SB_KEY = 'لێرە_ئەو_کۆدە_درێژەی_پێت_دا_دایبنێ'; // <--- کلیلە ئەنۆنەکە لێرە دابنێ
-    const supabase = supabase.createClient(SB_URL, SB_KEY);
+    const SB_KEY = 'لێرە_ئەو_کۆدە_درێژەی_پێت_دا_دایبنێ'; // <--- لێرە کۆدەکە دابنێ
+
+    // تێبینی: لێرە نابێت بنووسرێت supabase = supabase
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     async function saveInvoice() {
         const btn = document.getElementById('saveBtn');
+        const invNo = document.getElementById('invNo').value;
+        const itemName = document.getElementById('itemName').value;
+
+        if(!invNo || !itemName) {
+            alert("تکایە وەسڵ و ناوی بابەت پڕ بکەرەوە");
+            return;
+        }
+
         btn.disabled = true;
         btn.innerText = "خەریکە سەیڤ دەبێت...";
 
         const data = {
-            inv_no: document.getElementById('invNo').value,
+            inv_no: invNo,
             barcode: document.getElementById('barcode').value,
             merchant: document.getElementById('merchant').value,
-            item_name: document.getElementById('itemName').value,
-            qty: parseFloat(document.getElementById('qty').value),
-            pcs: parseFloat(document.getElementById('pcs').value),
-            buy_price: parseFloat(document.getElementById('buyPrice').value),
+            item_name: itemName,
+            qty: parseFloat(document.getElementById('qty').value) || 0,
+            pcs: parseFloat(document.getElementById('pcs').value) || 0,
+            buy_price: parseFloat(document.getElementById('buyPrice').value) || 0,
             currency: document.getElementById('curr').value
         };
 
-        const { error } = await supabase.from('invoices').insert([data]);
+        const { error } = await _supabase.from('invoices').insert([data]);
 
         if (error) {
             alert("کێشە: " + error.message);
+            console.log(error);
         } else {
             alert("تۆمار کرا!");
+            document.getElementById('itemName').value = ""; // پاککردنەوەی خانەکە
             loadInvoices();
         }
         btn.disabled = false;
@@ -101,7 +113,7 @@
     }
 
     async function loadInvoices() {
-        const { data, error } = await supabase
+        const { data, error } = await _supabase
             .from('invoices')
             .select('*')
             .order('created_at', { ascending: false });
@@ -111,9 +123,9 @@
             body.innerHTML = data.map(i => `
                 <tr>
                     <td data-label="بەروار">${new Date(i.created_at).toLocaleDateString()}</td>
-                    <td data-label="وەسڵ">${i.inv_no}</td>
-                    <td data-label="بابەت">${i.item_name}</td>
-                    <td data-label="بڕ">${i.qty}</td>
+                    <td data-label="وەسڵ">${i.inv_no || ''}</td>
+                    <td data-label="بابەت">${i.item_name || ''}</td>
+                    <td data-label="بڕ">${i.qty || 0}</td>
                     <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td>
                 </tr>
             `).join('');
@@ -122,7 +134,7 @@
 
     async function deleteInvoice(id) {
         if(confirm("دڵنیای لە سڕینەوە؟")) {
-            await supabase.from('invoices').delete().eq('id', id);
+            await _supabase.from('invoices').delete().eq('id', id);
             loadInvoices();
         }
     }
