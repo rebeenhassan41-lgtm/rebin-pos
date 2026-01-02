@@ -3,180 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ڕاپۆرتی پێشکەوتوو - Rebin System</title>
+    <title>ڕاپۆرتی کڕینەکان - Rebin System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #27ae60; --blue: #2980b9; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
-        .container { max-width: 1200px; margin: auto; }
-        .no-print { display: block; }
-        
-        .header { background: var(--p); color: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
-        /* بەشی فلتەرەکان */
-        .filter-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: flex-end; }
-        label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; }
-        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 5px solid var(--blue); }
-
-        .report-wrap { background: white; border-radius: 15px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        :root { --main: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; direction: rtl; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #eef2f3; padding: 15px; border-radius: 10px; text-align: center; }
+        .stat-card h3 { margin: 0; color: #7f8c8d; font-size: 14px; }
+        .stat-card p { margin: 5px 0 0; font-size: 20px; font-weight: bold; color: var(--main); }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f8f9fa; padding: 12px; border-bottom: 2px solid #eee; }
-        td { padding: 12px; border-bottom: 1px solid #f1f1f1; text-align: center; }
-
-        .btn-print { background: #34495e; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .container { max-width: 100%; }
-            .report-wrap { box-shadow: none; }
-        }
-
-        @media screen and (max-width: 600px) {
-            .filter-section { grid-template-columns: 1fr; }
-            table thead { display: none; }
-            table tr { display: block; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 10px; padding: 10px; }
-            table td { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
-            table td::before { content: attr(data-label); font-weight: bold; }
-        }
+        th { background: var(--main); color: white; padding: 12px; text-align: center; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        tr:hover { background: #f9f9f9; }
+        .search-box { margin-bottom: 20px; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header no-print">
-        <h2 style="margin:0;">📜 ڕاپۆرتی پێشکەوتوو</h2>
-        <div>
-            <button class="btn-print" onclick="window.print()">🖨️ چاپکردنی ڕاپۆرت</button>
-            <a href="dashboard.html" style="color:white; text-decoration:none; margin-right:10px;">داشبۆرد</a>
-        </div>
-    </div>
-
-    <div class="filter-section no-print">
-        <div>
-            <label>گەڕان بەپێی کۆمپانیا</label>
-            <input type="text" id="merchantFilter" placeholder="ناوی بازرگان بنووسە..." onkeyup="generateReport()">
-        </div>
-        <div>
-            <label>جۆری وەسڵ</label>
-            <select id="typeFilter" onchange="generateReport()">
-                <option value="all">هەمووی</option>
-                <option value="krin">تەنها کڕین</option>
-                <option value="sales">تەنها فرۆشتن</option>
-            </select>
-        </div>
-        <div>
-            <label>ماوەی کات</label>
-            <select id="timeFilter" onchange="generateReport()">
-                <option value="all">هەموو کاتێک</option>
-                <option value="today">ئەمڕۆ</option>
-                <option value="month">ئەم مانگە</option>
-                <option value="year">ئەمساڵ</option>
-            </select>
-        </div>
+    <div class="header">
+        <h2>📊 ڕاپۆرتی گشتی کڕین</h2>
+        <a href="index.html" style="text-decoration:none; color:var(--accent);">گەڕانەوە</a>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card" style="border-color: var(--s);">
-            <h4>کۆی کڕین</h4>
-            <h2 id="totalKrin">0</h2>
+        <div class="stat-card">
+            <h3>کۆی گشتی تێچووی کڕین</h3>
+            <p id="totalBuy">0</p>
         </div>
-        <div class="stat-card" style="border-color: var(--blue);">
-            <h4>کۆی فرۆشتن</h4>
-            <h2 id="totalFroshtn">0</h2>
-        </div>
-        <div class="stat-card" style="border-color: #e67e22;">
-            <h4>قازانج (تەنها فرۆشتن)</h4>
-            <h2 id="totalProfit">0</h2>
+        <div class="stat-card">
+            <h3>ژمارەی وەسڵەکان</h3>
+            <p id="invCount">0</p>
         </div>
     </div>
 
-    <div class="report-wrap">
-        <h3 id="reportTitle" style="text-align:center; display:none;">ڕاپۆرتی کڕین و فرۆشتن</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>بەروار</th>
-                    <th>جۆر</th>
-                    <th>کۆمپانیا/کڕیار</th>
-                    <th>بابەت</th>
-                    <th>بڕ</th>
-                    <th>کۆی نرخ</th>
-                    <th>دراو</th>
-                </tr>
-            </thead>
-            <tbody id="reportTable"></tbody>
-        </table>
-    </div>
+    <input type="text" id="searchInput" class="search-box" placeholder="بگەڕێ بۆ ناوی بابەت یان بازرگان..." onkeyup="filterTable()">
+
+    <table id="reportTable">
+        <thead>
+            <tr>
+                <th>بەروار</th>
+                <th>وەسڵ</th>
+                <th>بازرگان</th>
+                <th>ناوی بابەت</th>
+                <th>بڕ</th>
+                <th>نرخی کڕین</th>
+                <th>کۆی گشتی</th>
+            </tr>
+        </thead>
+        <tbody id="reportData"></tbody>
+    </table>
 </div>
 
 <script>
-    function generateReport() {
-        const krin = JSON.parse(localStorage.getItem('rebinInvoices')) || [];
-        const sales = JSON.parse(localStorage.getItem('rebinSales')) || [];
-        
-        const mFilter = document.getElementById('merchantFilter').value.toLowerCase();
-        const tFilter = document.getElementById('typeFilter').value;
-        const timeF = document.getElementById('timeFilter').value;
-        
-        const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
-        const monthStr = todayStr.substring(0, 7);
-        const yearStr = todayStr.substring(0, 4);
+    const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        let tKrin = 0;
-        let tFroshtn = 0;
-        let combined = [];
+    async function loadFullReport() {
+        const { data, error } = await _supabase
+            .from('invoices')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-        // کۆکردنەوەی هەموو داتاکان
-        if (tFilter === 'all' || tFilter === 'krin') {
-            krin.forEach(i => combined.push({...i, type: 'krin'}));
-        }
-        if (tFilter === 'all' || tFilter === 'sales') {
-            sales.forEach(s => combined.push({...s, type: 'sales'}));
+        if (error) {
+            console.error(error);
+            return;
         }
 
-        const tbody = document.getElementById('reportTable');
-        tbody.innerHTML = "";
-
-        combined.sort((a, b) => new Date(b.dateOnly) - new Date(a.dateOnly));
-
-        combined.forEach(item => {
-            // فلتەری بازرگان
-            const merchantName = (item.merchant || item.customer || "").toLowerCase();
-            if (mFilter && !merchantName.includes(mFilter)) return;
-
-            // فلتەری کات
-            if (timeF === 'today' && item.dateOnly !== todayStr) return;
-            if (timeF === 'month' && !item.dateOnly.startsWith(monthStr)) return;
-            if (timeF === 'year' && !item.dateOnly.startsWith(yearStr)) return;
-
-            const isKrin = item.type === 'krin';
-            const price = parseFloat(isKrin ? item.buyPrice : item.totalPrice) || 0;
-            
-            if (isKrin) tKrin += price; else tFroshtn += price;
-
-            tbody.innerHTML += `
+        let totalBuy = 0;
+        const body = document.getElementById('reportData');
+        body.innerHTML = data.map(i => {
+            const rowTotal = (i.qty || 0) * (i.buy_price || 0);
+            totalBuy += rowTotal;
+            return `
                 <tr>
-                    <td data-label="بەروار">${item.dateOnly}</td>
-                    <td data-label="جۆر"><span style="color:${isKrin?'red':'green'}; font-weight:bold;">${isKrin?'📥 کڕین':'📤 فرۆشتن'}</span></td>
-                    <td data-label="کۆمپانیا">${item.merchant || item.customer || "---"}</td>
-                    <td data-label="بابەت">${item.name}</td>
-                    <td data-label="بڕ">${item.qty}</td>
-                    <td data-label="کۆی نرخ">${price.toLocaleString()}</td>
-                    <td data-label="دراو">${item.curr}</td>
+                    <td>${new Date(i.created_at).toLocaleDateString('ku-IQ')}</td>
+                    <td>${i.inv_no || '-'}</td>
+                    <td>${i.merchant || '-'}</td>
+                    <td>${i.item_name || '-'}</td>
+                    <td>${i.qty || 0}</td>
+                    <td>${(i.buy_price || 0).toLocaleString()}</td>
+                    <td style="font-weight:bold;">${rowTotal.toLocaleString()} ${i.currency}</td>
                 </tr>
             `;
-        });
+        }).join('');
 
-        document.getElementById('totalKrin').innerText = tKrin.toLocaleString();
-        document.getElementById('totalFroshtn').innerText = tFroshtn.toLocaleString();
-        document.getElementById('totalProfit').innerText = (tFroshtn - (tFroshtn * 0.1)).toLocaleString(); // نموونەی قازانج
+        document.getElementById('totalBuy').innerText = totalBuy.toLocaleString() + " (تێکەڵ)";
+        document.getElementById('invCount').innerText = data.length;
     }
 
-    window.onload = generateReport;
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.getElementById("reportData").getElementsByTagName("tr");
+        for (let row of rows) {
+            row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+        }
+    }
+
+    window.onload = loadFullReport;
 </script>
 
 </body>
