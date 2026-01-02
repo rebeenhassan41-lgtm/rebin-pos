@@ -5,31 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبۆرد - سیستەمی ڕێبین</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-        .header { background: #2c3e50; color: white; padding: 25px; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 0; direction: rtl; }
+        .header { background: #2c3e50; color: white; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .container { padding: 30px; }
         .grid-container { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             gap: 20px; 
-            max-width: 1200px; 
+            max-width: 1100px; 
             margin: 0 auto;
         }
         .card { 
-            background: white; padding: 30px; border-radius: 20px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;
+            background: white; padding: 25px; border-radius: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;
             cursor: pointer; transition: 0.3s; text-decoration: none; color: #2c3e50;
-            border-top: 5px solid #ccc;
+            border-top: 6px solid #ccc; display: block;
         }
-        .card:hover { transform: translateY(-10px); background: #f8f9fa; }
-        .icon { font-size: 40px; margin-bottom: 10px; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: #fff; }
+        .icon { font-size: 45px; margin-bottom: 10px; display: block; }
         .buy { border-top-color: #3498db; }
         .sell { border-top-color: #2ecc71; }
         .inv { border-top-color: #f1c40f; }
         .rep { border-top-color: #9b59b6; }
         .rec { border-top-color: #e67e22; }
         .pay { border-top-color: #e74c3c; }
-        .logout-btn { background: #e74c3c; color: white; border: none; padding: 12px 30px; border-radius: 10px; cursor: pointer; margin-top: 40px; }
+        .logout-btn { background: #e74c3c; color: white; border: none; padding: 12px 40px; border-radius: 10px; cursor: pointer; margin-top: 40px; font-weight: bold; font-size: 16px; }
+        h2 { margin: 10px 0 0; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -40,26 +41,34 @@
 
     <div class="container">
         <div class="grid-container">
-            <a href="krin.html" class="card buy"><div class="icon">📥</div><h2>کڕین</h2></a>
-            <a href="sales.html" class="card sell"><div class="icon">💰</div><h2>فرۆشتن</h2></a>
-            <a href="inventory.html" class="card inv"><div class="icon">📦</div><h2>کۆگا</h2></a>
-            <a href="report.html" class="card rep"><div class="icon">📊</div><h2>ڕاپۆرت</h2></a>
-            <a href="qerzi_kriar.html" class="card rec"><div class="icon">🤝</div><h2>شایەنی وەرگرتنەوە</h2></a>
-            <a href="qerzi_bazrgan.html" class="card pay"><div class="icon">💸</div><h2>شایەنی سەرف کردن</h2></a>
+            <a href="krin.html" class="card buy"><span class="icon">📥</span><h2>کڕین</h2></a>
+            <a href="sales.html" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></a>
+            <a href="inventory.html" class="card inv"><span class="icon">📦</span><h2>کۆگا</h2></a>
+            
+            <a href="report.html" class="card rep"><span class="icon">📊</span><h2>ڕاپۆرت</h2></a>
+            
+            <a href="qerzi_kriar.html" class="card rec"><span class="icon">🤝</span><h2>شایەنی وەرگرتنەوە</h2></a>
+            <a href="qerzi_bazrgan.html" class="card pay"><span class="icon">💸</span><h2>شایەنی سەرف کردن</h2></a>
         </div>
+        
         <div style="text-align: center;">
             <button class="logout-btn" onclick="logout()">🛑 چوونە دەرەوە</button>
         </div>
     </div>
 
     <script>
+        // دڵنیابوونەوە لە لۆگین
         if (localStorage.getItem("rebeenAuth") !== "true") {
             window.location.href = "index.html";
         }
+
         function logout() {
             localStorage.removeItem("rebeenAuth");
             window.location.href = "index.html";
         }
+
+        // فێڵێکی بچووک بۆ پشکنینی فایلەکان لە کاتی کارپێکردندا
+        console.log("سیستەم ئامادەیە. دڵنیابە هەموو فایلەکان لە یەک فۆڵدەرن.");
     </script>
 </body>
 </html>
