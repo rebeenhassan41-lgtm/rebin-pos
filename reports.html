@@ -3,63 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ڕاپۆرتی پێشکەوتوو - Rebin System</title>
+    <title>ڕاپۆرتی کڕین - Rebin System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; direction: rtl; }
-        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #eef2f3; padding: 15px; border-radius: 10px; text-align: center; border-top: 4px solid var(--accent); }
+        .stat-card { background: #fff; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ddd; }
         .stat-card h3 { margin: 0; color: #7f8c8d; font-size: 14px; }
-        .stat-card p { margin: 5px 0 0; font-size: 18px; font-weight: bold; color: var(--main); }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; cursor: pointer; }
-        th { background: var(--main); color: white; padding: 12px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        .stat-card p { margin: 5px 0 0; font-size: 18px; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th { background: #f8f9fa; color: #333; padding: 12px; border: 1px solid #dee2e6; text-align: center; }
+        td { padding: 10px; border: 1px solid #dee2e6; text-align: center; cursor: pointer; }
         tr:hover { background: #f1f9ff; }
-        .search-box { margin-bottom: 20px; width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
 
-        /* Modal Style - پەنجەرەی وردەکاری */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 90%; max-width: 500px; border-radius: 15px; position: relative; }
-        .close { position: absolute; left: 20px; top: 15px; font-size: 25px; cursor: pointer; }
-        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; }
-        .detail-row b { color: #555; }
+        /* Modal & Print Style */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; width: 90%; max-width: 600px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.2); position: relative; }
+        .print-btn { background: #27ae60; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
+        
+        #invoice-print { border: 1px solid #eee; padding: 20px; background: #fff; }
+        .inv-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .inv-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5; }
+        .created-by { font-size: 10px; color: #888; margin-top: 30px; text-align: left; border-top: 1px solid #eee; padding-top: 5px; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #invoice-print, #invoice-print * { visibility: visible; }
+            #invoice-print { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+            .print-btn, .close { display: none !important; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>📊 ڕاپۆرتی وردی کڕین</h2>
-        <a href="index.html" style="text-decoration:none; color:var(--accent); font-weight:bold;">گەڕانەوە</a>
+        <h2>📑 ڕاپۆرتی گشتی کڕین</h2>
+        <a href="index.html" style="text-decoration:none; color:var(--accent);">گەڕانەوە</a>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card" style="border-color: #27ae60;">
+        <div class="stat-card" style="border-top: 4px solid #27ae60;">
             <h3>کۆی گشتی (دۆلار)</h3>
-            <p id="totalUSD">$0</p>
+            <p id="totalUSD" style="color:#27ae60;">$0</p>
         </div>
-        <div class="stat-card" style="border-color: #f39c12;">
+        <div class="stat-card" style="border-top: 4px solid #f39c12;">
             <h3>کۆی گشتی (دینار)</h3>
-            <p id="totalIQD">0 IQD</p>
-        </div>
-        <div class="stat-card">
-            <h3>ژمارەی وەسڵەکان</h3>
-            <p id="invCount">0</p>
+            <p id="totalIQD" style="color:#f39c12;">0 IQD</p>
         </div>
     </div>
 
-    <input type="text" id="searchInput" class="search-box" placeholder="بگەڕێ بۆ وەسڵ، بابەت، یان بازرگان..." onkeyup="filterTable()">
+    <input type="text" id="searchInput" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px;" placeholder="بگەڕێ (ناوی بازرگان، بابەت، وەسڵ)..." onkeyup="filterTable()">
 
-    <table id="reportTable">
+    <table>
         <thead>
             <tr>
                 <th>بەروار</th>
                 <th>وەسڵ #</th>
+                <th>ناوی بازرگان</th>
                 <th>بابەت</th>
-                <th>کۆی گشتی</th>
+                <th>کڕین (USD)</th>
+                <th>کڕین (IQD)</th>
             </tr>
         </thead>
         <tbody id="reportData"></tbody>
@@ -68,9 +76,17 @@
 
 <div id="detailsModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h3 style="text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">📄 وردەکاری وەسڵ</h3>
-        <div id="modalBody"></div>
+        <span class="close" onclick="closeModal()" style="float:left; cursor:pointer; font-size:24px;">&times;</span>
+        <button class="print-btn" onclick="window.print()">🖨️ پرێنت کردن</button>
+        
+        <div id="invoice-print">
+            <div class="inv-header">
+                <h1 style="margin:0;">REBIN SYSTEM</h1>
+                <p>وەسڵی کڕینی کاڵا</p>
+            </div>
+            <div id="modalBody"></div>
+            <div class="created-by">ئەم وەسڵە لە لایەن ڕێبین سیستمەوە داخڵ کراوە</div>
+        </div>
     </div>
 </div>
 
@@ -94,52 +110,50 @@
         
         body.innerHTML = data.map(i => {
             const rowTotal = (i.qty || 0) * (i.buy_price || 0);
-            if(i.currency === 'USD') usd += rowTotal;
-            else iqd += rowTotal;
+            const isUSD = i.currency === 'USD';
+            if(isUSD) usd += rowTotal; else iqd += rowTotal;
 
             return `
                 <tr onclick="showDetails(${i.id})">
                     <td>${new Date(i.created_at).toLocaleDateString('ku-IQ')}</td>
                     <td>${i.inv_no || '-'}</td>
+                    <td>${i.merchant || '-'}</td>
                     <td>${i.item_name || '-'}</td>
-                    <td style="font-weight:bold; color:${i.currency === 'USD' ? '#27ae60' : '#f39c12'}">
-                        ${rowTotal.toLocaleString()} ${i.currency}
-                    </td>
+                    <td style="color:#27ae60; font-weight:bold;">${isUSD ? rowTotal.toLocaleString() + ' $' : '-'}</td>
+                    <td style="color:#f39c12; font-weight:bold;">${!isUSD ? rowTotal.toLocaleString() + ' دینار' : '-'}</td>
                 </tr>
             `;
         }).join('');
 
         document.getElementById('totalUSD').innerText = "$" + usd.toLocaleString();
         document.getElementById('totalIQD').innerText = iqd.toLocaleString() + " IQD";
-        document.getElementById('invCount').innerText = data.length;
     }
 
     function showDetails(id) {
         const item = allData.find(i => i.id === id);
         const modalBody = document.getElementById('modalBody');
+        const total = (item.qty * item.buy_price).toLocaleString();
+        
         modalBody.innerHTML = `
-            <div class="detail-row"><b>ڕێکەوت:</b> <span>${new Date(item.created_at).toLocaleString('ku-IQ')}</span></div>
-            <div class="detail-row"><b>ژمارەی وەسڵ:</b> <span>${item.inv_no}</span></div>
-            <div class="detail-row"><b>بازرگان:</b> <span>${item.merchant || 'دیاری نەکراوە'}</span></div>
-            <div class="detail-row"><b>ناوی بابەت:</b> <span>${item.item_name}</span></div>
-            <div class="detail-row"><b>بارکۆد:</b> <span>${item.barcode || '-'}</span></div>
-            <div class="detail-row"><b>بڕ (کارتۆن):</b> <span>${item.qty}</span></div>
-            <div class="detail-row"><b>دانە لە کارتۆن:</b> <span>${item.pcs}</span></div>
-            <div class="detail-row"><b>نرخی کڕین:</b> <span>${item.buy_price.toLocaleString()} ${item.currency}</span></div>
-            <div class="detail-row" style="background:#f9f9f9; font-weight:bold;"><b>کۆی گشتی:</b> <span>${(item.qty * item.buy_price).toLocaleString()} ${item.currency}</span></div>
+            <div class="inv-row"><b>ڕێکەوت:</b> <span>${new Date(item.created_at).toLocaleString('ku-IQ')}</span></div>
+            <div class="inv-row"><b>ژمارەی وەسڵ:</b> <span>${item.inv_no}</span></div>
+            <div class="inv-row"><b>بازرگان:</b> <span>${item.merchant || '-'}</span></div>
+            <div class="inv-row"><b>ناوی بابەت:</b> <span>${item.item_name}</span></div>
+            <div class="inv-row"><b>بڕ:</b> <span>${item.qty} کارتۆن / ${item.pcs} دانە</span></div>
+            <div class="inv-row"><b>نرخی یەکە:</b> <span>${item.buy_price.toLocaleString()} ${item.currency}</span></div>
+            <div class="inv-row" style="margin-top:15px; font-size:18px; border-top:2px solid #333;"><b>کۆی گشتی:</b> <span>${total} ${item.currency}</span></div>
         `;
         document.getElementById('detailsModal').style.display = "block";
     }
 
     function closeModal() { document.getElementById('detailsModal').style.display = "none"; }
-    window.onclick = function(event) { if (event.target.className === 'modal') closeModal(); }
-
+    
     function filterTable() {
         let input = document.getElementById("searchInput").value.toLowerCase();
         const filtered = allData.filter(i => 
             (i.item_name && i.item_name.toLowerCase().includes(input)) || 
-            (i.inv_no && i.inv_no.toLowerCase().includes(input)) ||
-            (i.merchant && i.merchant.toLowerCase().includes(input))
+            (i.merchant && i.merchant.toLowerCase().includes(input)) ||
+            (i.inv_no && i.inv_no.toLowerCase().includes(input))
         );
         renderTable(filtered);
     }
