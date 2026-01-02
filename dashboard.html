@@ -41,14 +41,12 @@
 
     <div class="container">
         <div class="grid-container">
-            <a href="krin.html" class="card buy"><span class="icon">📥</span><h2>کڕین</h2></a>
-            <a href="sales.html" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></a>
-            <a href="inventory.html" class="card inv"><span class="icon">📦</span><h2>کۆگا</h2></a>
-            
-            <a href="report.html" class="card rep"><span class="icon">📊</span><h2>ڕاپۆرت</h2></a>
-            
-            <a href="qerzi_kriar.html" class="card rec"><span class="icon">🤝</span><h2>شایەنی وەرگرتنەوە</h2></a>
-            <a href="qerzi_bazrgan.html" class="card pay"><span class="icon">💸</span><h2>شایەنی سەرف کردن</h2></a>
+            <div onclick="navTo('krin.html')" class="card buy"><span class="icon">📥</span><h2>کڕین</h2></div>
+            <div onclick="navTo('sales.html')" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></div>
+            <div onclick="navTo('inventory.html')" class="card inv"><span class="icon">📦</span><h2>کۆگا</h2></div>
+            <div onclick="navTo('report.html')" class="card rep"><span class="icon">📊</span><h2>ڕاپۆرت</h2></div>
+            <div onclick="navTo('qerzi_kriar.html')" class="card rec"><span class="icon">🤝</span><h2>شایەنی وەرگرتنەوە</h2></div>
+            <div onclick="navTo('qerzi_bazrgan.html')" class="card pay"><span class="icon">💸</span><h2>شایەنی سەرف کردن</h2></div>
         </div>
         
         <div style="text-align: center;">
@@ -57,7 +55,7 @@
     </div>
 
     <script>
-        // دڵنیابوونەوە لە لۆگین
+        // پشکنینی لۆگین
         if (localStorage.getItem("rebeenAuth") !== "true") {
             window.location.href = "index.html";
         }
@@ -67,8 +65,17 @@
             window.location.href = "index.html";
         }
 
-        // فێڵێکی بچووک بۆ پشکنینی فایلەکان لە کاتی کارپێکردندا
-        console.log("سیستەم ئامادەیە. دڵنیابە هەموو فایلەکان لە یەک فۆڵدەرن.");
+        // فەنکشنی زیرەک بۆ چوون بۆ لاپەڕەکان
+        function navTo(page) {
+            // ئەگەر لەناو فۆڵدەری public بووین، دەبێت هەر لەوێ بمێنینەوە
+            if (window.location.pathname.includes('/public/')) {
+                window.location.href = page;
+            } else {
+                // ئەگەر لە دەرەوە بووین و فایلەکە لەناو پوبلیک بوو، هەوڵ دەدەین بڕۆینە ناو پوبلیک
+                // بەڵام سادەترین ڕێگە ئەوەیە تەنها فایلەکە بانگ بکەین
+                window.location.href = page;
+            }
+        }
     </script>
 </body>
 </html>
