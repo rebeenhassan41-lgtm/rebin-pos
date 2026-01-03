@@ -1,57 +1,8 @@
-<!DOCTYPE html>
-<html lang="ku" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بەخێرهاتی - Rebin POS</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 40px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 350px; text-align: center; }
-        h2 { color: #000; margin-bottom: 30px; font-size: 28px; }
-        .input-box { background: #eef3ff; border: 1px solid #ccd6e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; width: 100%; box-sizing: border-box; font-size: 20px; text-align: center; letter-spacing: 5px; }
-        .login-btn { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; }
-        #msg { margin-top: 15px; font-size: 14px; font-weight: bold; min-height: 20px; }
-    </style>
-</head>
-<body>
-<div class="login-card">
-    <h2>بەخێرهاتی 👋</h2>
-    <input type="password" id="pinCode" class="input-box" placeholder="••••" autofocus>
-    <button class="login-btn" onclick="checkPin()">چوونە ژوورەوە</button>
-    <div id="msg"></div>
-</div>
-
 <script>
-    // پشکنینی ڕاستەوخۆ لە کاتی بارکردنی لاپەڕە بۆ ڕێگری لە Cache
-    (function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const isLogout = window.location.hash === "#logout" || urlParams.has('logout');
-
-        if (isLogout) {
-            localStorage.clear();
-            sessionStorage.clear();
-            document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            // پاککردنەوەی ناونیشانی لاپەڕەکە
-            history.replaceState(null, null, window.location.pathname);
-        } else {
-            // ئەگەر لۆگ ئاوت نەبوو و داتای تێدا بوو، یەکسەر بڕۆ داشبۆرد
-            if (localStorage.getItem("rebeenAuth") === "true") {
-                window.location.replace("dashboard.html");
-            }
-        }
-    })();
-
-    function checkPin() {
-        const pin = document.getElementById('pinCode').value;
-        if (pin === "1234" || pin === "rebeen") {
-            localStorage.setItem("rebeenAuth", "true");
-            document.cookie = "rebeenAuth=true; path=/; max-age=86400; SameSite=Strict";
-            window.location.replace("dashboard.html");
-        } else {
-            document.getElementById('msg').style.color = "red";
-            document.getElementById('msg').innerText = "کۆدەکە هەڵەیە!";
-        }
+    // پشکنین: ئەگەر داخل نەبووە، بینێرە بۆ لاپەڕەی لۆگین
+    if (localStorage.getItem("rebeenAuth") !== "true") {
+        window.location.replace("login.html");
+    } else {
+        window.location.replace("dashboard.html");
     }
 </script>
-</body>
-</html>
