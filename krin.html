@@ -7,60 +7,62 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 10px; direction: rtl; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .header-box { background: var(--main); color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        .btn-save { background: var(--success); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        .btn-save { background: var(--success); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
         .table-wrap { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f1f2f6; padding: 12px; border-bottom: 2px solid #ddd; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        .user-info { font-size: 12px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 5px; }
-        .btn-dash { background: #e67e22; color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: #f1f2f6; padding: 12px; border-bottom: 2px solid #ddd; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
+        .btn-dash { background: #e67e22; color: white; text-decoration: none; padding: 8px 12px; border-radius: 5px; font-size: 12px; }
+        
+        @media (max-width: 600px) {
+            .header-box h2 { font-size: 16px; }
+            .form-grid { grid-template-columns: 1fr 1fr; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-box">
-        <h2 style="margin:0;">📥 کڕین (تۆمارکردن)</h2>
-        <div id="userBadge" class="user-info">بەکارهێنەر: rebeen</div>
-        <a href="dashboard.html" class="btn-dash">🏠 گەڕانەوە بۆ داشبۆرد</a>
+        <h2 style="margin:0;">📥 کڕینی کاڵا</h2>
+        <a href="dashboard.html" class="btn-dash">🏠 گەڕانەوە</a>
     </div>
 
     <div class="form-grid">
         <div><label>🔢 بارکۆد</label><input type="text" id="barcode"></div>
         <div><label>🧾 وەسڵ #</label><input type="text" id="invNo"></div>
         <div><label>بازرگان</label><input type="text" id="merchant"></div>
-        <div><label>بابەت</label><input type="text" id="itemName"></div>
-        <div><label>کارتۆن</label><input type="number" id="qty" value="0"></div>
-        <div><label>دانە</label><input type="number" id="pcs" value="1"></div>
+        <div><label>ناوی کاڵا</label><input type="text" id="itemName"></div>
+        <div><label>کۆۆی دانە</label><input type="number" id="quantity" value="0"></div>
         <div><label>نرخی کڕین</label><input type="number" id="buyPrice" value="0"></div>
         <div><label>دراو</label>
             <select id="curr">
-                <option value="USD">دۆلار</option>
-                <option value="IQD">دینار</option>
+                <option value="USD">دۆلار ($)</option>
+                <option value="IQD">دینار (ع.د)</option>
             </select>
         </div>
     </div>
-    <button onclick="saveInvoice()" id="saveBtn" class="btn-save">پاشکەوتکردن لەسەر سێرڤەر ☁️</button>
+    <button onclick="saveInvoice()" id="saveBtn" class="btn-save">تۆمارکردن لە کۆگا ☁️</button>
 
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
                     <th>بەروار</th>
-                    <th>وەسڵ</th>
-                    <th>بابەت</th>
+                    <th>کاڵا</th>
                     <th>بڕ</th>
                     <th>نرخ</th>
                     <th>کردار</th>
                 </tr>
             </thead>
             <tbody id="listBody">
-                <tr><td colspan="6">خەریکە داتاکان بار دەکرێن...</td></tr>
+                <tr><td colspan="5">خەریکە بار دەکرێت...</td></tr>
             </tbody>
         </table>
     </div>
@@ -71,36 +73,31 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // پشکنینی لۆگین (بە شێوەیەکی سادە بۆ ئەوەی فڕێت نەداتە دەرەوە)
-    function checkLogin() {
-        if (localStorage.getItem("rebeenAuth") !== "true") {
-            window.location.href = "index.html";
-        }
-    }
+    // پشکنینی لۆگین بۆ مۆبایل و کۆمپیوتەر
+    const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
+    if (!isAuth) { window.location.href = "index.html"; }
 
     async function saveInvoice() {
         const btn = document.getElementById('saveBtn');
-        const invNo = document.getElementById('invNo').value;
         const itemName = document.getElementById('itemName').value;
+        const qty = document.getElementById('quantity').value;
 
-        if(!invNo || !itemName) {
-            alert("تکایە وەسڵ و ناوی بابەت پڕ بکەرەوە");
+        if(!itemName || qty <= 0) {
+            alert("تکایە ناوی کاڵا و بڕەکەی دیاری بکە");
             return;
         }
 
         btn.disabled = true;
-        btn.innerText = "خەریکە سەیڤ دەبێت...";
+        btn.innerText = "خەریکە تۆمار دەبێت...";
 
         const data = {
-            inv_no: invNo,
+            inv_no: document.getElementById('invNo').value,
             barcode: document.getElementById('barcode').value,
             merchant: document.getElementById('merchant').value,
             item_name: itemName,
-            qty: parseFloat(document.getElementById('qty').value) || 0,
-            pcs: parseFloat(document.getElementById('pcs').value) || 0,
+            quantity: parseFloat(qty),
             buy_price: parseFloat(document.getElementById('buyPrice').value) || 0,
-            currency: document.getElementById('curr').value,
-            created_by: "rebeen"
+            currency: document.getElementById('curr').value
         };
 
         const { error } = await _supabase.from('invoices').insert([data]);
@@ -108,12 +105,13 @@
         if (error) {
             alert("کێشە: " + error.message);
         } else {
-            alert("تۆمار کرا!");
-            document.getElementById('itemName').value = ""; 
+            alert("بە سەرکەوتوویی تۆمار کرا");
+            document.getElementById('itemName').value = "";
+            document.getElementById('quantity').value = "0";
             loadInvoices();
         }
         btn.disabled = false;
-        btn.innerText = "پاشکەوتکردن لەسەر سێرڤەر ☁️";
+        btn.innerText = "تۆمارکردن لە کۆگا ☁️";
     }
 
     async function loadInvoices() {
@@ -127,26 +125,23 @@
             body.innerHTML = data.map(i => `
                 <tr>
                     <td>${new Date(i.created_at).toLocaleDateString('ku-IQ')}</td>
-                    <td>${i.inv_no || ''}</td>
-                    <td>${i.item_name || ''}</td>
-                    <td>${i.qty} کارتۆن</td>
+                    <td><b>${i.item_name}</b></td>
+                    <td>${i.quantity} دانە</td>
                     <td>${i.buy_price} ${i.currency}</td>
-                    <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer; font-size:18px;">🗑️</button></td>
+                    <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer; font-size:16px;">🗑️</button></td>
                 </tr>
             `).join('');
         }
     }
 
     async function deleteInvoice(id) {
-        if(confirm("دڵنیای لە سڕینەوەی ئەم بابەتە؟")) {
+        if(confirm("ئایا دڵنیای لە سڕینەوە؟")) {
             const { error } = await _supabase.from('invoices').delete().eq('id', id);
             if(!error) loadInvoices();
         }
     }
 
-    // دەسپێکردن
-    checkLogin();
-    loadInvoices();
+    window.onload = loadInvoices;
 </script>
 </body>
 </html>
