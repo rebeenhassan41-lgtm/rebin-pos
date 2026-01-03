@@ -5,82 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبۆرد - سیستەمی ڕێبین</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 0; direction: rtl; }
-        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .container { padding: 20px; }
+        :root {
+            --primary: #2c3e50;
+            --accent: #34495e;
+            --bg: #f0f2f5;
+            --white: #ffffff;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
+        
+        .header { 
+            background: var(--primary); color: white; padding: 30px 20px; 
+            text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            border-bottom: 5px solid #3498db;
+        }
+
+        .container { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
+        
         .grid-container { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-            gap: 15px; 
-            max-width: 1100px; 
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 20px; 
         }
+
         .card { 
-            background: white; padding: 20px; border-radius: 15px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;
-            cursor: pointer; transition: 0.2s; text-decoration: none; color: #2c3e50;
-            border-top: 6px solid #ccc; display: block;
+            background: var(--white); padding: 25px 15px; border-radius: 20px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05); text-align: center;
+            cursor: pointer; transition: all 0.3s ease; text-decoration: none; 
+            color: var(--primary); border-top: 8px solid #ccc; display: block;
+            position: relative; overflow: hidden;
         }
-        .card:active { transform: scale(0.95); background: #fafafa; } 
-        .icon { font-size: 40px; margin-bottom: 10px; display: block; }
-        .buy { border-top-color: #3498db; }
-        .sell { border-top-color: #2ecc71; }
-        .inv { border-top-color: #f1c40f; }
-        .rep { border-top-color: #9b59b6; }
-        .rec { border-top-color: #e67e22; }
-        .pay { border-top-color: #e74c3c; }
-        .logout-btn { background: #e74c3c; color: white; border: none; padding: 12px 40px; border-radius: 10px; cursor: pointer; margin-top: 30px; font-weight: bold; font-size: 16px; width: 100%; max-width: 300px; }
-        h2 { margin: 10px 0 0; font-size: 16px; }
+
+        .card:hover { transform: translateY(-10px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
+        .card:active { transform: scale(0.95); }
+
+        .icon { font-size: 45px; margin-bottom: 15px; display: block; }
+        h2 { margin: 10px 0 0; font-size: 18px; font-weight: bold; }
+
+        /* ڕەنگە تایبەتەکان بۆ هەر بەشێک */
+        .buy { border-top-color: #3498db; }      /* شین */
+        .sell { border-top-color: #2ecc71; }     /* سەوز */
+        .inv { border-top-color: #f1c40f; }      /* زەرد */
+        .rep { border-top-color: #9b59b6; }      /* مۆر */
+        .rec { border-top-color: #e67e22; }      /* پرتەقاڵی */
+        .pay { border-top-color: #e74c3c; }      /* سوور */
+        .sup { border-top-color: #1abc9c; }      /* فیرۆزی - بازرگانان */
+
+        .logout-section { text-align: center; margin-top: 50px; }
+        .logout-btn { 
+            background: #e74c3c; color: white; border: none; padding: 15px 50px; 
+            border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; 
+            transition: 0.3s; width: 100%; max-width: 300px;
+        }
+        .logout-btn:hover { background: #c0392b; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); }
+
+        /* وەسفی ژێر کارتەکان (ئارەزوومەندانە) */
+        .card p { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1 style="font-size: 22px;">سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
+        <h1 style="font-size: 26px; margin: 0;">سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
+        <p style="opacity: 0.8; margin-top: 10px;">بەخێرهاتی بۆ پانێڵی سەرەکی</p>
     </div>
 
     <div class="container">
         <div class="grid-container">
-            <div onclick="navTo('krin.html')" class="card buy"><span class="icon">📥</span><h2>کڕین</h2></div>
-            <div onclick="navTo('sales.html')" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></div>
-            <div onclick="navTo('inventory.html')" class="card inv"><span class="icon">📦</span><h2>کۆگا</h2></div>
-            <div onclick="navTo('report.html')" class="card rep"><span class="icon">📊</span><h2>ڕاپۆرت</h2></div>
-            <div onclick="navTo('qerzi_kriar.html')" class="card rec"><span class="icon">🤝</span><h2>قەرزی کڕیار</h2></div>
-            <div onclick="navTo('qerzi_bazrgan.html')" class="card pay"><span class="icon">💸</span><h2>قەرزی بازرگان</h2></div>
+            <div onclick="navTo('krin.html')" class="card buy">
+                <span class="icon">📥</span>
+                <h2>کڕین</h2>
+                <p>تۆمارکردنی کاڵای نوێ</p>
+            </div>
+            
+            <div onclick="navTo('sales.html')" class="card sell">
+                <span class="icon">💰</span>
+                <h2>فرۆشتن</h2>
+                <p>وەسڵی فرۆشتنی نوێ</p>
+            </div>
+
+            <div onclick="navTo('suppliers.html')" class="card sup">
+                <span class="icon">👥</span>
+                <h2>بازرگانان</h2>
+                <p>پڕۆفایل و وەسڵەکان</p>
+            </div>
+
+            <div onclick="navTo('inventory.html')" class="card inv">
+                <span class="icon">📦</span>
+                <h2>کۆگا</h2>
+                <p>بینینی مەخزەن</p>
+            </div>
+
+            <div onclick="navTo('report.html')" class="card rep">
+                <span class="icon">📊</span>
+                <h2>ڕاپۆرت</h2>
+                <p>قازانج و چالاکییەکان</p>
+            </div>
+
+            <div onclick="navTo('qerzi_kriar.html')" class="card rec">
+                <span class="icon">🤝</span>
+                <h2>قەرزی کڕیار</h2>
+                <p>ئەوانەی قەرزاری تۆن</p>
+            </div>
+
+            <div onclick="navTo('qerzi_bazrgan.html')" class="card pay">
+                <span class="icon">💸</span>
+                <h2>قەرزی بازرگان</h2>
+                <p>ئەوانەی قەرزاریانی</p>
+            </div>
         </div>
         
-        <div style="text-align: center;">
-            <button class="logout-btn" onclick="logout()">🛑 چوونە دەرەوە</button>
+        <div class="logout-section">
+            <button class="logout-btn" onclick="logout()">🛑 چوونە دەرەوەی سیستم</button>
         </div>
     </div>
 
     <script>
-        window.onpageshow = function(event) {
-            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-                window.location.reload();
-            }
-        };
-
+        // پشکنینی چوونە ژوورەوە
         function checkAuth() {
-            const isAuth = localStorage.getItem("rebeenAuth") === "true";
-            if (!isAuth) {
-                window.location.replace("login.html?v=" + new Date().getTime());
+            if (localStorage.getItem("rebeenAuth") !== "true") {
+                window.location.replace("login.html");
             }
         }
-        
         checkAuth();
 
         function logout() {
             localStorage.clear(); 
-            sessionStorage.clear();
-            document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            const cacheBuster = "v=" + new Date().getTime();
-            window.location.replace("login.html?" + cacheBuster + "#logout");
+            window.location.replace("login.html");
         }
 
         function navTo(page) {
             window.location.href = page;
         }
+
+        // بۆ ئەوەی لاپەڕەکە نوێ ببێتەوە کاتێک لە وەسڵێک دەگەڕێتەوە
+        window.onpageshow = function(event) {
+            if (event.persisted) window.location.reload();
+        };
     </script>
 </body>
 </html>
