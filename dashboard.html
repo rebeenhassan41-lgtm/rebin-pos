@@ -6,47 +6,47 @@
     <title>داشبۆرد - سیستەمی ڕێبین</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 0; direction: rtl; }
-        .header { background: #2c3e50; color: white; padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .container { padding: 30px; }
+        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { padding: 20px; }
         .grid-container { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 20px; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 15px; 
             max-width: 1100px; 
             margin: 0 auto;
         }
         .card { 
-            background: white; padding: 25px; border-radius: 15px; 
+            background: white; padding: 20px; border-radius: 15px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;
-            cursor: pointer; transition: 0.3s; text-decoration: none; color: #2c3e50;
+            cursor: pointer; transition: 0.2s; text-decoration: none; color: #2c3e50;
             border-top: 6px solid #ccc; display: block;
         }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: #fff; }
-        .icon { font-size: 45px; margin-bottom: 10px; display: block; }
+        .card:active { transform: scale(0.95); background: #fafafa; } /* تایبەت بۆ مۆبایل */
+        .icon { font-size: 40px; margin-bottom: 10px; display: block; }
         .buy { border-top-color: #3498db; }
         .sell { border-top-color: #2ecc71; }
         .inv { border-top-color: #f1c40f; }
         .rep { border-top-color: #9b59b6; }
         .rec { border-top-color: #e67e22; }
         .pay { border-top-color: #e74c3c; }
-        .logout-btn { background: #e74c3c; color: white; border: none; padding: 12px 40px; border-radius: 10px; cursor: pointer; margin-top: 40px; font-weight: bold; font-size: 16px; }
-        h2 { margin: 10px 0 0; font-size: 18px; }
+        .logout-btn { background: #e74c3c; color: white; border: none; padding: 12px 40px; border-radius: 10px; cursor: pointer; margin-top: 30px; font-weight: bold; font-size: 16px; width: 100%; max-width: 300px; }
+        h2 { margin: 10px 0 0; font-size: 16px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
+        <h1 style="font-size: 22px;">سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
     </div>
 
     <div class="container">
         <div class="grid-container">
             <div onclick="navTo('krin.html')" class="card buy"><span class="icon">📥</span><h2>کڕین</h2></div>
-            <div onclick="navTo('sales.html')" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></div>
+            <div onclick="navTo('sale.html')" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></div>
             <div onclick="navTo('inventory.html')" class="card inv"><span class="icon">📦</span><h2>کۆگا</h2></div>
             <div onclick="navTo('report.html')" class="card rep"><span class="icon">📊</span><h2>ڕاپۆرت</h2></div>
-            <div onclick="navTo('qerzi_kriar.html')" class="card rec"><span class="icon">🤝</span><h2>شایەنی وەرگرتنەوە</h2></div>
-            <div onclick="navTo('qerzi_bazrgan.html')" class="card pay"><span class="icon">💸</span><h2>شایەنی سەرف کردن</h2></div>
+            <div onclick="navTo('qerzi_kriar.html')" class="card rec"><span class="icon">🤝</span><h2>قەرزی کڕیار</h2></div>
+            <div onclick="navTo('qerzi_bazrgan.html')" class="card pay"><span class="icon">💸</span><h2>قەرزی بازرگان</h2></div>
         </div>
         
         <div style="text-align: center;">
@@ -55,17 +55,24 @@
     </div>
 
     <script>
-        // پشکنینی لۆگین (گونجاو بۆ مۆبایل و کۆمپیوتەر)
-        const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
-
-        if (!isAuth) {
-            window.location.href = "index.html";
+        // پشکنینی لۆگین لە کاتی کردنەوەی لاپەڕە
+        function checkAuth() {
+            const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
+            if (!isAuth) {
+                window.location.replace("index.html");
+            }
         }
+        
+        checkAuth();
 
         function logout() {
-            localStorage.removeItem("rebeenAuth");
+            // سڕینەوەی هەموو داتاکان
+            localStorage.clear(); // هەموو شتێک پاک دەکاتەوە
+            sessionStorage.clear();
             document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = "index.html";
+            
+            // گەڕانەوە بۆ لۆگین بە شێوەیەک کە نەتوانێت بە دوگمەی Back بگەڕێتەوە
+            window.location.replace("index.html");
         }
 
         function navTo(page) {
