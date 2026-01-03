@@ -3,62 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بەڕێوەبردنی بەکارهێنەران</title>
+    <title>بەڕێوەبردنی کارمەندان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #3498db; --success: #27ae60; --danger: #e74c3c; }
+        :root { --p: #2c3e50; --s: #3498db; --success: #27ae60; --warn: #f39c12; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; margin: 0; direction: rtl; padding: 20px; }
-        
         .header-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .btn-back { background: var(--p); color: white; padding: 8px 18px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.3s; }
-        .btn-back:hover { background: #000; }
-
+        .btn-back { background: var(--p); color: white; padding: 8px 18px; border-radius: 10px; text-decoration: none; font-weight: bold; }
         .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        
-        h3 { margin-top: 0; color: var(--p); border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; font-size: 16px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--s); }
-        
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; font-size: 16px; outline: none; }
         .btn-save { width: 100%; padding: 14px; background: var(--success); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 17px; font-weight: bold; }
-        
-        .user-list { max-height: 450px; overflow-y: auto; }
-        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fafafa; border-radius: 12px; margin-bottom: 10px; border: 1px solid #f0f0f0; }
-        
-        .user-info b { display: block; color: var(--p); font-size: 16px; }
-        .user-info span { font-size: 13px; color: #7f8c8d; }
-        
-        .status { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: bold; }
-        .online { background: #e8f8f0; color: #27ae60; }
-        .offline { background: #fdf2f2; color: #e74c3c; }
-
-        .del-btn { background: #fff1f0; color: var(--danger); border: 1px solid #ffd6d3; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
-        .del-btn:hover { background: var(--danger); color: white; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fafafa; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; }
+        .edit-btn { color: var(--warn); cursor: pointer; border: none; background: none; font-weight: bold; margin-left: 10px; }
+        .del-btn { color: #e74c3c; cursor: pointer; border: none; background: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header-nav">
-        <h2 style="margin:0; font-size: 20px;">👥 بەڕێوەبردنی کارمەندان</h2>
+        <h2 style="margin:0;">👥 بەڕێوەبردنی کارمەندان</h2>
         <a href="dashboard.html" class="btn-back">🔙 گەڕانەوە</a>
     </div>
 
     <div class="container">
         <div class="card">
-            <h3>👤 زیادکردنی بەکارهێنەر</h3>
-            <input type="text" id="fullName" placeholder="ناوی تەواوی کارمەند">
-            <input type="text" id="username" placeholder="ناوی بەکارهێنەر (بۆ چوونەژوورەوە)">
+            <h3 id="formTitle">👤 زیادکردنی بەکارهێنەر</h3>
+            <input type="text" id="fullName" placeholder="ناوی تەواو">
+            <input type="text" id="username" placeholder="ناوی بەکارهێنەر">
             <input type="password" id="password" placeholder="پاسوۆرد">
             <select id="position">
-                <option value="کارمەند">کارمەند (Staff)</option>
-                <option value="بەڕێوەبەر">بەڕێوەبەر (Admin)</option>
+                <option value="کارمەند">کارمەند</option>
+                <option value="بەڕێوەبەر">بەڕێوەبەر</option>
             </select>
-            <button class="btn-save" onclick="createUser()">تۆمارکردن ✅</button>
+            <button class="btn-save" id="mainBtn" onclick="createUser()">تۆمارکردن ✅</button>
+            <button id="cancelBtn" style="display:none; width:100%; margin-top:10px; border:none; background:none; cursor:pointer;" onclick="resetForm()">پاشگەزبوونەوە</button>
         </div>
 
         <div class="card">
-            <h3>📋 لیستی کارمەندەکان</h3>
-            <div id="userList" class="user-list">خەریکی بارکردنە...</div>
+            <h3>📋 لیستی ئێستا</h3>
+            <div id="userList">خەریکی بارکردنە...</div>
         </div>
     </div>
 
@@ -66,79 +50,75 @@
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+    let editingId = null;
 
-    // هێنانی لیستەکە
     async function fetchUsers() {
         const { data, error } = await _supabase.from('system_users').select('*').order('created_at', { ascending: false });
         if (error) return;
-
         const listDiv = document.getElementById('userList');
-        listDiv.innerHTML = data.length === 0 ? "هیچ کارمەندێک نییە" : "";
-
+        listDiv.innerHTML = "";
         data.forEach(user => {
-            // پشکنینی کاتی دوایین چالاکی بۆ ئۆنلاین بوون
-            const lastSeen = user.last_seen ? new Date(user.last_seen) : new Date(0);
-            const isOnline = (new Date() - lastSeen) < 300000; // ٥ خولەک
-
             listDiv.innerHTML += `
                 <div class="user-item">
-                    <div class="user-info">
-                        <b>${user.full_name}</b>
-                        <span>ناوەکە: ${user.username} | ${user.position}</span>
-                        <span class="status ${isOnline ? 'online' : 'offline'}">
-                            ${isOnline ? '● ئۆنلاین' : '● ئۆفلاین'}
-                        </span>
+                    <div><b>${user.full_name}</b><br><small>${user.username}</small></div>
+                    <div>
+                        <button class="edit-btn" onclick="prepareEdit('${user.id}', '${user.full_name}', '${user.username}', '${user.password}', '${user.position}')">دەستکاری</button>
+                        <button class="del-btn" onclick="deleteUser('${user.id}')">سڕینەوە</button>
                     </div>
-                    <button class="del-btn" onclick="deleteUser('${user.id}', '${user.username}')">سڕینەوە</button>
-                </div>
-            `;
+                </div>`;
         });
     }
 
-    // دروستکردنی یوسەر
     async function createUser() {
-        const name = document.getElementById('fullName').value.trim();
-        const user = document.getElementById('username').value.trim();
-        const pass = document.getElementById('password').value.trim();
+        const name = document.getElementById('fullName').value;
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
         const pos = document.getElementById('position').value;
 
         if(!name || !user || !pass) return alert("تکایە هەموو خانەکان پڕ بکەرەوە");
 
-        const { error } = await _supabase.from('system_users').insert([{
-            full_name: name,
-            username: user,
-            password: pass,
-            position: pos,
-            last_seen: new Date().toISOString()
-        }]);
-
-        if (error) {
-            if (error.message.includes("unique")) {
-                alert("ئەم ناوە (" + user + ") پێشتر هەیە! ناوێکی تر بنووسە.");
-            } else {
-                alert("هەڵە: " + error.message);
-            }
+        if(editingId) {
+            const { error } = await _supabase.from('system_users').update({ full_name: name, username: user, password: pass, position: pos }).eq('id', editingId);
+            if(error) alert("هەڵە: " + error.message);
+            else { alert("نوێکرایەوە ✅"); resetForm(); fetchUsers(); }
         } else {
-            alert("کارمەند " + name + " بە سەرکەوتوویی زیادکرا ✅");
-            document.getElementById('fullName').value = '';
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
+            const { error } = await _supabase.from('system_users').insert([{ full_name: name, username: user, password: pass, position: pos }]);
+            if(error) alert(error.message.includes("unique") ? "ئەم ناوە پێشتر هەیە!" : error.message);
+            else { alert("زیادکرا ✅"); resetForm(); fetchUsers(); }
+        }
+    }
+
+    function prepareEdit(id, name, user, pass, pos) {
+        editingId = id;
+        document.getElementById('fullName').value = name;
+        document.getElementById('username').value = user;
+        document.getElementById('password').value = pass;
+        document.getElementById('position').value = pos;
+        document.getElementById('formTitle').innerText = "🔄 دەستکاری یوسەر";
+        document.getElementById('mainBtn').innerText = "پاشەکەوتکردنی گۆڕانکارییەکان";
+        document.getElementById('mainBtn').style.background = "var(--warn)";
+        document.getElementById('cancelBtn').style.display = "block";
+    }
+
+    function resetForm() {
+        editingId = null;
+        document.getElementById('fullName').value = '';
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('formTitle').innerText = "👤 زیادکردنی بەکارهێنەر";
+        document.getElementById('mainBtn').innerText = "تۆمارکردن ✅";
+        document.getElementById('mainBtn').style.background = "var(--success)";
+        document.getElementById('cancelBtn').style.display = "none";
+    }
+
+    async function deleteUser(id) {
+        if(confirm("دڵنیای لە سڕینەوە؟")) {
+            await _supabase.from('system_users').delete().eq('id', id);
             fetchUsers();
         }
     }
 
-    // سڕینەوە
-    async function deleteUser(id, name) {
-        if(confirm("دڵنیای لە سڕینەوەی " + name + "؟")) {
-            const { error } = await _supabase.from('system_users').delete().eq('id', id);
-            if(!error) fetchUsers();
-            else alert("نەسڕایەوە: " + error.message);
-        }
-    }
-
     fetchUsers();
-    // نوێکردنەوەی ئۆتۆماتیکی لیستەکە هەموو ٣٠ چرکەیەک
-    setInterval(fetchUsers, 30000);
 </script>
 </body>
 </html>
