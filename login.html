@@ -1,56 +1,40 @@
 async function login() {
-    const userField = document.getElementById('username');
-    const passField = document.getElementById('password');
+    const userV = document.getElementById('username').value.trim();
+    const passV = document.getElementById('password').value.trim();
     const btn = document.getElementById('loginBtn');
     const err = document.getElementById('errorMsg');
 
-    const userValue = userField.value.trim();
-    const passValue = passField.value.trim();
-
-    if (!userValue || !passValue) {
-        err.innerText = "تکایە ناو و پاسوۆرد بنووسە!";
-        err.style.display = "block";
-        return;
-    }
+    if (!userV || !passV) return alert("تکایە خانەکان پڕ بکەرەوە");
 
     btn.disabled = true;
     btn.innerText = "خەریکی پشکنینە...";
     err.style.display = "none";
 
     try {
-        // گەڕان بەدوای یوسەردا
+        // گەڕانی ڕاستەوخۆ بە ناو و پاسوۆرد
         const { data, error } = await _supabase
             .from('system_users')
             .select('*')
-            .eq('username', userValue);
+            .eq('username', userV)
+            .eq('password', passV);
 
-        if (error) {
-            console.error("Supabase Error:", error);
-            throw new Error("کێشە لە پەیوەندی داتابەیس هەیە");
-        }
+        if (error) throw error;
 
         if (data && data.length > 0) {
-            const dbUser = data[0];
-
-            // بەراوردکردنی پاسوۆرد (دڵنیابەوە کە لە داتابەیس ستوونی password هەمان ناوە)
-            if (String(dbUser.password) === String(passValue)) {
-                localStorage.setItem("rebeenAuth", "true");
-                localStorage.setItem("userName", dbUser.full_name);
-                localStorage.setItem("userPosition", dbUser.position);
-                
-                window.location.replace("dashboard.html");
-            } else {
-                err.innerText = "پاسوۆردەکە هەڵەیە! ❌";
-                err.style.display = "block";
-            }
+            // ئەگەر دۆزرایەوە
+            localStorage.setItem("rebeenAuth", "true");
+            localStorage.setItem("userName", data[0].full_name);
+            localStorage.setItem("userPosition", data[0].position);
+            window.location.replace("dashboard.html");
         } else {
-            err.innerText = "ئەم ناوە ( " + userValue + " ) بوونی نییە! ❌";
+            // ئەگەر نەدۆزرایەوە
+            err.innerText = "ناو یان پاسوۆرد هەڵەیە! ❌";
             err.style.display = "block";
+            btn.disabled = false;
+            btn.innerText = "چوونە ژوورەوە";
         }
     } catch (e) {
-        err.innerText = "هەڵە: " + e.message;
-        err.style.display = "block";
-    } finally {
+        alert("هەڵەیەک ڕوویدا: " + e.message);
         btn.disabled = false;
         btn.innerText = "چوونە ژوورەوە";
     }
