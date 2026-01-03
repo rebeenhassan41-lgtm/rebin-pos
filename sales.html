@@ -18,6 +18,7 @@
         td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 15px; }
         .summary { margin-top: 20px; padding: 20px; background: var(--p); color: white; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
         .btn-done { background: var(--success); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-done:disabled { background: #7f8c8d; }
         @media print { .no-print { display: none !important; } .container { box-shadow: none; border: none; } body { background: white; } }
     </style>
 </head>
@@ -25,9 +26,9 @@
 
 <div class="container">
     <div class="top-bar no-print">
-        <div><label>💵 100$ بە:</label><input type="number" id="dollarRate" value="152000" style="width: 100px;"></div>
-        <div><label>🛒 جۆری نرخ:</label>
-            <select id="priceType">
+        <div><label>💵 دۆلار (100$):</label><input type="number" id="dollarRate" value="152000" style="width: 100px;"></div>
+        <div><label>🛒 نرخ:</label>
+            <select id="priceType" onchange="updateUI()">
                 <option value="retail">فرۆشی تاک</option>
                 <option value="wholesale">فرۆشی کۆ</option>
             </select>
@@ -37,7 +38,7 @@
     </div>
 
     <div class="barcode-section no-print">
-        <input type="text" id="barcodeInput" class="barcode-input" placeholder="بارکۆد سکان بکە یان لێبدە..." autofocus onkeypress="handleScan(event)">
+        <input type="text" id="barcodeInput" class="barcode-input" placeholder="بارکۆد سکان بکە..." autofocus onkeypress="handleScan(event)">
     </div>
 
     <div id="printArea">
@@ -47,7 +48,7 @@
                 <tr>
                     <th>کاڵا</th>
                     <th>بڕ</th>
-                    <th>نرخی یەکە</th>
+                    <th>نرخی فرۆشتن</th>
                     <th>کۆی گشتی</th>
                     <th class="no-print">کردار</th>
                 </tr>
@@ -82,7 +83,7 @@
         if (e.key === 'Enter') {
             const bc = e.target.value.trim();
             if (!bc) return;
-            const { data } = await _supabase.from('purchases').select('*').eq('barcode', bc).maybeSingle();
+            const { data, error } = await _supabase.from('purchases').select('*').eq('barcode', bc).maybeSingle();
             if (data) {
                 addItem(data);
                 e.target.value = '';
@@ -95,15 +96,18 @@
 
     function addItem(item) {
         const type = document.getElementById('priceType').value;
-        let price = (type === 'retail') ? item.sale_price_retail : item.sale_price_wholesale;
+        let salePrice = (type === 'retail') ? item.sale_price_retail : item.sale_price_wholesale;
+        
         const exists = cart.find(c => c.barcode === item.barcode);
-        if (exists) { exists.qty += 1; } 
-        else {
+        if (exists) {
+            exists.qty += 1;
+        } else {
             cart.push({
                 id: item.id,
                 name: item.item_name,
                 barcode: item.barcode,
-                price: price,
+                sale_price: salePrice,
+                cost_price: item.cost_price_usd, // پاراستنی نرخی کڕین بۆ قازانج
                 currency: item.currency,
                 qty: 1
             });
@@ -117,14 +121,15 @@
         let grandTotalUSD = 0;
 
         body.innerHTML = cart.map((item, idx) => {
-            const lineTotal = item.price * item.qty;
+            const lineTotal = item.sale_price * item.qty;
+            // گۆڕینی نرخ بۆ دۆلار ئەگەر کاڵاکە بە دینار کڕابێت
             const lineTotalUSD = (item.currency === 'USD') ? lineTotal : (lineTotal / (rate/100));
             grandTotalUSD += lineTotalUSD;
 
             return `<tr>
                 <td>${item.name}</td>
                 <td><input type="number" value="${item.qty}" style="width:50px; text-align:center;" onchange="updateQty(${idx}, this.value)"></td>
-                <td>${item.price.toLocaleString()} ${item.currency === 'USD' ? '$' : 'د.ع'}</td>
+                <td>${item.sale_price.toLocaleString()} ${item.currency === 'USD' ? '$' : 'د.ع'}</td>
                 <td>${lineTotal.toLocaleString()}</td>
                 <td class="no-print"><button onclick="removeItem(${idx})" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td>
             </tr>`;
@@ -138,17 +143,38 @@
     function removeItem(idx) { cart.splice(idx, 1); updateUI(); }
 
     async function completeSale() {
-        if (cart.length === 0) return alert("سەبەتەکە خاڵییە!");
+        if (cart.length === 0) return alert("وەسڵەکە خاڵییە!");
         const btn = document.getElementById('btnComplete');
         btn.disabled = true;
-        btn.innerText = "خەریکە تۆمار دەبێت...";
+
+        const customer = document.getElementById('customerName').value || "کڕیاری گشتی";
+        const method = document.getElementById('payMethod').value;
+        const totalSalesUSD = parseFloat(document.getElementById('totalUSD').innerText.replace(/[^0-9.]/g, ''));
+        
+        // حسابکردنی کۆی تێچوو (Cost) بۆ قازانج
+        let totalCostUSD = 0;
+        cart.forEach(item => { totalCostUSD += (item.cost_price * item.qty); });
 
         try {
-            const customer = document.getElementById('customerName').value || "کڕیاری گشتی";
-            const method = document.getElementById('payMethod').value;
-            const totalUSD = parseFloat(document.getElementById('totalUSD').innerText.replace(/[^0-9.]/g, ''));
+            // ١. تۆمارکردنی فرۆشتن لە داتابەیس
+            await _supabase.from('sales').insert([{
+                customer_name: customer,
+                total_usd: totalSalesUSD,
+                total_cost_usd: totalCostUSD, // ئەمە بۆ قازانجەکە زۆر گرنگە
+                pay_method: method
+            }]);
 
-            // ١. کەمکردنەوە لە کۆگا
+            // ٢. ئەگەر قەرز بوو، تۆمارکردنی قەرز
+            if (method === "Debt") {
+                await _supabase.from('qerzi_kriar').insert([{
+                    name: customer,
+                    amount: totalSalesUSD,
+                    currency: "USD",
+                    note: "فرۆشتنی قەرز"
+                }]);
+            }
+
+            // ٣. کەمکردنەوە لە کۆگا
             for (const item of cart) {
                 const { data: stock } = await _supabase.from('purchases').select('quantity').eq('id', item.id).single();
                 if (stock) {
@@ -156,17 +182,7 @@
                 }
             }
 
-            // ٢. ئەگەر قەرز بوو تۆماری بکە
-            if (method === "Debt") {
-                await _supabase.from('qerzi_kriar').insert([{
-                    name: customer,
-                    amount: totalUSD,
-                    currency: "USD",
-                    note: "وەسڵی فرۆشتن"
-                }]);
-            }
-
-            alert("تۆمار کرا ✅");
+            alert("سەرکەوتوو بوو ✅");
             window.print();
             location.reload();
         } catch (e) {
