@@ -8,7 +8,7 @@
         :root { --p: #2c3e50; --s: #3498db; --bg: #f4f7f6; --success: #27ae60; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; margin: 0; }
         .btn-back { background: var(--p); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold; }
-        .form-card { max-width: 550px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .form-card { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .form-card h2 { text-align: center; color: var(--p); margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
         label { display: block; margin-top: 15px; font-weight: bold; color: var(--p); font-size: 14px; }
         input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; outline-color: var(--s); }
@@ -66,35 +66,48 @@
         btn.disabled = true;
         btn.innerText = "خەریکی پشکنینە...";
 
-        // پشکنینی دووبارە نەبوونەوە
-        const { data: existing } = await _supabase.from('purchases').select('id').eq('barcode', barcode).maybeSingle();
-        
-        if (existing) {
-            alert("ئەم بارکۆدە پێشتر ناسێنراوە!");
-            btn.disabled = false;
-            btn.innerText = "تۆمارکردن لە لیست ✅";
-            return;
-        }
+        try {
+            // ١. پشکنینی دووبارە نەبوونەوە
+            const { data: existing } = await _supabase
+                .from('purchases')
+                .select('id')
+                .eq('barcode', barcode)
+                .maybeSingle();
+            
+            if (existing) {
+                alert("ئەم بارکۆدە پێشتر ناسێنراوە!");
+                btn.disabled = false;
+                btn.innerText = "تۆمارکردن لە لیست ✅";
+                return;
+            }
 
-        // تۆمارکردنی زانیارییەکان
-        const { error } = await _supabase.from('purchases').insert([{
-            barcode: barcode,
-            item_name: name,
-            category: cat,
-            brand: brand, // دڵنیابە لە Supabase ئەم ستوونەت (Column) دروست کردووە
-            quantity: 0,
-            cost_price_usd: 0,
-            sale_price_retail: 0,
-            sale_price_wholesale: 0
-        }]);
+            // ٢. دروستکردنی داتا بۆ ناردن (بەتەنها ئەو ستوونانەی دڵنیاین هەن)
+            const payload = {
+                barcode: barcode,
+                item_name: name,
+                quantity: 0,
+                cost_price_usd: 0,
+                sale_price_retail: 0,
+                sale_price_wholesale: 0,
+                category: cat, // دڵنیابەوە لە Supabase پیتەکان بچوکن
+                brand: brand   // دڵنیابەوە لە Supabase پیتەکان بچوکن
+            };
 
-        if(!error) {
-            alert("کەرەستەی (" + name + ") تۆمار کرا");
-            location.reload();
-        } else {
-            alert("هەڵە لە سەیڤکردن: " + error.message);
+            // ٣. ناردن بۆ داتابەیس
+            const { error } = await _supabase.from('purchases').insert([payload]);
+
+            if(!error) {
+                alert("کەرەستەی (" + name + ") بە سەرکەوتوویی تۆمار کرا ✅");
+                location.reload();
+            } else {
+                console.error("Supabase Error:", error);
+                alert("کێشەیەک لە ستوونەکان هەیە: " + error.message);
+                btn.disabled = false;
+                btn.innerText = "تۆمارکردن لە لیست ✅";
+            }
+        } catch (err) {
+            alert("هەڵەیەکی چاوەڕواننەکراو: " + err.message);
             btn.disabled = false;
-            btn.innerText = "تۆمارکردن لە لیست ✅";
         }
     }
 </script>
