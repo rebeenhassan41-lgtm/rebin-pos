@@ -56,22 +56,25 @@
 
     <script>
         function checkAuth() {
+            // پشکنین بە هەموو شێوەکان
             const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
             if (!isAuth) {
-                window.location.replace("index.html");
+                // ئەگەر داخل نەبوو، یەکسەر بینێرە بۆ لۆگین بە بێ پاشکەوت کردنی ئەم لاپەڕەیە
+                window.location.replace("index.html?v=" + new Date().getTime());
             }
         }
         
         checkAuth();
 
         function logout() {
-            // سڕینەوەی هەموو داتاکان
+            // ١. پاککردنەوەی هەموو داتاکان
             localStorage.clear(); 
             sessionStorage.clear();
             document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             
-            // ناردنەوە بۆ لۆگین بە نیشانەی تایبەت بۆ ئەوەی لە مۆبایلەکە جێگیر بێت
-            window.location.replace("index.html#logout");
+            // ٢. دروستکردنی ناونیشانێکی نوێ بۆ ئەوەی گیتھەب ناچار بێت لاپەڕەکە نوێ بکاتەوە
+            const cacheBuster = "v=" + new Date().getTime();
+            window.location.replace("index.html?" + cacheBuster + "#logout");
         }
 
         function navTo(page) {
