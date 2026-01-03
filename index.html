@@ -5,55 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بەخێرهاتی - Rebin POS</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background: #2c3e50; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-        }
-        .login-card { 
-            background: white; 
-            padding: 40px 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-            width: 90%; 
-            max-width: 350px; 
-            text-align: center; 
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 350px; text-align: center; }
         h2 { color: #000; margin-bottom: 30px; font-size: 28px; }
-        .input-box {
-            background: #eef3ff;
-            border: 1px solid #ccd6e0;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            width: 100%;
-            box-sizing: border-box;
-            font-size: 20px;
-            text-align: center;
-            letter-spacing: 5px;
-        }
-        .login-btn { 
-            width: 100%; 
-            padding: 15px; 
-            background: #e67e22; 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 18px; 
-            transition: 0.3s;
-        }
-        .login-btn:active { transform: scale(0.98); }
+        .input-box { background: #eef3ff; border: 1px solid #ccd6e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; width: 100%; box-sizing: border-box; font-size: 20px; text-align: center; letter-spacing: 5px; }
+        .login-btn { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; }
         #msg { margin-top: 15px; font-size: 14px; font-weight: bold; min-height: 20px; }
     </style>
 </head>
 <body>
-
 <div class="login-card">
     <h2>بەخێرهاتی 👋</h2>
     <input type="password" id="pinCode" class="input-box" placeholder="••••" autofocus>
@@ -64,39 +24,29 @@
 <script>
     function checkPin() {
         const pin = document.getElementById('pinCode').value;
-        const msg = document.getElementById('msg');
-
-        // کۆدەکە لێرە دیاری کراوە
         if (pin === "1234" || pin === "rebeen") {
-            msg.style.color = "green";
-            msg.innerText = "خەریکە دەچیتە ژوورەوە...";
-            
-            // ١. تۆمارکردنی لۆگین لە هەموو شوێنێک بۆ دڵنیایی
             localStorage.setItem("rebeenAuth", "true");
-            
-            // ٢. دانانی کۆکی بە شێوەیەک کە تەنها لەم سایتە ئیش بکات
             document.cookie = "rebeenAuth=true; path=/; max-age=86400; SameSite=Strict";
-            
-            // ٣. گواستنەوە بۆ داشبۆرد بەبێ پاشکەوت کردنی لاپەڕەی لۆگین لە مێژوودا
-            setTimeout(() => {
-                window.location.replace("dashboard.html");
-            }, 400);
+            window.location.replace("dashboard.html");
         } else {
-            msg.style.color = "red";
-            msg.innerText = "وشەی نهێنی هەڵەیە!";
-            document.getElementById('pinCode').value = "";
+            document.getElementById('msg').style.color = "red";
+            document.getElementById('msg').innerText = "کۆدەکە هەڵەیە!";
         }
     }
 
-    // پشکنینی ئۆتۆماتیکی لە کاتی بارکردنی لاپەڕە
     window.onload = function() {
-        // ئەگەر کاتێک هاتییە ئەم لاپەڕەیە و پێشتر داخل بووبوویت، ڕاستەوخۆ بڕۆ داشبۆرد
-        const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
-        if (isAuth && window.location.hash !== "#logout") {
+        // ئەگەر بە لۆگ ئاوت هاتبوو، هەموو داتاکان ڕەش بکەرەوە
+        if (window.location.hash === "#logout") {
+            localStorage.removeItem("rebeenAuth");
+            document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            history.replaceState(null, null, window.location.pathname);
+            return;
+        }
+        // ئەگەر پێشتر داخل بوو، یەکسەر بڕۆ داشبۆرد
+        if (localStorage.getItem("rebeenAuth") === "true") {
             window.location.replace("dashboard.html");
         }
     }
 </script>
-
 </body>
 </html>
