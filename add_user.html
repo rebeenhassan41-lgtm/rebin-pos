@@ -2,15 +2,18 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>زیادکردنی بەکارهێنەر</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --p: #2c3e50; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
-        .form-card { max-width: 450px; margin: 50px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn-save { width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; margin-top: 20px; font-weight: bold; }
-        .btn-back { background: #eee; color: #333; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 14px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 15px; margin: 0; }
+        .form-card { max-width: 400px; margin: 20px auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--p); font-size: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: var(--p); font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .btn-save { width: 100%; padding: 15px; background: var(--p); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; margin-top: 25px; font-weight: bold; }
+        .btn-back { background: #eee; color: #333; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -18,14 +21,28 @@
     <a href="dashboard.html" class="btn-back">🔙 گەڕانەوە</a>
 
     <div class="form-card">
-        <h2 style="text-align:center; margin-top:0;">👤 زیادکردنی بەکارهێنەری نوێ</h2>
+        <h2>👤 بەکارهێنەری نوێ</h2>
         
-        <input type="text" id="fullName" placeholder="ناوی سیانی">
-        <input type="text" id="phone" placeholder="ژمارەی مۆبایل">
-        <input type="text" id="username" placeholder="ناوی بەکارهێنەر (Username)">
-        <input type="password" id="password" placeholder="پاسوۆرد">
+        <label>ناوی تەواو:</label>
+        <input type="text" id="fullName" placeholder="بۆ نموونە: ئەحمەد عەلی">
 
-        <button class="btn-save" onclick="createUser()">تۆمارکردن ✅</button>
+        <label>ژمارەی مۆبایل:</label>
+        <input type="tel" id="phone" placeholder="0750xxxxxxx">
+
+        <label>ناوی بەکارهێنەر (بۆ چوونە ژوورەوە):</label>
+        <input type="text" id="username" placeholder="username">
+
+        <label>پاسوۆرد:</label>
+        <input type="password" id="password" placeholder="******">
+
+        <label>پۆزیشن (Position):</label>
+        <select id="position">
+            <option value="بەڕێوەبەر">بەڕێوەبەر (Admin)</option>
+            <option value="کارمەند">کارمەند (Staff)</option>
+            <option value="کاشێر">کاشێر (Cashier)</option>
+        </select>
+
+        <button class="btn-save" id="saveBtn" onclick="createUser()">تۆمارکردن ✅</button>
     </div>
 
 <script>
@@ -34,25 +51,33 @@
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     async function createUser() {
-        const name = document.getElementById('fullName').value;
-        const phone = document.getElementById('phone').value;
-        const user = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
+        const name = document.getElementById('fullName').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const user = document.getElementById('username').value.trim();
+        const pass = document.getElementById('password').value.trim();
+        const pos = document.getElementById('position').value;
+        const btn = document.getElementById('saveBtn');
 
-        if(!name || !user || !pass) return alert("تکایە خانەکان پڕ بکەرەوە!");
+        if(!name || !user || !pass) return alert("تکایە خانە گرنگەکان پڕ بکەرەوە!");
+
+        btn.disabled = true;
+        btn.innerText = "خەریکی تۆمارکردنە...";
 
         const { error } = await _supabase.from('system_users').insert([{
             full_name: name,
+            phone_number: phone,
             username: user,
             password: pass,
-            phone_number: phone
+            position: pos
         }]);
 
         if(!error) {
-            alert("بەکارهێنەر بە سەرکەوتوویی دروست کرا ✅");
+            alert("بەکارهێنەر (" + name + ") بە سەرکەوتوویی دروست کرا ✅");
             location.href = 'dashboard.html';
         } else {
             alert("هەڵە: " + error.message);
+            btn.disabled = false;
+            btn.innerText = "تۆمارکردن ✅";
         }
     }
 </script>
