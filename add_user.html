@@ -3,46 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>زیادکردنی بەکارهێنەر</title>
+    <title>بەڕێوەبردنی بەکارهێنەران</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 15px; margin: 0; }
-        .form-card { max-width: 400px; margin: 20px auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--p); font-size: 20px; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: var(--p); font-size: 14px; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        .btn-save { width: 100%; padding: 15px; background: var(--p); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; margin-top: 25px; font-weight: bold; }
-        .btn-back { background: #eee; color: #333; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 15px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; display: flex; flex-wrap: wrap; padding: 20px; gap: 20px; direction: rtl; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); flex: 1; min-width: 320px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: #27ae60; color: white; }
+        .user-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-left: 5px; }
+        .online { background-color: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
+        .offline { background-color: #95a5a6; }
+        .perm-box { font-size: 12px; background: #f9f9f9; padding: 5px; border-radius: 5px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <a href="dashboard.html" class="btn-back">🔙 گەڕانەوە</a>
-
-    <div class="form-card">
+    <div class="card">
         <h2>👤 بەکارهێنەری نوێ</h2>
-        
-        <label>ناوی تەواو:</label>
-        <input type="text" id="fullName" placeholder="بۆ نموونە: ئەحمەد عەلی">
-
-        <label>ژمارەی مۆبایل:</label>
-        <input type="tel" id="phone" placeholder="0750xxxxxxx">
-
-        <label>ناوی بەکارهێنەر (بۆ چوونە ژوورەوە):</label>
-        <input type="text" id="username" placeholder="username">
-
-        <label>پاسوۆرد:</label>
-        <input type="password" id="password" placeholder="******">
-
-        <label>پۆزیشن (Position):</label>
+        <input type="text" id="fullName" placeholder="ناوی تەواو">
+        <input type="text" id="username" placeholder="ناوی بەکارهێنەر">
+        <input type="password" id="password" placeholder="پاسوۆرد">
+        <input type="tel" id="phone" placeholder="ژمارەی مۆبایل">
         <select id="position">
-            <option value="بەڕێوەبەر">بەڕێوەبەر (Admin)</option>
-            <option value="کارمەند">کارمەند (Staff)</option>
-            <option value="کاشێر">کاشێر (Cashier)</option>
+            <option value="بەڕێوەبەر">بەڕێوەبەر</option>
+            <option value="کارمەند">کارمەند</option>
         </select>
+        <button class="btn btn-add" onclick="createUser()">تۆمارکردن ✅</button>
+    </div>
 
-        <button class="btn-save" id="saveBtn" onclick="createUser()">تۆمارکردن ✅</button>
+    <div class="card">
+        <h2>👥 لیستی بەکارهێنەران</h2>
+        <div id="userList">خەریکی بارکردنە...</div>
     </div>
 
 <script>
@@ -50,36 +44,58 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
+    async function fetchUsers() {
+        const { data, error } = await _supabase.from('system_users').select('*');
+        if (error) return;
+
+        const listDiv = document.getElementById('userList');
+        listDiv.innerHTML = '';
+
+        data.forEach(user => {
+            // پشکنینی ئۆنلاین بوون (ئەگەر کەمتر لە ٥ خولەک پێش ئێستا چالاک بووبێت)
+            const lastSeen = new Date(user.last_seen);
+            const isOnline = (new Date() - lastSeen) < 300000; 
+
+            listDiv.innerHTML += `
+                <div class="user-item">
+                    <div>
+                        <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
+                        <strong>${user.full_name}</strong> (${user.position})
+                        <div class="perm-box">
+                            مۆڵەت: ${user.permissions?.can_sell ? 'فرۆشتن ✅' : 'فرۆشتن ❌'} | 
+                            ${user.permissions?.can_report ? 'ڕاپۆرت ✅' : 'ڕاپۆرت ❌'}
+                        </div>
+                    </div>
+                    <button onclick="deleteUser('${user.id}')" style="color:red; border:none; background:none; cursor:pointer;">سڕینەوە</button>
+                </div>
+            `;
+        });
+    }
+
     async function createUser() {
-        const name = document.getElementById('fullName').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const user = document.getElementById('username').value.trim();
-        const pass = document.getElementById('password').value.trim();
+        const name = document.getElementById('fullName').value;
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
         const pos = document.getElementById('position').value;
-        const btn = document.getElementById('saveBtn');
-
-        if(!name || !user || !pass) return alert("تکایە خانە گرنگەکان پڕ بکەرەوە!");
-
-        btn.disabled = true;
-        btn.innerText = "خەریکی تۆمارکردنە...";
 
         const { error } = await _supabase.from('system_users').insert([{
-            full_name: name,
-            phone_number: phone,
-            username: user,
-            password: pass,
-            position: pos
+            full_name: name, username: user, password: pass, position: pos,
+            permissions: { can_sell: true, can_buy: true, can_report: (pos === 'بەڕێوەبەر') }
         }]);
 
-        if(!error) {
-            alert("بەکارهێنەر (" + name + ") بە سەرکەوتوویی دروست کرا ✅");
-            location.href = 'dashboard.html';
-        } else {
-            alert("هەڵە: " + error.message);
-            btn.disabled = false;
-            btn.innerText = "تۆمارکردن ✅";
+        if (!error) { alert("دروستکرا!"); fetchUsers(); }
+    }
+
+    async function deleteUser(id) {
+        if(confirm('دڵنیای لە سڕینەوەی؟')) {
+            await _supabase.from('system_users').delete().eq('id', id);
+            fetchUsers();
         }
     }
+
+    // نوێکردنەوەی لیستەکە هەموو ١٠ چرکەیەک بۆ ئۆنلاین بوون
+    fetchUsers();
+    setInterval(fetchUsers, 10000);
 </script>
 </body>
 </html>
