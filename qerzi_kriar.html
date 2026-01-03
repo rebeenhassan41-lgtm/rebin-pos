@@ -2,28 +2,31 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شایەنی وەرگرتنەوە - Rebin System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; direction: rtl; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .header { background: var(--accent); color: white; padding: 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 10px; direction: rtl; margin: 0; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: var(--accent); color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-back { background: var(--main); color: white; text-decoration: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+        
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
         th { background: #f8f9fa; color: var(--main); }
         .customer-link { color: #2980b9; cursor: pointer; font-weight: bold; text-decoration: underline; }
-        .btn-back { background: var(--main); color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
         
-        /* Modal Style - پەنجەرەی وەسڵ */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 500px; position: relative; }
+        /* Modal Style */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; position: relative; }
         
         @media print {
             .no-print { display: none !important; }
-            body { padding: 0; background: white; }
-            .modal { position: absolute; background: white; }
-            .modal-content { margin: 0; width: 100%; box-shadow: none; border: none; }
+            body { background: white; padding: 0; }
+            .modal { position: absolute; background: white; display: block !important; }
+            .modal-content { margin: 0; width: 100%; max-width: none; box-shadow: none; border: none; }
         }
     </style>
 </head>
@@ -31,47 +34,48 @@
 
 <div class="container no-print">
     <div class="header">
-        <h2 style="margin:0;">🤝 لیستی قەرزی کڕیارەکان</h2>
-        <a href="dashboard.html" class="btn-back">🏠 داشبۆرد</a>
+        <h2 style="margin:0; font-size: 18px;">🤝 قەرزی کڕیارەکان</h2>
+        <a href="dashboard.html" class="btn-back">🏠 گەڕانەوە</a>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>بەروار</th>
-                <th>ناوی کڕیار (بۆ وەسڵ کلیک بکە)</th>
-                <th>بڕی قەرز</th>
-                <th>تێبینی</th>
-            </tr>
-        </thead>
-        <tbody id="qerzTable">
-            <tr><td colspan="4">خەریکە بار دەکرێت...</td></tr>
-        </tbody>
-    </table>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>بەروار</th>
+                    <th>کڕیار</th>
+                    <th>بڕی قەرز</th>
+                    <th>تێبینی</th>
+                </tr>
+            </thead>
+            <tbody id="qerzTable">
+                <tr><td colspan="4">خەریکە بار دەکرێت...</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <div id="invoiceModal" class="modal">
     <div class="modal-content">
         <div id="printArea">
-            <h2 style="text-align:center; color:var(--main);">وەسڵی فرۆشتنی قەرز</h2>
-            <hr>
-            <p id="invCustName" style="font-weight:bold;"></p>
-            <p id="invDate" style="font-size:12px; color:gray;"></p>
-            <table style="width:100%; border:1px solid #ddd; border-collapse:collapse; margin-top:15px;">
+            <h2 style="text-align:center; color:var(--main); margin-top:0;">وەسڵی قەرز</h2>
+            <p id="invCustName" style="font-weight:bold; margin-bottom:5px;"></p>
+            <p id="invDate" style="font-size:12px; color:gray; margin:0;"></p>
+            <table style="width:100%; border-collapse:collapse; margin-top:15px; border: 1px solid #ddd;">
                 <thead>
                     <tr style="background:#f4f4f4;">
-                        <th style="border:1px solid #ddd;">کاڵا</th>
-                        <th style="border:1px solid #ddd;">بڕ</th>
-                        <th style="border:1px solid #ddd;">کۆی گشتی</th>
+                        <th>کاڵا</th>
+                        <th>بڕ</th>
+                        <th>کۆ</th>
                     </tr>
                 </thead>
                 <tbody id="invItemsBody"></tbody>
             </table>
-            <h3 id="invTotalUSD" style="text-align:left; margin-top:20px;"></h3>
+            <h3 id="invTotalUSD" style="text-align:left; margin-top:15px; color: #c0392b;"></h3>
         </div>
-        <div class="no-print" style="margin-top:30px; display:flex; gap:10px;">
-            <button onclick="window.print()" style="flex:1; background:#27ae60; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">🖨️ پرینتکردنەوە</button>
-            <button onclick="closeModal()" style="flex:1; background:#c0392b; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">داخستن</button>
+        <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
+            <button onclick="window.print()" style="flex:1; background:#27ae60; color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">🖨️ چاپکردن</button>
+            <button onclick="closeModal()" style="flex:1; background:#7f8c8d; color:white; padding:12px; border:none; border-radius:8px; cursor:pointer;">داخستن</button>
         </div>
     </div>
 </div>
@@ -80,6 +84,10 @@
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    // پشکنینی لۆگین
+    const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
+    if (!isAuth) { window.location.href = "index.html"; }
 
     async function loadQerz() {
         const { data, error } = await _supabase.from('qerzi_kriar').select('*').order('created_at', {ascending: false});
@@ -90,18 +98,18 @@
                 <tr>
                     <td>${new Date(q.created_at).toLocaleDateString('ku-IQ')}</td>
                     <td class="customer-link" onclick="viewInvoice('${q.sale_id}')">${q.name}</td>
-                    <td style="color:red; font-weight:bold;">${q.amount.toLocaleString()} $</td>
+                    <td style="color:red; font-weight:bold;">${Number(q.amount).toLocaleString()} $</td>
                     <td>${q.note || '-'}</td>
                 </tr>
             `).join('');
         } else {
-            body.innerHTML = '<tr><td colspan="4">هیچ قەرزێک نییە</td></tr>';
+            body.innerHTML = '<tr><td colspan="4">هیچ تۆمارێک نییە</td></tr>';
         }
     }
 
     async function viewInvoice(saleId) {
         if (!saleId || saleId === 'null') {
-            alert("ئەم قەرزە بە دەست داخڵ کراوە و وەسڵی نییە");
+            alert("ئەم قەرزە وەسڵی ئەلیکترۆنی نییە");
             return;
         }
 
@@ -115,19 +123,17 @@
                 <tr>
                     <td style="border:1px solid #ddd; padding:8px;">${i.name}</td>
                     <td style="border:1px solid #ddd; padding:8px;">${i.cQty}ک، ${i.pQty}د</td>
-                    <td style="border:1px solid #ddd; padding:8px;">${i.total}$</td>
+                    <td style="border:1px solid #ddd; padding:8px;">${Number(i.total).toLocaleString()}$</td>
                 </tr>
             `).join('');
             
             document.getElementById('invItemsBody').innerHTML = itemsHtml;
-            document.getElementById('invTotalUSD').innerText = "کۆی گشتی: " + data.total_usd.toLocaleString() + " $";
+            document.getElementById('invTotalUSD').innerText = "کۆی گشتی: " + Number(data.total_usd).toLocaleString() + " $";
             document.getElementById('invoiceModal').style.display = 'block';
         }
     }
 
-    function closeModal() {
-        document.getElementById('invoiceModal').style.display = 'none';
-    }
+    function closeModal() { document.getElementById('invoiceModal').style.display = 'none'; }
 
     window.onload = loadQerz;
 </script>
