@@ -2,32 +2,69 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ناساندنی بازرگانی نوێ</title>
+    <title>ناساندنی بازرگان | ڕێبین سیستم</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --p: #2c3e50; --s: #1abc9c; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
-        .form-container { max-width: 500px; margin: 50px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn-save { width: 100%; padding: 15px; background: var(--s); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        .btn-save:hover { background: #16a085; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
+        .form-container { max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .grid-input { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: var(--p); font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; }
+        .category-area { display: flex; gap: 10px; align-items: flex-end; }
+        .btn-add-cat { background: #eee; border: 1px solid #ddd; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .btn-save { width: 100%; padding: 15px; background: var(--s); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 25px; transition: 0.3s; }
+        .btn-save:hover { background: #16a085; transform: translateY(-2px); }
+        h2 { text-align: center; color: var(--p); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="form-container">
-    <h2 style="text-align:center; color:var(--p);">📝 ناساندنی بازرگانی نوێ</h2>
-    <label>ناوی بازرگان یان کۆمپانیا:</label>
-    <input type="text" id="supName" placeholder="نموونە: کۆمپانیای ئاراس">
+    <h2>👤 ناساندنی بازرگانی نوێ</h2>
     
-    <label>ژمارەی مۆبایل:</label>
-    <input type="text" id="supPhone" placeholder="0750XXXXXXX">
-    
-    <label>ناونیشان:</label>
-    <input type="text" id="supAddress" placeholder="هەولێر - پیشەسازی">
+    <div class="grid-input">
+        <div>
+            <label>ناو:</label>
+            <input type="text" id="firstName" placeholder="ناوی یەکەم">
+        </div>
+        <div>
+            <label>نازناو:</label>
+            <input type="text" id="lastName" placeholder="نازناو یان ناوی باوک">
+        </div>
+    </div>
 
-    <button class="btn-save" onclick="saveSupplier()">تۆمارکردن ✅</button>
-    <button onclick="location.href='dashboard.html'" style="width:100%; margin-top:10px; background:none; border:none; color:#7f8c8d; cursor:pointer;">پاشگەزبوونەوە</button>
+    <div class="grid-input">
+        <div>
+            <label>ژمارەی مۆبایل:</label>
+            <input type="text" id="phone" placeholder="0750XXXXXXX">
+        </div>
+        <div>
+            <label>ئیمەیل (ئارەزوومەندانە):</label>
+            <input type="email" id="email" placeholder="example@mail.com">
+        </div>
+    </div>
+
+    <label>ناونیشانی تەواو:</label>
+    <input type="text" id="address" placeholder="شار - گەڕەک - شوێنی کار">
+
+    <label>پیشە / کاتیگۆری:</label>
+    <div class="category-area">
+        <select id="jobCategory">
+            <option value="گشتی">گشتی</option>
+            <option value="خۆراک">خۆراک</option>
+            <option value="پێڵاو">پێڵاو</option>
+            <option value="کارەبایی">کارەبایی</option>
+            <option value="کۆسمێتیک">کۆسمێتیک</option>
+        </select>
+        <button class="btn-add-cat" onclick="addNewCategory()" title="زیادکردنی پیشەی نوێ">➕</button>
+    </div>
+
+    <button class="btn-save" onclick="saveSupplier()">تۆمارکردنی بازرگان ✅</button>
+    
+    <div style="text-align: center; margin-top: 15px;">
+        <a href="dashboard.html" style="color: #95a5a6; text-decoration: none; font-size: 14px;">🔙 گەڕانەوە بۆ داشبۆرد</a>
+    </div>
 </div>
 
 <script>
@@ -35,25 +72,48 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    async function saveSupplier() {
-        const name = document.getElementById('supName').value;
-        const phone = document.getElementById('supPhone').value;
-        const address = document.getElementById('supAddress').value;
+    // فەنکشن بۆ زیادکردنی پیشەی نوێ بۆ ناو لیستەکە بە شێوەی کاتی
+    function addNewCategory() {
+        const newCat = prompt("ناوی پیشە نوێیەکە بنووسە:");
+        if (newCat) {
+            const select = document.getElementById('jobCategory');
+            const option = document.createElement('option');
+            option.value = newCat;
+            option.text = newCat;
+            select.add(option);
+            select.value = newCat;
+        }
+    }
 
-        if(!name) return alert("تکایە ناو بنووسە");
+    async function saveSupplier() {
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const phone = document.getElementById('phone').value;
+        const email = document.getElementById('email').value;
+        const address = document.getElementById('address').value;
+        const category = document.getElementById('jobCategory').value;
+
+        if (!firstName || !phone) {
+            alert("تکایە ناو و ژمارەی مۆبایل بەتاڵ جێ مەهێڵە!");
+            return;
+        }
+
+        const fullName = firstName + " " + lastName;
 
         const { error } = await _supabase.from('suppliers').insert([{
-            name: name,
+            name: fullName,
             phone: phone,
+            email: email,
             address: address,
+            category: category,
             balance: 0
         }]);
 
-        if(!error) {
-            alert("بازرگان بە سەرکەوتوویی تۆمارکرا");
+        if (!error) {
+            alert("بازرگان (" + fullName + ") بە سەرکەوتوویی تۆمارکرا ✅");
             location.href = 'suppliers.html';
         } else {
-            alert("هەڵەیەک ڕوویدا: " + error.message);
+            alert("هەڵە لە تۆمارکردن: " + error.message);
         }
     }
 </script>
