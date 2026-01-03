@@ -43,7 +43,7 @@
 
         /* ڕەنگە تایبەتەکان */
         .item-add { border-top-color: #8e44ad; } 
-        .user-add { border-top-color: #607d8b; } /* ڕەنگی خۆڵەمێشی شیک بۆ بەکارهێنەر */
+        .user-add { border-top-color: #607d8b; } 
         .buy { border-top-color: #3498db; }      
         .sell { border-top-color: #2ecc71; }     
         .sup { border-top-color: #1abc9c; }      
@@ -59,13 +59,14 @@
             border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; 
             transition: 0.3s; width: 100%; max-width: 250px;
         }
+        #userWelcome { color: #f1c40f; font-weight: bold; display: block; margin-top: 8px; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1 style="font-size: 24px; margin: 0;">سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
-        <p style="opacity: 0.8; margin-top: 5px; color: white;">بەخێربێیت، کۆنترۆڵی هەموو بەشەکان لێرەوە بکە</p>
+        <span id="userWelcome">بەخێربێیت</span>
     </div>
 
     <div class="container">
@@ -139,9 +140,14 @@
     </div>
 
     <script>
+        // پشکنینی ئۆتۆنتیکەیشن و نیشاندانی ناوی بەکارهێنەر
         function checkAuth() {
             if (localStorage.getItem("rebeenAuth") !== "true") {
                 window.location.replace("login.html");
+            } else {
+                const name = localStorage.getItem("userName") || "کارمەند";
+                const pos = localStorage.getItem("userPosition") || "";
+                document.getElementById("userWelcome").innerText = "بەخێربێیت: " + name + " (" + pos + ")";
             }
         }
         checkAuth();
