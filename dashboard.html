@@ -21,7 +21,7 @@
             cursor: pointer; transition: 0.2s; text-decoration: none; color: #2c3e50;
             border-top: 6px solid #ccc; display: block;
         }
-        .card:active { transform: scale(0.95); background: #fafafa; } /* تایبەت بۆ مۆبایل */
+        .card:active { transform: scale(0.95); background: #fafafa; } 
         .icon { font-size: 40px; margin-bottom: 10px; display: block; }
         .buy { border-top-color: #3498db; }
         .sell { border-top-color: #2ecc71; }
@@ -55,7 +55,6 @@
     </div>
 
     <script>
-        // پشکنینی لۆگین لە کاتی کردنەوەی لاپەڕە
         function checkAuth() {
             const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
             if (!isAuth) {
@@ -67,12 +66,12 @@
 
         function logout() {
             // سڕینەوەی هەموو داتاکان
-            localStorage.clear(); // هەموو شتێک پاک دەکاتەوە
+            localStorage.clear(); 
             sessionStorage.clear();
             document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             
-            // گەڕانەوە بۆ لۆگین بە شێوەیەک کە نەتوانێت بە دوگمەی Back بگەڕێتەوە
-            window.location.replace("index.html");
+            // ناردنەوە بۆ لۆگین بە نیشانەی تایبەت بۆ ئەوەی لە مۆبایلەکە جێگیر بێت
+            window.location.replace("index.html#logout");
         }
 
         function navTo(page) {
