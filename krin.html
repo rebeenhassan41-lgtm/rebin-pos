@@ -47,6 +47,12 @@
                 <option value="IQD">دینار (ع.د)</option>
             </select>
         </div>
+        <div><label>جۆری کڕین</label>
+            <select id="payType">
+                <option value="Cash">نەختینە (کاش)</option>
+                <option value="Debt">بە قەرز</option>
+            </select>
+        </div>
     </div>
     <button onclick="saveInvoice()" id="saveBtn" class="btn-save">تۆمارکردن لە کۆگا ☁️</button>
 
@@ -58,11 +64,12 @@
                     <th>کاڵا</th>
                     <th>بڕ</th>
                     <th>نرخ</th>
+                    <th>جۆر</th>
                     <th>کردار</th>
                 </tr>
             </thead>
             <tbody id="listBody">
-                <tr><td colspan="5">خەریکە بار دەکرێت...</td></tr>
+                <tr><td colspan="6">خەریکە بار دەکرێت...</td></tr>
             </tbody>
         </table>
     </div>
@@ -73,14 +80,17 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // پشکنینی لۆگین بۆ مۆبایل و کۆمپیوتەر
-    const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
+    const isAuth = localStorage.getItem("rebeenAuth") === "true";
     if (!isAuth) { window.location.href = "index.html"; }
 
     async function saveInvoice() {
         const btn = document.getElementById('saveBtn');
         const itemName = document.getElementById('itemName').value;
-        const qty = document.getElementById('quantity').value;
+        const qty = parseFloat(document.getElementById('quantity').value);
+        const price = parseFloat(document.getElementById('buyPrice').value) || 0;
+        const currency = document.getElementById('curr').value;
+        const merchant = document.getElementById('merchant').value;
+        const payType = document.getElementById('payType').value;
 
         if(!itemName || qty <= 0) {
             alert("تکایە ناوی کاڵا و بڕەکەی دیاری بکە");
@@ -93,19 +103,34 @@
         const data = {
             inv_no: document.getElementById('invNo').value,
             barcode: document.getElementById('barcode').value,
-            merchant: document.getElementById('merchant').value,
+            merchant: merchant,
             item_name: itemName,
-            quantity: parseFloat(qty),
-            buy_price: parseFloat(document.getElementById('buyPrice').value) || 0,
-            currency: document.getElementById('curr').value
+            quantity: qty,
+            buy_price: price,
+            currency: currency,
+            pay_type: payType
         };
 
-        const { error } = await _supabase.from('invoices').insert([data]);
+        // ١. تۆمارکردن لە خشتەی وەسڵەکان (کۆگا)
+        const { error: invError } = await _supabase.from('invoices').insert([data]);
 
-        if (error) {
-            alert("کێشە: " + error.message);
+        if (invError) {
+            alert("کێشە لە وەسڵ: " + invError.message);
         } else {
-            alert("بە سەرکەوتوویی تۆمار کرا");
+            // ٢. ئەگەر بە قەرز بوو، بینێرە بۆ merchant_debts
+            if (payType === "Debt") {
+                const debtData = {
+                    merchant_name: merchant || "نادیار",
+                    amount_usd: (currency === "USD") ? (qty * price) : 0,
+                    amount_iqd: (currency === "IQD") ? (qty * price) : 0,
+                    items_details: `${itemName} (${qty} دانە) - وەسڵی #${data.inv_no}`
+                };
+                
+                const { error: debtError } = await _supabase.from('merchant_debts').insert([debtData]);
+                if (debtError) console.log("کێشە لە قەرز:", debtError.message);
+            }
+
+            alert("بە سەرکەوتوویی تۆمار کرا ✅");
             document.getElementById('itemName').value = "";
             document.getElementById('quantity').value = "0";
             loadInvoices();
@@ -115,11 +140,7 @@
     }
 
     async function loadInvoices() {
-        const { data, error } = await _supabase
-            .from('invoices')
-            .select('*')
-            .order('created_at', { ascending: false });
-
+        const { data, error } = await _supabase.from('invoices').select('*').order('created_at', { ascending: false });
         if (data) {
             const body = document.getElementById('listBody');
             body.innerHTML = data.map(i => `
@@ -128,6 +149,7 @@
                     <td><b>${i.item_name}</b></td>
                     <td>${i.quantity} دانە</td>
                     <td>${i.buy_price} ${i.currency}</td>
+                    <td>${i.pay_type === 'Debt' ? '⚠️ قەرز' : '💰 نەخت'}</td>
                     <td><button onclick="deleteInvoice(${i.id})" style="color:red; border:none; background:none; cursor:pointer; font-size:16px;">🗑️</button></td>
                 </tr>
             `).join('');
