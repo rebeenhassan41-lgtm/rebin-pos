@@ -2,28 +2,31 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>چوونەژوورەوە - Rebin System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>چوونەژوورەوە</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 320px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .login-box { background: white; padding: 30px; border-radius: 15px; text-align: center; width: 85%; max-width: 320px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
     </style>
 </head>
 <body>
     <div class="login-box">
         <h2>بەخێرهاتی 👋</h2>
-        <input type="password" id="passInput" placeholder="وشەی تێپەڕ بنووسە">
+        <input type="password" id="passInput" placeholder="وشەی تێپەڕ" inputmode="text">
         <button onclick="checkLogin()">چوونەژوورەوە</button>
-        <p id="msg" style="color: red; font-size: 13px;"></p>
+        <p id="msg" style="color: red;"></p>
     </div>
 
     <script>
         function checkLogin() {
             const pass = document.getElementById('passInput').value;
-            // لێرە وشەی تێپەڕ دابنێ (بۆ نموونە: 1234)
             if (pass === "rebin2024") { 
+                // پاشکەوتکردن لە هەردوو شوێنەکە بۆ دڵنیایی
                 localStorage.setItem("rebeenAuth", "true");
+                document.cookie = "rebeenAuth=true; path=/; max-age=86400"; // بۆ ماوەی ٢٤ کاتژمێر
+                
                 window.location.href = "dashboard.html";
             } else {
                 document.getElementById('msg').innerText = "وشەی تێپەڕ هەڵەیە!";
