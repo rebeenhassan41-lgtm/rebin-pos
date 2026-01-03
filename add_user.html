@@ -6,37 +6,47 @@
     <title>بەڕێوەبردنی بەکارهێنەران</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; display: flex; flex-wrap: wrap; padding: 20px; gap: 20px; direction: rtl; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); flex: 1; min-width: 320px; }
-        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        input, select { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-add { background: #27ae60; color: white; }
-        .user-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-left: 5px; }
-        .online { background-color: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
-        .offline { background-color: #95a5a6; }
-        .perm-box { font-size: 12px; background: #f9f9f9; padding: 5px; border-radius: 5px; margin-top: 5px; }
+        :root { --p: #2c3e50; --s: #3498db; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; direction: rtl; padding: 20px; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-back { background: var(--p); color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; }
+        
+        .main-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .btn-save { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        
+        .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .status-online { color: #2ecc71; font-size: 12px; font-weight: bold; }
+        .status-offline { color: #95a5a6; font-size: 12px; }
+        .delete-btn { color: #e74c3c; cursor: pointer; border: none; background: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>👤 بەکارهێنەری نوێ</h2>
-        <input type="text" id="fullName" placeholder="ناوی تەواو">
-        <input type="text" id="username" placeholder="ناوی بەکارهێنەر">
-        <input type="password" id="password" placeholder="پاسوۆرد">
-        <input type="tel" id="phone" placeholder="ژمارەی مۆبایل">
-        <select id="position">
-            <option value="بەڕێوەبەر">بەڕێوەبەر</option>
-            <option value="کارمەند">کارمەند</option>
-        </select>
-        <button class="btn btn-add" onclick="createUser()">تۆمارکردن ✅</button>
+    <div class="nav-bar">
+        <a href="dashboard.html" class="btn-back">🔙 گەڕانەوە بۆ داشبۆرد</a>
+        <h2 style="margin:0;">بەڕێوەبردنی بەکارهێنەران</h2>
     </div>
 
-    <div class="card">
-        <h2>👥 لیستی بەکارهێنەران</h2>
-        <div id="userList">خەریکی بارکردنە...</div>
+    <div class="main-grid">
+        <div class="card">
+            <h3>👤 زیادکردنی نوێ</h3>
+            <input type="text" id="fullName" placeholder="ناوی تەواو">
+            <input type="text" id="username" placeholder="ناوی بەکارهێنەر (username)">
+            <input type="password" id="password" placeholder="پاسوۆرد">
+            <select id="position">
+                <option value="بەڕێوەبەر">بەڕێوەبەر (Admin)</option>
+                <option value="کارمەند">کارمەند (Staff)</option>
+            </select>
+            <button class="btn-save" onclick="createUser()">تۆمارکردن ✅</button>
+        </div>
+
+        <div class="card">
+            <h3>👥 بەکارهێنەرە تۆمارکراوەکان</h3>
+            <div id="userList">خەریکی بارکردنە...</div>
+        </div>
     </div>
 
 <script>
@@ -52,50 +62,61 @@
         listDiv.innerHTML = '';
 
         data.forEach(user => {
-            // پشکنینی ئۆنلاین بوون (ئەگەر کەمتر لە ٥ خولەک پێش ئێستا چالاک بووبێت)
-            const lastSeen = new Date(user.last_seen);
-            const isOnline = (new Date() - lastSeen) < 300000; 
+            // پشکنینی ئۆنلاین (ئەگەر لە ٥ خولەکی ڕابردوو لۆگینی کردبێت)
+            const lastSeen = user.last_seen ? new Date(user.last_seen) : new Date(0);
+            const isOnline = (new Date() - lastSeen) < 300000;
 
             listDiv.innerHTML += `
-                <div class="user-item">
+                <div class="user-list-item">
                     <div>
-                        <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
-                        <strong>${user.full_name}</strong> (${user.position})
-                        <div class="perm-box">
-                            مۆڵەت: ${user.permissions?.can_sell ? 'فرۆشتن ✅' : 'فرۆشتن ❌'} | 
-                            ${user.permissions?.can_report ? 'ڕاپۆرت ✅' : 'ڕاپۆرت ❌'}
-                        </div>
+                        <strong>${user.full_name}</strong> <br>
+                        <small>${user.position}</small> | 
+                        <span class="${isOnline ? 'status-online' : 'status-offline'}">
+                            ${isOnline ? '● ئۆنلاین' : '● ئۆفلاین'}
+                        </span>
                     </div>
-                    <button onclick="deleteUser('${user.id}')" style="color:red; border:none; background:none; cursor:pointer;">سڕینەوە</button>
+                    <button class="delete-btn" onclick="deleteUser('${user.id}')">سڕینەوە</button>
                 </div>
             `;
         });
     }
 
     async function createUser() {
-        const name = document.getElementById('fullName').value;
-        const user = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
+        const name = document.getElementById('fullName').value.trim();
+        const user = document.getElementById('username').value.trim();
+        const pass = document.getElementById('password').value.trim();
         const pos = document.getElementById('position').value;
 
+        if(!name || !user || !pass) return alert("تکایە خانەکان پڕ بکەرەوە");
+
         const { error } = await _supabase.from('system_users').insert([{
-            full_name: name, username: user, password: pass, position: pos,
-            permissions: { can_sell: true, can_buy: true, can_report: (pos === 'بەڕێوەبەر') }
+            full_name: name,
+            username: user,
+            password: pass,
+            position: pos,
+            last_seen: new Date().toISOString()
         }]);
 
-        if (!error) { alert("دروستکرا!"); fetchUsers(); }
-    }
-
-    async function deleteUser(id) {
-        if(confirm('دڵنیای لە سڕینەوەی؟')) {
-            await _supabase.from('system_users').delete().eq('id', id);
+        if (error) {
+            alert("هەڵە: " + error.message);
+        } else {
+            alert("بەکارهێنەر دروستکرا ✅");
+            document.getElementById('fullName').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
             fetchUsers();
         }
     }
 
-    // نوێکردنەوەی لیستەکە هەموو ١٠ چرکەیەک بۆ ئۆنلاین بوون
+    async function deleteUser(id) {
+        if(confirm("دڵنیای لە سڕینەوە؟")) {
+            const { error } = await _supabase.from('system_users').delete().eq('id', id);
+            if(!error) fetchUsers();
+        }
+    }
+
+    // بارکردنی سەرەتایی
     fetchUsers();
-    setInterval(fetchUsers, 10000);
 </script>
 </body>
 </html>
