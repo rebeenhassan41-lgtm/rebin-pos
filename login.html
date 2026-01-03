@@ -4,38 +4,48 @@ async function login() {
     const btn = document.getElementById('loginBtn');
     const err = document.getElementById('errorMsg');
 
-    if(!user || !pass) return;
+    // ئەگەر خانەکان بەتاڵ بوون هیچی نەکات
+    if(!user || !pass) {
+        err.innerText = "تکایە ناو و پاسوۆرد بنووسە";
+        err.style.display = "block";
+        return;
+    }
 
     btn.disabled = true;
     btn.innerText = "خەریکی پشکنینە...";
     err.style.display = "none";
 
     try {
-        // گەڕان بەدوای یوسەردا
+        // گەڕان لەناو داتابەیس بەپێی ناوی بەکارهێنەر و پاسوۆرد
         const { data, error } = await _supabase
             .from('system_users')
-            .select('*')
+            .select('full_name, position, username, password')
             .eq('username', user)
-            .eq('password', pass); // لێرە maybeSingle مان لادا بۆ پشکنینی وردتر
+            .eq('password', pass);
 
         if (error) throw error;
 
+        // پشکنینی ئەوەی ئایا هیچ ئەنجامێک گەڕاوەتەوە؟
         if (data && data.length > 0) {
             const userData = data[0];
+            
+            // سەیڤکردنی زانیارییەکان لە ناو وێبگەڕ (Local Storage)
             localStorage.setItem("rebeenAuth", "true");
             localStorage.setItem("userName", userData.full_name);
             localStorage.setItem("userPosition", userData.position);
             
+            // گواستنەوە بۆ داشبۆرد
             window.location.replace("dashboard.html");
         } else {
-            err.innerText = "ناو یان پاسوۆرد هەڵەیە!";
+            // ئەگەر ناو یان پاسوۆردەکە لە داتابەیس نەبوو
+            err.innerText = "ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە! ❌";
             err.style.display = "block";
             btn.disabled = false;
             btn.innerText = "چوونە ژوورەوە";
         }
     } catch (e) {
-        console.error(e);
-        err.innerText = "کێشەی پەیوەندی: " + e.message;
+        console.error("Login Error:", e);
+        err.innerText = "هەڵە لە پەیوەندی: " + e.message;
         err.style.display = "block";
         btn.disabled = false;
         btn.innerText = "چوونە ژوورەوە";
