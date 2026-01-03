@@ -2,80 +2,54 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ڕاپۆرتی پێشکەوتوو - Rebin System</title>
+    <title>ڕاپۆرتی گشتی ڕێبین</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #e67e22; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; --blue: #3498db; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; margin: 0; }
+        :root { --p: #2c3e50; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
         .container { max-width: 1100px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        
-        /* کارتەکانی ئامار */
-        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; text-align: center; border-bottom: 5px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .stat-card h3 { margin: 0; font-size: 14px; color: #666; }
-        .stat-card .amount { font-size: 20px; font-weight: bold; margin-top: 10px; display: block; }
-        
-        .filter-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .filter-bar select, .filter-bar button { padding: 10px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; }
-        .btn-search { background: var(--p); color: white; border: none; }
-        
-        table { width: 100%; background: white; border-collapse: collapse; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .grid-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card h3 { font-size: 14px; margin: 0; color: #666; }
+        .amount { font-size: 20px; font-weight: bold; display: block; margin-top: 10px; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
         th { background: var(--p); color: white; padding: 12px; }
         td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
-        
-        .profit-positive { color: var(--success); font-weight: bold; }
-        .profit-negative { color: var(--danger); font-weight: bold; }
+        .buy-row { border-right: 5px solid var(--danger); }
+        .sell-row { border-right: 5px solid var(--success); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h2 style="margin:0;">📊 ڕاپۆرتی دارایی و قازانج</h2>
-        <button onclick="location.href='dashboard.html'" style="padding:10px 20px; border-radius:8px; border:none; background:var(--danger); color:white; cursor:pointer;">🏠 گەڕانەوە</button>
-    </div>
-
-    <div class="filter-bar">
-        <label>ماوەی ڕاپۆرت:</label>
-        <select id="timeRange" onchange="loadFullReport()">
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+        <h2>📊 ڕاپۆرتی چالاکییەکان</h2>
+        <select id="timeRange" onchange="loadData()" style="padding:10px; border-radius:8px;">
             <option value="today">ئەمڕۆ</option>
             <option value="week">ئەم هەفتەیە</option>
             <option value="month">ئەم مانگە</option>
             <option value="year">ئەم ساڵ</option>
         </select>
-        <button class="btn-search" onclick="loadFullReport()">🔄 نوێکردنەوە</button>
     </div>
 
     <div class="grid-stats">
-        <div class="stat-card" style="border-color: var(--blue);">
-            <h3>کۆی فرۆشتن</h3>
-            <span class="amount" id="sumSales">0 $</span>
-        </div>
-        <div class="stat-card" style="border-color: var(--danger);">
-            <h3>کۆی کڕین</h3>
-            <span class="amount" id="sumPurchases">0 $</span>
-        </div>
-        <div class="stat-card" style="border-color: var(--success);" id="profitCard">
-            <h3>قازانجی مەزندەکراو</h3>
-            <span class="amount" id="sumProfit">0 $</span>
-        </div>
+        <div class="card"><h3>کۆی فرۆشتن</h3><span class="amount" id="tSales" style="color:var(--success);">0 $</span></div>
+        <div class="card"><h3>کۆی کڕین</h3><span class="amount" id="tPurchases" style="color:var(--danger);">0 $</span></div>
+        <div class="card"><h3>قازانجی فرۆشتن</h3><span class="amount" id="tProfit" style="color:blue;">0 $</span></div>
+        <div class="card"><h3>داهاتی پوختە</h3><span class="amount" id="tNet" style="color:var(--p);">0 $</span></div>
     </div>
 
     <table>
         <thead>
             <tr>
                 <th>بەروار</th>
-                <th>کاڵا</th>
-                <th>بڕ</th>
-                <th>کڕین (یەکە)</th>
-                <th>فرۆشتن (یەکە)</th>
-                <th>قازانج</th>
+                <th>جۆر</th>
+                <th>کڕیار/بازرگان</th>
+                <th>کۆی گشتی ($)</th>
+                <th>شێواز</th>
             </tr>
         </thead>
-        <tbody id="reportTbody">
-            </tbody>
+        <tbody id="tbody"></tbody>
     </table>
 </div>
 
@@ -84,60 +58,38 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    async function loadFullReport() {
+    async function loadData() {
         const range = document.getElementById('timeRange').value;
-        const tbody = document.getElementById('reportTbody');
-        tbody.innerHTML = "<tr><td colspan='6'>خەریکە حسابات دەکرێت...</td></tr>";
+        let start = new Date();
+        if(range === 'today') start.setHours(0,0,0,0);
+        else if(range === 'week') start.setDate(start.getDate() - 7);
+        else if(range === 'month') start.setMonth(start.getMonth() - 1);
+        else start.setFullYear(start.getFullYear() - 1);
 
-        let startDate = new Date();
-        if (range === 'today') startDate.setHours(0,0,0,0);
-        else if (range === 'week') startDate.setDate(startDate.getDate() - 7);
-        else if (range === 'month') startDate.setMonth(startDate.getMonth() - 1);
-        else if (range === 'year') startDate.setFullYear(startDate.getFullYear() - 1);
+        const { data: sales } = await _supabase.from('sales').select('*').gte('created_at', start.toISOString());
+        const { data: buys } = await _supabase.from('purchases').select('*').gte('created_at', start.toISOString());
 
-        const startISO = startDate.toISOString();
-
-        // هێنانی داتاکانی فرۆشتن (sales) - پێویستە items_json یان خشتەی وردەکاری هەبێت
-        const { data: sales, error } = await _supabase.from('sale_details')
-            .select('*')
-            .gte('created_at', startISO);
-
-        if (error) return alert("هەڵە لە هێنانی داتای فرۆشتن");
-
-        let totalSales = 0;
-        let totalCost = 0;
+        let ts = 0, tp = 0, tprof = 0;
         let html = "";
 
-        sales.forEach(sale => {
-            totalSales += sale.total_usd;
-            
-            // گریمانە دەکەین کاڵاکان لەناو items_json دانراون
-            const items = sale.items_json || [];
-            items.forEach(item => {
-                // لێرە قازانج حساب دەکەین: (نرخی فرۆشتن - نرخی کڕین) * بڕ
-                // تێبینی: دەبێت لە کاتی فرۆشتن نرخی کڕینیش (cost_price) سەیڤ بکەیت
-                const cost = item.cost_price || 0; 
-                const profit = (item.price - cost) * (item.cQty + item.pQty);
-                totalCost += (cost * (item.cQty + item.pQty));
-
-                html += `<tr>
-                    <td>${new Date(sale.created_at).toLocaleDateString()}</td>
-                    <td>${item.name}</td>
-                    <td>${item.cQty + item.pQty}</td>
-                    <td>${cost} $</td>
-                    <td>${item.price} $</td>
-                    <td class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">${profit.toFixed(2)} $</td>
-                </tr>`;
-            });
+        if(buys) buys.forEach(b => {
+            tp += (b.total_price_usd || 0);
+            html += `<tr class="buy-row"><td>${new Date(b.created_at).toLocaleDateString()}</td><td>📥 کڕین</td><td>${b.supplier_name}</td><td>${b.total_price_usd}</td><td>${b.is_debt ? 'قەرز' : 'نەقد'}</td></tr>`;
         });
 
-        document.getElementById('sumSales').innerText = totalSales.toFixed(2) + " $";
-        // لێرە کڕینە گشتییەکانیش دەتوانیت لێ زیاد بکەیت
-        document.getElementById('sumProfit').innerText = (totalSales - totalCost).toFixed(2) + " $";
-        tbody.innerHTML = html || "<tr><td colspan='6'>هیچ داتایەک نییە</td></tr>";
-    }
+        if(sales) sales.forEach(s => {
+            ts += s.total_usd;
+            tprof += (s.total_usd - s.total_cost_usd);
+            html += `<tr class="sell-row"><td>${new Date(s.created_at).toLocaleDateString()}</td><td>💰 فرۆشتن</td><td>${s.customer_name}</td><td>${s.total_usd}</td><td>${s.pay_method === 'Cash' ? 'نەقد' : 'قەرز'}</td></tr>`;
+        });
 
-    window.onload = loadFullReport;
+        document.getElementById('tSales').innerText = ts.toFixed(2) + " $";
+        document.getElementById('tPurchases').innerText = tp.toFixed(2) + " $";
+        document.getElementById('tProfit').innerText = tprof.toFixed(2) + " $";
+        document.getElementById('tNet').innerText = (ts - tp).toFixed(2) + " $";
+        document.getElementById('tbody').innerHTML = html;
+    }
+    window.onload = loadData;
 </script>
 </body>
 </html>
