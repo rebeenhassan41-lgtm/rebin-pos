@@ -1,12 +1,14 @@
 async function login() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
+    const userField = document.getElementById('username');
+    const passField = document.getElementById('password');
     const btn = document.getElementById('loginBtn');
     const err = document.getElementById('errorMsg');
 
-    // ئەگەر خانەکان بەتاڵ بوون هیچی نەکات
-    if(!user || !pass) {
-        err.innerText = "تکایە ناو و پاسوۆرد بنووسە";
+    const userValue = userField.value.trim();
+    const passValue = passField.value.trim();
+
+    if (!userValue || !passValue) {
+        err.innerText = "تکایە ناو و پاسوۆرد بنووسە!";
         err.style.display = "block";
         return;
     }
@@ -16,37 +18,39 @@ async function login() {
     err.style.display = "none";
 
     try {
-        // گەڕان لەناو داتابەیس بەپێی ناوی بەکارهێنەر و پاسوۆرد
+        // گەڕان بەدوای یوسەردا
         const { data, error } = await _supabase
             .from('system_users')
-            .select('full_name, position, username, password')
-            .eq('username', user)
-            .eq('password', pass);
+            .select('*')
+            .eq('username', userValue);
 
-        if (error) throw error;
+        if (error) {
+            console.error("Supabase Error:", error);
+            throw new Error("کێشە لە پەیوەندی داتابەیس هەیە");
+        }
 
-        // پشکنینی ئەوەی ئایا هیچ ئەنجامێک گەڕاوەتەوە؟
         if (data && data.length > 0) {
-            const userData = data[0];
-            
-            // سەیڤکردنی زانیارییەکان لە ناو وێبگەڕ (Local Storage)
-            localStorage.setItem("rebeenAuth", "true");
-            localStorage.setItem("userName", userData.full_name);
-            localStorage.setItem("userPosition", userData.position);
-            
-            // گواستنەوە بۆ داشبۆرد
-            window.location.replace("dashboard.html");
+            const dbUser = data[0];
+
+            // بەراوردکردنی پاسوۆرد (دڵنیابەوە کە لە داتابەیس ستوونی password هەمان ناوە)
+            if (String(dbUser.password) === String(passValue)) {
+                localStorage.setItem("rebeenAuth", "true");
+                localStorage.setItem("userName", dbUser.full_name);
+                localStorage.setItem("userPosition", dbUser.position);
+                
+                window.location.replace("dashboard.html");
+            } else {
+                err.innerText = "پاسوۆردەکە هەڵەیە! ❌";
+                err.style.display = "block";
+            }
         } else {
-            // ئەگەر ناو یان پاسوۆردەکە لە داتابەیس نەبوو
-            err.innerText = "ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە! ❌";
+            err.innerText = "ئەم ناوە ( " + userValue + " ) بوونی نییە! ❌";
             err.style.display = "block";
-            btn.disabled = false;
-            btn.innerText = "چوونە ژوورەوە";
         }
     } catch (e) {
-        console.error("Login Error:", e);
-        err.innerText = "هەڵە لە پەیوەندی: " + e.message;
+        err.innerText = "هەڵە: " + e.message;
         err.style.display = "block";
+    } finally {
         btn.disabled = false;
         btn.innerText = "چوونە ژوورەوە";
     }
