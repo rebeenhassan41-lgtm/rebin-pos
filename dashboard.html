@@ -41,15 +41,16 @@
         h2 { margin: 10px 0 0; font-size: 16px; font-weight: bold; }
         p { font-size: 11px; color: #7f8c8d; margin: 5px 0 0; }
 
-        /* ڕەنگەکان */
-        .buy { border-top-color: #3498db; }      /* کڕین */
-        .sell { border-top-color: #2ecc71; }     /* فرۆشتن */
-        .sup { border-top-color: #1abc9c; }      /* بازرگانان */
-        .add-sup { border-top-color: #f39c12; }  /* ناساندنی بازرگان */
-        .inv { border-top-color: #f1c40f; }      /* کۆگا */
-        .rep { border-top-color: #9b59b6; }      /* ڕاپۆرت */
-        .rec { border-top-color: #e67e22; }      /* قەرزی کڕیار */
-        .pay { border-top-color: #e74c3c; }      /* قەرزی بازرگان */
+        /* ڕەنگە نوێکراوەکان */
+        .item-add { border-top-color: #8e44ad; } /* ناساندنی کەرەستە */
+        .buy { border-top-color: #3498db; }      
+        .sell { border-top-color: #2ecc71; }     
+        .sup { border-top-color: #1abc9c; }      
+        .add-sup { border-top-color: #f39c12; }  
+        .inv { border-top-color: #f1c40f; }      
+        .rep { border-top-color: #9b59b6; }      
+        .rec { border-top-color: #e67e22; }      
+        .pay { border-top-color: #e74c3c; }      
 
         .logout-section { text-align: center; margin-top: 40px; }
         .logout-btn { 
@@ -68,10 +69,17 @@
 
     <div class="container">
         <div class="grid-container">
+            
+            <div onclick="navTo('add_item.html')" class="card item-add">
+                <span class="icon">📦</span>
+                <h2>ناساندنی کەرەستە</h2>
+                <p>تۆمارکردنی کاڵای نوێ</p>
+            </div>
+
             <div onclick="navTo('krin.html')" class="card buy">
                 <span class="icon">📥</span>
                 <h2>کڕین</h2>
-                <p>داخڵکردنی کاڵا</p>
+                <p>داخڵکردنی بڕی کاڵا</p>
             </div>
             
             <div onclick="navTo('sales.html')" class="card sell">
@@ -93,7 +101,7 @@
             </div>
 
             <div onclick="navTo('inventory.html')" class="card inv">
-                <span class="icon">📦</span>
+                <span class="icon">🏬</span>
                 <h2>کۆگا</h2>
                 <p>بینینی مەخزەن</p>
             </div>
