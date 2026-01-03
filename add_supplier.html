@@ -2,68 +2,75 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ناساندنی بازرگان | ڕێبین سیستم</title>
+    <title>بەڕێوەبردنی بازرگانان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #1abc9c; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
-        .form-container { max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .grid-input { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: var(--p); font-size: 14px; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; }
-        .category-area { display: flex; gap: 10px; align-items: flex-end; }
-        .btn-add-cat { background: #eee; border: 1px solid #ddd; padding: 10px; border-radius: 8px; cursor: pointer; }
-        .btn-save { width: 100%; padding: 15px; background: var(--s); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 25px; transition: 0.3s; }
-        .btn-save:hover { background: #16a085; transform: translateY(-2px); }
-        h2 { text-align: center; color: var(--p); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        :root { --p: #2c3e50; --s: #1abc9c; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); direction: rtl; margin: 0; padding: 20px; }
+        
+        .main-wrapper { display: grid; grid-template-columns: 400px 1fr; gap: 20px; max-width: 1400px; margin: auto; }
+        
+        /* بەشی فۆرمەکە (لای ڕاست) */
+        .form-section { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: fit-content; position: sticky; top: 20px; }
+        
+        /* بەشی لیستەکە (لای چەپ) */
+        .list-section { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); min-height: 80vh; }
+        
+        input, select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn-save { width: 100%; padding: 12px; background: var(--s); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        /* دیزاینی کارتەکانی لیستەکە */
+        .supplier-file { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px;
+            transition: 0.3s; cursor: pointer; border-right: 5px solid var(--s);
+        }
+        .supplier-file:hover { background: #f9f9f9; transform: translateX(-5px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .sup-info h4 { margin: 0; color: var(--p); }
+        .sup-info p { margin: 5px 0 0; font-size: 12px; color: #7f8c8d; }
+        
+        .search-box { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; font-size: 14px; }
+        .badge { background: #e8f8f5; color: #1abc9c; padding: 3px 8px; border-radius: 5px; font-size: 11px; }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h2>👤 ناساندنی بازرگانی نوێ</h2>
-    
-    <div class="grid-input">
-        <div>
-            <label>ناو:</label>
-            <input type="text" id="firstName" placeholder="ناوی یەکەم">
+<div style="display:flex; justify-content:space-between; align-items:center; max-width:1400px; margin: 0 auto 20px auto;">
+    <h2>🗂️ بەڕێوەبردنی فایل و ناساندنی بازرگانان</h2>
+    <button onclick="location.href='dashboard.html'" style="padding:10px 20px; border-radius:8px; border:none; background:var(--p); color:white; cursor:pointer;">🏠 گەڕانەوە</button>
+</div>
+
+<div class="main-wrapper">
+    <div class="form-section">
+        <h3 style="margin-top:0;">📝 ناساندنی نوێ</h3>
+        <label>ناوی سیانەیی:</label>
+        <input type="text" id="supName" placeholder="ناو و نازناو بنووسە">
+        
+        <label>ژمارەی مۆبایل:</label>
+        <input type="text" id="supPhone" placeholder="0750XXXXXXX">
+        
+        <label>پیشە / کاتیگۆری:</label>
+        <div style="display:flex; gap:5px;">
+            <select id="supCat">
+                <option value="گشتی">گشتی</option>
+                <option value="خۆراک">خۆراک</option>
+                <option value="پێڵاو">پێڵاو</option>
+                <option value="کارەبایی">کارەبایی</option>
+            </select>
+            <button onclick="addCat()" style="padding:0 10px; border-radius:8px; border:1px solid #ddd;">➕</button>
         </div>
-        <div>
-            <label>نازناو:</label>
-            <input type="text" id="lastName" placeholder="نازناو یان ناوی باوک">
-        </div>
+
+        <label>ناونیشان:</label>
+        <input type="text" id="supAddr" placeholder="شار - گەڕەک">
+
+        <button class="btn-save" onclick="saveSupplier()">تۆمارکردن لە لیست ✅</button>
     </div>
 
-    <div class="grid-input">
-        <div>
-            <label>ژمارەی مۆبایل:</label>
-            <input type="text" id="phone" placeholder="0750XXXXXXX">
+    <div class="list-section">
+        <input type="text" id="searchSup" class="search-box" placeholder="🔍 گەڕان بەپێی ناو یان مۆبایل..." oninput="filterSuppliers()">
+        <div id="supListArea">
+            <p style="text-align:center; color:#999;">خەریکە بازرگانەکان دەهێنرێن...</p>
         </div>
-        <div>
-            <label>ئیمەیل (ئارەزوومەندانە):</label>
-            <input type="email" id="email" placeholder="example@mail.com">
-        </div>
-    </div>
-
-    <label>ناونیشانی تەواو:</label>
-    <input type="text" id="address" placeholder="شار - گەڕەک - شوێنی کار">
-
-    <label>پیشە / کاتیگۆری:</label>
-    <div class="category-area">
-        <select id="jobCategory">
-            <option value="گشتی">گشتی</option>
-            <option value="خۆراک">خۆراک</option>
-            <option value="پێڵاو">پێڵاو</option>
-            <option value="کارەبایی">کارەبایی</option>
-            <option value="کۆسمێتیک">کۆسمێتیک</option>
-        </select>
-        <button class="btn-add-cat" onclick="addNewCategory()" title="زیادکردنی پیشەی نوێ">➕</button>
-    </div>
-
-    <button class="btn-save" onclick="saveSupplier()">تۆمارکردنی بازرگان ✅</button>
-    
-    <div style="text-align: center; margin-top: 15px;">
-        <a href="dashboard.html" style="color: #95a5a6; text-decoration: none; font-size: 14px;">🔙 گەڕانەوە بۆ داشبۆرد</a>
     </div>
 </div>
 
@@ -72,50 +79,80 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // فەنکشن بۆ زیادکردنی پیشەی نوێ بۆ ناو لیستەکە بە شێوەی کاتی
-    function addNewCategory() {
-        const newCat = prompt("ناوی پیشە نوێیەکە بنووسە:");
-        if (newCat) {
-            const select = document.getElementById('jobCategory');
-            const option = document.createElement('option');
-            option.value = newCat;
-            option.text = newCat;
-            select.add(option);
-            select.value = newCat;
+    let allSuppliers = [];
+
+    // هێنانی داتا لە دروستبوونی لاپەڕەکە
+    async function fetchSuppliers() {
+        const { data, error } = await _supabase.from('suppliers').select('*').order('name', { ascending: true });
+        if (!error) {
+            allSuppliers = data;
+            renderList(data);
         }
+    }
+
+    function renderList(list) {
+        const area = document.getElementById('supListArea');
+        if (list.length === 0) {
+            area.innerHTML = "<p style='text-align:center; color:#999;'>هیچ بازرگانێک نەدۆزرایەوە</p>";
+            return;
+        }
+        area.innerHTML = list.map(s => `
+            <div class="supplier-file" onclick="goToProfile('${s.name}')">
+                <div class="sup-info">
+                    <h4>${s.name}</h4>
+                    <p>📞 ${s.phone || 'بێ ژمارە'} | 📍 ${s.address || 'بێ ناونیشان'}</p>
+                </div>
+                <div>
+                    <span class="badge">${s.category || 'گشتی'}</span>
+                    <span style="color:#ccc; margin-right:10px;">◀</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterSuppliers() {
+        const term = document.getElementById('searchSup').value.toLowerCase();
+        const filtered = allSuppliers.filter(s => 
+            s.name.toLowerCase().includes(term) || 
+            (s.phone && s.phone.includes(term))
+        );
+        renderList(filtered);
+    }
+
+    function goToProfile(name) {
+        // ناردنی ناوەکە بۆ لاپەڕەی پڕۆفایل لە ڕێگەی URL
+        window.location.href = `suppliers.html?name=${encodeURIComponent(name)}`;
     }
 
     async function saveSupplier() {
-        const firstName = document.getElementById('firstName').value;
-        const lastName = document.getElementById('lastName').value;
-        const phone = document.getElementById('phone').value;
-        const email = document.getElementById('email').value;
-        const address = document.getElementById('address').value;
-        const category = document.getElementById('jobCategory').value;
+        const name = document.getElementById('supName').value;
+        const phone = document.getElementById('supPhone').value;
+        const cat = document.getElementById('supCat').value;
+        const addr = document.getElementById('supAddr').value;
 
-        if (!firstName || !phone) {
-            alert("تکایە ناو و ژمارەی مۆبایل بەتاڵ جێ مەهێڵە!");
-            return;
-        }
-
-        const fullName = firstName + " " + lastName;
+        if (!name) return alert("تکایە ناو بنووسە");
 
         const { error } = await _supabase.from('suppliers').insert([{
-            name: fullName,
-            phone: phone,
-            email: email,
-            address: address,
-            category: category,
-            balance: 0
+            name: name, phone: phone, category: cat, address: addr, balance: 0
         }]);
 
         if (!error) {
-            alert("بازرگان (" + fullName + ") بە سەرکەوتوویی تۆمارکرا ✅");
-            location.href = 'suppliers.html';
-        } else {
-            alert("هەڵە لە تۆمارکردن: " + error.message);
+            alert("بازرگان زیادکرا");
+            location.reload();
         }
     }
+
+    function addCat() {
+        const c = prompt("پیشەی نوێ:");
+        if(c) {
+            const sel = document.getElementById('supCat');
+            const opt = document.createElement('option');
+            opt.text = c; opt.value = c;
+            sel.add(opt); sel.value = c;
+        }
+    }
+
+    window.onload = fetchSuppliers;
 </script>
 </body>
 </html>
