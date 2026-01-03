@@ -41,8 +41,9 @@
         h2 { margin: 10px 0 0; font-size: 16px; font-weight: bold; }
         p { font-size: 11px; color: #7f8c8d; margin: 5px 0 0; }
 
-        /* ڕەنگە نوێکراوەکان */
-        .item-add { border-top-color: #8e44ad; } /* ناساندنی کەرەستە */
+        /* ڕەنگە تایبەتەکان */
+        .item-add { border-top-color: #8e44ad; } 
+        .user-add { border-top-color: #607d8b; } /* ڕەنگی خۆڵەمێشی شیک بۆ بەکارهێنەر */
         .buy { border-top-color: #3498db; }      
         .sell { border-top-color: #2ecc71; }     
         .sup { border-top-color: #1abc9c; }      
@@ -64,7 +65,7 @@
 
     <div class="header">
         <h1 style="font-size: 24px; margin: 0;">سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
-        <p style="opacity: 0.8; margin-top: 5px; color: white;">کۆنترۆڵی تەواوی کارەکانت لێرەوە بکە</p>
+        <p style="opacity: 0.8; margin-top: 5px; color: white;">بەخێربێیت، کۆنترۆڵی هەموو بەشەکان لێرەوە بکە</p>
     </div>
 
     <div class="container">
@@ -76,16 +77,28 @@
                 <p>تۆمارکردنی کاڵای نوێ</p>
             </div>
 
+            <div onclick="navTo('add_user.html')" class="card user-add">
+                <span class="icon">👤</span>
+                <h2>زیادکردنی بەکارهێنەر</h2>
+                <p>دروستکردنی ئەکاونت</p>
+            </div>
+
+            <div onclick="navTo('sales.html')" class="card sell">
+                <span class="icon">💰</span>
+                <h2>فرۆشتن</h2>
+                <p>وەسڵی نوێ</p>
+            </div>
+
             <div onclick="navTo('krin.html')" class="card buy">
                 <span class="icon">📥</span>
                 <h2>کڕین</h2>
                 <p>داخڵکردنی بڕی کاڵا</p>
             </div>
-            
-            <div onclick="navTo('sales.html')" class="card sell">
-                <span class="icon">💰</span>
-                <h2>فرۆشتن</h2>
-                <p>وەسڵی نوێ</p>
+
+            <div onclick="navTo('inventory.html')" class="card inv">
+                <span class="icon">🏬</span>
+                <h2>کۆگا</h2>
+                <p>بینینی مەخزەن</p>
             </div>
 
             <div onclick="navTo('add_supplier.html')" class="card add-sup">
@@ -98,12 +111,6 @@
                 <span class="icon">👥</span>
                 <h2>پڕۆفایلی بازرگانان</h2>
                 <p>کەشف حیساب</p>
-            </div>
-
-            <div onclick="navTo('inventory.html')" class="card inv">
-                <span class="icon">🏬</span>
-                <h2>کۆگا</h2>
-                <p>بینینی مەخزەن</p>
             </div>
 
             <div onclick="navTo('report.html')" class="card rep">
@@ -123,6 +130,7 @@
                 <h2>قەرزی بازرگان</h2>
                 <p>ئەو پارەیەی لەسەرتە</p>
             </div>
+
         </div>
         
         <div class="logout-section">
