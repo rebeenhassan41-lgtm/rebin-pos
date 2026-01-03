@@ -1,1 +1,61 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ناساندنی بازرگانی نوێ</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --p: #2c3e50; --s: #1abc9c; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
+        .form-container { max-width: 500px; margin: 50px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn-save { width: 100%; padding: 15px; background: var(--s); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .btn-save:hover { background: #16a085; }
+    </style>
+</head>
+<body>
 
+<div class="form-container">
+    <h2 style="text-align:center; color:var(--p);">📝 ناساندنی بازرگانی نوێ</h2>
+    <label>ناوی بازرگان یان کۆمپانیا:</label>
+    <input type="text" id="supName" placeholder="نموونە: کۆمپانیای ئاراس">
+    
+    <label>ژمارەی مۆبایل:</label>
+    <input type="text" id="supPhone" placeholder="0750XXXXXXX">
+    
+    <label>ناونیشان:</label>
+    <input type="text" id="supAddress" placeholder="هەولێر - پیشەسازی">
+
+    <button class="btn-save" onclick="saveSupplier()">تۆمارکردن ✅</button>
+    <button onclick="location.href='dashboard.html'" style="width:100%; margin-top:10px; background:none; border:none; color:#7f8c8d; cursor:pointer;">پاشگەزبوونەوە</button>
+</div>
+
+<script>
+    const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    async function saveSupplier() {
+        const name = document.getElementById('supName').value;
+        const phone = document.getElementById('supPhone').value;
+        const address = document.getElementById('supAddress').value;
+
+        if(!name) return alert("تکایە ناو بنووسە");
+
+        const { error } = await _supabase.from('suppliers').insert([{
+            name: name,
+            phone: phone,
+            address: address,
+            balance: 0
+        }]);
+
+        if(!error) {
+            alert("بازرگان بە سەرکەوتوویی تۆمارکرا");
+            location.href = 'suppliers.html';
+        } else {
+            alert("هەڵەیەک ڕوویدا: " + error.message);
+        }
+    }
+</script>
+</body>
+</html>
