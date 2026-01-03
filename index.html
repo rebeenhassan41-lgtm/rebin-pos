@@ -22,6 +22,25 @@
 </div>
 
 <script>
+    // پشکنینی ڕاستەوخۆ لە کاتی بارکردنی لاپەڕە بۆ ڕێگری لە Cache
+    (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isLogout = window.location.hash === "#logout" || urlParams.has('logout');
+
+        if (isLogout) {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            // پاککردنەوەی ناونیشانی لاپەڕەکە
+            history.replaceState(null, null, window.location.pathname);
+        } else {
+            // ئەگەر لۆگ ئاوت نەبوو و داتای تێدا بوو، یەکسەر بڕۆ داشبۆرد
+            if (localStorage.getItem("rebeenAuth") === "true") {
+                window.location.replace("dashboard.html");
+            }
+        }
+    })();
+
     function checkPin() {
         const pin = document.getElementById('pinCode').value;
         if (pin === "1234" || pin === "rebeen") {
@@ -31,20 +50,6 @@
         } else {
             document.getElementById('msg').style.color = "red";
             document.getElementById('msg').innerText = "کۆدەکە هەڵەیە!";
-        }
-    }
-
-    window.onload = function() {
-        // ئەگەر بە لۆگ ئاوت هاتبوو، هەموو داتاکان ڕەش بکەرەوە
-        if (window.location.hash === "#logout") {
-            localStorage.removeItem("rebeenAuth");
-            document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            history.replaceState(null, null, window.location.pathname);
-            return;
-        }
-        // ئەگەر پێشتر داخل بوو، یەکسەر بڕۆ داشبۆرد
-        if (localStorage.getItem("rebeenAuth") === "true") {
-            window.location.replace("dashboard.html");
         }
     }
 </script>
