@@ -42,7 +42,7 @@
     <div class="container">
         <div class="grid-container">
             <div onclick="navTo('krin.html')" class="card buy"><span class="icon">📥</span><h2>کڕین</h2></div>
-            <div onclick="navTo('sale.html')" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></div>
+            <div onclick="navTo('sales.html')" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2></div>
             <div onclick="navTo('inventory.html')" class="card inv"><span class="icon">📦</span><h2>کۆگا</h2></div>
             <div onclick="navTo('report.html')" class="card rep"><span class="icon">📊</span><h2>ڕاپۆرت</h2></div>
             <div onclick="navTo('qerzi_kriar.html')" class="card rec"><span class="icon">🤝</span><h2>قەرزی کڕیار</h2></div>
@@ -55,7 +55,6 @@
     </div>
 
     <script>
-        // پشکنینی توند بۆ ڕێگری لە گەڕانەوە بە دوگمەی Back
         window.onpageshow = function(event) {
             if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
                 window.location.reload();
@@ -65,7 +64,6 @@
         function checkAuth() {
             const isAuth = localStorage.getItem("rebeenAuth") === "true";
             if (!isAuth) {
-                // ناردنی ڕاستەوخۆ بۆ login.html
                 window.location.replace("login.html?v=" + new Date().getTime());
             }
         }
@@ -73,12 +71,9 @@
         checkAuth();
 
         function logout() {
-            // سڕینەوەی هەموو داتاکانی لۆگین
             localStorage.clear(); 
             sessionStorage.clear();
             document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            
-            // فێڵی Cache Buster بۆ ئەوەی گیتھەب ناچار بێت داتا تازەکە بخوێنێتەوە
             const cacheBuster = "v=" + new Date().getTime();
             window.location.replace("login.html?" + cacheBuster + "#logout");
         }
