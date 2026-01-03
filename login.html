@@ -29,6 +29,25 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
+    // --- چاکسازی بۆ گیتھەب و مۆبایل ---
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        // ئەگەر لەڕێی Logout هاتبێت یان نیشانەی لۆگ ئاوتی پێبێت
+        if (window.location.hash === "#logout" || urlParams.has('logout')) {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie = "rebeenAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            // پاککردنەوەی ناونیشانی لاپەڕەکە
+            history.replaceState(null, null, window.location.pathname);
+            return;
+        }
+
+        // ئەگەر پێشتر داخل بوو، یەکسەر بڕۆ بۆ داشبۆرد
+        if (localStorage.getItem("rebeenAuth") === "true") {
+            window.location.replace("dashboard.html");
+        }
+    };
+
     async function login() {
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
@@ -43,7 +62,6 @@
         msg.style.color = "blue";
         msg.innerText = "خەریکە دەپشکنرێت...";
 
-        // --- ڕێگەی تاقیکردنەوەی خێرا (Emergency Bypass بۆ مۆبایل) ---
         if ((email === "rebeen" && password === "12345678") || (email === "a" && password === "a")) {
             setAuthAndRedirect();
             return; 
@@ -64,17 +82,15 @@
     }
 
     function setAuthAndRedirect() {
-        // پاشکەوتکردن بۆ مۆبایل و کۆمپیوتەر پێکەوە
         localStorage.setItem("rebeenAuth", "true");
         document.cookie = "rebeenAuth=true; path=/; max-age=86400; SameSite=Lax";
         
         document.getElementById('msg').style.color = "green";
         document.getElementById('msg').innerText = "سەرکەوتوو بوو! گواستنەوە...";
         
-        // گواستنەوە بۆ داشبۆرد (نەک ئیندێکس)
         setTimeout(() => {
             window.location.replace("dashboard.html");
-        }, 500);
+        }, 300);
     }
 </script>
 </body>
