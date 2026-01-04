@@ -2,48 +2,50 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تۆمارکردنی کەرەستە - ڕێبین سیستم</title>
-    <link rel="icon" type="image/png" href="https://img.icons8.com/color/96/r.png">
+    <title>R</title>
+    <meta name="apple-mobile-web-app-title" content="R">
+    <meta name="application-name" content="R">
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
-    <meta name="apple-mobile-web-app-title" content="Rebin System">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --p: #2c3e50; --s: #3498db; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; margin: 0; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 15px; margin: 0; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .section-title { background: #eee; padding: 10px; border-radius: 8px; margin-top: 25px; color: var(--p); font-weight: bold; border-right: 5px solid var(--s); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
         label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 15px; }
         .flex-row { display: flex; gap: 5px; }
         .btn-plus { background: var(--s); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; font-weight: bold; font-size: 20px; }
         .btn-save { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; transition: 0.3s; }
-        .btn-save:hover { background: #219150; transform: translateY(-2px); }
-        .checkbox-grid { display: flex; gap: 20px; align-items: center; margin-top: 20px; background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px dashed #ccc; }
-        .branch-badge { background: #34495e; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .btn-save:active { transform: scale(0.98); }
+        .checkbox-grid { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-top: 20px; background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px dashed #ccc; }
+        .branch-badge { background: #34495e; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="display:flex; justify-content:space-between; align-items: center;">
+    <div style="display:flex; justify-content:space-between; align-items: flex-start;">
         <div>
-            <h2 style="margin:0;">📦 دروستکردنی کەرەستەی نوێ</h2>
-            <span id="currentBranch" class="branch-badge">خەریکە بار دەکرێت...</span>
+            <h2 style="margin:0;">📦 کاڵای نوێ</h2>
+            <span id="currentBranch" class="branch-badge">بار دەکرێت...</span>
         </div>
-        <a href="dashboard.html" style="text-decoration:none; color:#e74c3c; font-weight:bold; border: 1px solid #e74c3c; padding: 8px 15px; border-radius: 8px;">گه‌ڕانه‌وه‌ 🔙</a>
+        <a href="dashboard.html" style="text-decoration:none; color:#e74c3c; font-weight:bold; border: 1px solid #e74c3c; padding: 8px 15px; border-radius: 8px; font-size: 14px;">گه‌ڕانه‌وه‌ 🔙</a>
     </div>
 
     <div class="section-title">📝 زانیاری گشتی</div>
     <div class="grid">
-        <div><label>ناو*</label><input type="text" id="itemName"></div>
-        <div><label>ناوی زانستی</label><input type="text" id="sciName"></div>
+        <div><label>ناو*</label><input type="text" id="itemName" placeholder="ناوی کاڵا"></div>
         <div><label>کۆد (بارکۆد)*</label><input type="text" id="barcode" autofocus></div>
-        <div><label>ئایدی (خۆکار)</label><input type="text" id="itemId" disabled placeholder="Auto-ID"></div>
-    </div>
-    
-    <div class="grid">
         <div>
             <label>کاتیگۆری</label>
             <div class="flex-row">
@@ -55,29 +57,33 @@
                 <button class="btn-plus" onclick="addNewCategory()">+</button>
             </div>
         </div>
+    </div>
+    
+    <div class="grid">
         <div><label>براند</label><input type="text" id="brand" placeholder="بێ براند"></div>
         <div><label>دابینکەر</label><input type="text" id="supplier"></div>
+        <div><label>ناوی زانستی</label><input type="text" id="sciName"></div>
     </div>
 
     <div class="section-title">💰 نرخ و مەخزەن</div>
     <div class="grid">
         <div><label>نرخی کڕین</label><input type="number" id="buyPrice" value="0"></div>
-        <div><label>نرخی فرۆش (تاک)</label><input type="number" id="sellPrice" value="0"></div>
-        <div><label>بڕی ئێستا (Initial Qty)</label><input type="number" id="initialQty" value="0"></div>
+        <div><label>نرخی فرۆش</label><input type="number" id="sellPrice" value="0"></div>
+        <div><label>بڕی مەوجود</label><input type="number" id="initialQty" value="0"></div>
     </div>
     <div class="grid">
         <div><label>یەکە</label><select id="unit"><option>دانە</option><option>کارتۆن</option><option>پاکەت</option></select></div>
-        <div><label>ڕێکەوتی بەسەرچوون</label><input type="date" id="expiryDate"></div>
-        <div><label>کەمترین بڕی ئاگادارکردنەوە</label><input type="number" id="alertQty" value="5"></div>
+        <div><label>بەسەرچوون</label><input type="date" id="expiryDate"></div>
+        <div><label>کەمترین بڕ</label><input type="number" id="alertQty" value="5"></div>
     </div>
 
     <div class="checkbox-grid">
-        <label><input type="checkbox" id="isService"> خزمەتگوزارییە</label>
-        <label><input type="checkbox" id="hasExpiry" checked> ئیکسپایەر دەبێت</label>
+        <label><input type="checkbox" id="isService"> خزمەتگوزاری</label>
+        <label><input type="checkbox" id="hasExpiry" checked> ئیکسپایەر</label>
         <label><input type="checkbox" id="isActive" checked> چالاکە</label>
     </div>
 
-    <button class="btn-save" id="saveBtn" onclick="saveFullItem()">تۆمارکردن لە کۆگا ✅</button>
+    <button class="btn-save" id="saveBtn" onclick="saveFullItem()">تۆمارکردن ✅</button>
 </div>
 
 <script>
@@ -85,7 +91,6 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // وەرگرتنی زانیاری لق لە مێمۆری
     const userBranchId = localStorage.getItem("userBranchId");
     const userBranchName = localStorage.getItem("userBranchName") || "نادیار";
     document.getElementById('currentBranch').innerText = "لق: " + userBranchName;
@@ -95,8 +100,7 @@
         if (newCat && newCat.trim() !== "") {
             const select = document.getElementById('cat');
             const option = document.createElement("option");
-            option.text = newCat;
-            option.value = newCat;
+            option.text = newCat; option.value = newCat;
             select.add(option);
             select.value = newCat;
         }
@@ -107,11 +111,11 @@
         const itemName = document.getElementById('itemName').value.trim();
         const barcode = document.getElementById('barcode').value.trim();
 
-        if(!itemName || !barcode) return alert("تکایە ناو و بارکۆد بنووسە!");
-        if(!userBranchId) return alert("هەڵە: لقی تۆ دیار نییە، تکایە دووبارە لۆگین بکەوە.");
+        if(!itemName || !barcode) return alert("تکایە ناو و بارکۆد پڕ بکەرەوە");
+        if(!userBranchId) return alert("لقی تۆ دیار نییە، تکایە لۆگین بکەوە");
 
         saveBtn.disabled = true;
-        saveBtn.innerText = "خەریکی تۆمارکردن...";
+        saveBtn.innerText = "خەریکە...";
 
         const payload = {
             item_name: itemName,
@@ -129,18 +133,18 @@
             is_service: document.getElementById('isService').checked,
             has_expiry: document.getElementById('hasExpiry').checked,
             is_active: document.getElementById('isActive').checked,
-            branch_id: userBranchId // بەستنەوەی کاڵاکە بە لقەوە
+            branch_id: userBranchId
         };
 
         const { error } = await _supabase.from('purchases').insert([payload]);
 
         if(!error) {
-            alert("کاڵای (" + itemName + ") بە سەرکەوتوویی لە لقی " + userBranchName + " تۆمارکرا! 🚀");
+            alert("تۆمارکرا لە لقی " + userBranchName);
             location.reload();
         } else {
-            alert("هەڵە ڕوویدا: " + error.message);
+            alert("هەڵە: " + error.message);
             saveBtn.disabled = false;
-            saveBtn.innerText = "تۆمارکردن لە کۆگا ✅";
+            saveBtn.innerText = "تۆمارکردن ✅";
         }
     }
 </script>
