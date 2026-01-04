@@ -2,29 +2,37 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شایەنی وەرگرتنەوە - Rebin System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R - قەرزی کڕیارەکان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --main: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
+        :root { --main: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --red: #e74c3c; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 10px; direction: rtl; margin: 0; }
         .container { max-width: 1000px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .header { background: var(--accent); color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-back { background: var(--main); color: white; text-decoration: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 14px; }
         
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
-        th { background: #f8f9fa; color: var(--main); }
-        .customer-link { color: #2980b9; cursor: pointer; font-weight: bold; text-decoration: underline; }
+        .header { background: var(--accent); color: white; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .branch-tag { font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; }
+
+        .card-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .qerz-card { 
+            background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px; 
+            border-right: 5px solid var(--red); display: flex; justify-content: space-between; align-items: center;
+        }
+        .cust-info b { font-size: 16px; color: var(--main); display: block; cursor: pointer; text-decoration: underline; }
+        .cust-info small { color: #888; }
+        .amount-tag { text-align: left; }
+        .amount-tag span { color: var(--red); font-weight: bold; font-size: 18px; display: block; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; position: relative; }
         
-        /* Modal Style */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; position: relative; }
-        
+        .inv-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .inv-table th, .inv-table td { border: 1px solid #eee; padding: 10px; text-align: center; font-size: 13px; }
+        .inv-table th { background: #f8f9fa; }
+
         @media print {
             .no-print { display: none !important; }
-            body { background: white; padding: 0; }
             .modal { position: absolute; background: white; display: block !important; }
             .modal-content { margin: 0; width: 100%; max-width: none; box-shadow: none; border: none; }
         }
@@ -34,36 +42,32 @@
 
 <div class="container no-print">
     <div class="header">
-        <h2 style="margin:0; font-size: 18px;">🤝 قەرزی کڕیارەکان</h2>
-        <a href="dashboard.html" class="btn-back">🏠 گەڕانەوە</a>
+        <div>
+            <h2 style="margin:0; font-size: 18px;">🤝 قەرزی کڕیارەکان</h2>
+            <span id="branchDisplay" class="branch-tag">بار دەکرێت...</span>
+        </div>
+        <a href="dashboard.html" style="color:white; text-decoration:none; font-size: 24px;">🏠</a>
     </div>
 
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>بەروار</th>
-                    <th>کڕیار</th>
-                    <th>بڕی قەرز</th>
-                    <th>تێبینی</th>
-                </tr>
-            </thead>
-            <tbody id="qerzTable">
-                <tr><td colspan="4">خەریکە بار دەکرێت...</td></tr>
-            </tbody>
-        </table>
+    <div id="qerzContainer" class="card-list">
+        <p style="text-align:center; grid-column: 1/-1;">خەریکە لیستەکە بار دەکرێت...</p>
     </div>
 </div>
 
 <div id="invoiceModal" class="modal">
     <div class="modal-content">
         <div id="printArea">
-            <h2 style="text-align:center; color:var(--main); margin-top:0;">وەسڵی قەرز</h2>
-            <p id="invCustName" style="font-weight:bold; margin-bottom:5px;"></p>
-            <p id="invDate" style="font-size:12px; color:gray; margin:0;"></p>
-            <table style="width:100%; border-collapse:collapse; margin-top:15px; border: 1px solid #ddd;">
+            <div style="text-align:center; margin-bottom: 20px;">
+                <h2 style="margin:0; color:var(--main);">وەسڵی قەرز</h2>
+                <small id="branchInfo" style="color:#777;"></small>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span id="invCustName"></span>
+                <span id="invDate"></span>
+            </div>
+            <table class="inv-table">
                 <thead>
-                    <tr style="background:#f4f4f4;">
+                    <tr>
                         <th>کاڵا</th>
                         <th>بڕ</th>
                         <th>کۆ</th>
@@ -71,11 +75,14 @@
                 </thead>
                 <tbody id="invItemsBody"></tbody>
             </table>
-            <h3 id="invTotalUSD" style="text-align:left; margin-top:15px; color: #c0392b;"></h3>
+            <div style="margin-top:20px; padding:10px; background:#fdf2f2; border-radius:10px; text-align:left;">
+                <b style="color:var(--red);">ماوەی قەرز: <span id="invTotalUSD"></span></b>
+            </div>
+            <p style="font-size:10px; color:#aaa; margin-top:15px; text-align:center;">ئەم وەسڵە بە شێوەی ئەلیکترۆنی لە R-System دەرچووە</p>
         </div>
         <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
-            <button onclick="window.print()" style="flex:1; background:#27ae60; color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">🖨️ چاپکردن</button>
-            <button onclick="closeModal()" style="flex:1; background:#7f8c8d; color:white; padding:12px; border:none; border-radius:8px; cursor:pointer;">داخستن</button>
+            <button onclick="window.print()" style="flex:1; background:#27ae60; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">🖨️ چاپکردن</button>
+            <button onclick="closeModal()" style="flex:1; background:#95a5a6; color:white; padding:12px; border:none; border-radius:10px; cursor:pointer;">داخستن</button>
         </div>
     </div>
 </div>
@@ -85,56 +92,63 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // پشکنینی لۆگین
-    const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
-    if (!isAuth) { window.location.href = "index.html"; }
+    const branchId = localStorage.getItem("userBranchId");
+    const branchName = localStorage.getItem("userBranchName");
 
     async function loadQerz() {
-        const { data, error } = await _supabase.from('qerzi_kriar').select('*').order('created_at', {ascending: false});
-        const body = document.getElementById('qerzTable');
+        document.getElementById('branchDisplay').innerText = "لق: " + (branchName || "هەمووی");
         
-        if (data) {
-            body.innerHTML = data.map(q => `
-                <tr>
-                    <td>${new Date(q.created_at).toLocaleDateString('ku-IQ')}</td>
-                    <td class="customer-link" onclick="viewInvoice('${q.sale_id}')">${q.name}</td>
-                    <td style="color:red; font-weight:bold;">${Number(q.amount).toLocaleString()} $</td>
-                    <td>${q.note || '-'}</td>
-                </tr>
+        let query = _supabase.from('qerzi_kriar').select('*').order('created_at', {ascending: false});
+        
+        // فلتەر بەپێی لق
+        if(branchId) query = query.eq('branch_id', branchId);
+
+        const { data, error } = await query;
+        const container = document.getElementById('qerzContainer');
+        
+        if (data && data.length > 0) {
+            container.innerHTML = data.map(q => `
+                <div class="qerz-card">
+                    <div class="cust-info">
+                        <b onclick="viewInvoice('${q.sale_id}')">👤 ${q.name}</b>
+                        <small>📅 ${new Date(q.created_at).toLocaleDateString('ku-IQ')}</small>
+                    </div>
+                    <div class="amount-tag">
+                        <span>$${Number(q.amount).toFixed(2)}</span>
+                        <small style="color:#aaa;">${q.note || 'بێ تێبینی'}</small>
+                    </div>
+                </div>
             `).join('');
         } else {
-            body.innerHTML = '<tr><td colspan="4">هیچ تۆمارێک نییە</td></tr>';
+            container.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:#888;">هیچ قەرزێک لەم لقەدا نییە.</p>';
         }
     }
 
     async function viewInvoice(saleId) {
-        if (!saleId || saleId === 'null') {
-            alert("ئەم قەرزە وەسڵی ئەلیکترۆنی نییە");
-            return;
-        }
+        if (!saleId || saleId === 'null') return alert("وەسڵی ئەم قەرزە بەردەست نییە");
 
         const { data, error } = await _supabase.from('sale_details').select('*').eq('id', saleId).single();
 
         if (data) {
+            document.getElementById('branchInfo').innerText = "لقی " + (data.branch_name || branchName);
             document.getElementById('invCustName').innerText = "کڕیار: " + data.customer_name;
-            document.getElementById('invDate').innerText = "بەروار: " + new Date(data.created_at).toLocaleString('ku-IQ');
+            document.getElementById('invDate').innerText = "بەروار: " + new Date(data.created_at).toLocaleDateString('ku-IQ');
             
             const itemsHtml = data.items_json.map(i => `
                 <tr>
-                    <td style="border:1px solid #ddd; padding:8px;">${i.name}</td>
-                    <td style="border:1px solid #ddd; padding:8px;">${i.cQty}ک، ${i.pQty}د</td>
-                    <td style="border:1px solid #ddd; padding:8px;">${Number(i.total).toLocaleString()}$</td>
+                    <td>${i.name}</td>
+                    <td>${i.qty}</td>
+                    <td>$${i.total}</td>
                 </tr>
             `).join('');
             
             document.getElementById('invItemsBody').innerHTML = itemsHtml;
-            document.getElementById('invTotalUSD').innerText = "کۆی گشتی: " + Number(data.total_usd).toLocaleString() + " $";
+            document.getElementById('invTotalUSD').innerText = "$" + data.total_usd;
             document.getElementById('invoiceModal').style.display = 'block';
         }
     }
 
     function closeModal() { document.getElementById('invoiceModal').style.display = 'none'; }
-
     window.onload = loadQerz;
 </script>
 </body>
