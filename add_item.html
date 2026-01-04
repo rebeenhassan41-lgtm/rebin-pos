@@ -3,31 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>تۆمارکردنی کەرەستە - ڕێبین سیستم</title>
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/96/r.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
+    <meta name="apple-mobile-web-app-title" content="Rebin System">
+    <meta name="mobile-web-app-capable" content="yes">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --p: #2c3e50; --s: #3498db; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; margin: 0; }
         .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .section-title { background: #eee; padding: 10px; border-radius: 8px; margin-top: 25px; color: var(--p); font-weight: bold; border-right: 5px solid var(--s); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
         label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
-        
-        /* شێوازی نوێ بۆ بەشی کاتیگۆری */
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 15px; }
         .flex-row { display: flex; gap: 5px; }
-        .btn-plus { background: var(--s); color: white; border: none; border-radius: 8px; width: 40px; cursor: pointer; font-weight: bold; font-size: 20px; }
-        
-        .btn-save { width: 100%; padding: 20px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; transition: 0.3s; }
-        .btn-save:hover { background: #219150; }
+        .btn-plus { background: var(--s); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; font-weight: bold; font-size: 20px; }
+        .btn-save { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; transition: 0.3s; }
+        .btn-save:hover { background: #219150; transform: translateY(-2px); }
         .checkbox-grid { display: flex; gap: 20px; align-items: center; margin-top: 20px; background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px dashed #ccc; }
+        .branch-badge { background: #34495e; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div style="display:flex; justify-content:space-between; align-items: center;">
-        <h2>📦 دروستکردنی کەرەستەی نوێ</h2>
-        <a href="dashboard.html" style="text-decoration:none; color:#e74c3c; font-weight:bold; border: 1px solid #e74c3c; padding: 5px 15px; border-radius: 8px;">گه‌ڕانه‌وه‌ 🔙</a>
+        <div>
+            <h2 style="margin:0;">📦 دروستکردنی کەرەستەی نوێ</h2>
+            <span id="currentBranch" class="branch-badge">خەریکە بار دەکرێت...</span>
+        </div>
+        <a href="dashboard.html" style="text-decoration:none; color:#e74c3c; font-weight:bold; border: 1px solid #e74c3c; padding: 8px 15px; border-radius: 8px;">گه‌ڕانه‌وه‌ 🔙</a>
     </div>
 
     <div class="section-title">📝 زانیاری گشتی</div>
@@ -35,8 +40,9 @@
         <div><label>ناو*</label><input type="text" id="itemName"></div>
         <div><label>ناوی زانستی</label><input type="text" id="sciName"></div>
         <div><label>کۆد (بارکۆد)*</label><input type="text" id="barcode" autofocus></div>
-        <div><label>ئایدی</label><input type="text" id="itemId" placeholder="بە شێوەی خۆکار"></div>
+        <div><label>ئایدی (خۆکار)</label><input type="text" id="itemId" disabled placeholder="Auto-ID"></div>
     </div>
+    
     <div class="grid">
         <div>
             <label>کاتیگۆری</label>
@@ -46,28 +52,22 @@
                     <option value="دەرمان">دەرمان</option>
                     <option value="خۆراک">خۆراک</option>
                 </select>
-                <button class="btn-plus" onclick="addNewCategory()" title="زیادکردنی کاتیگۆری نوێ">+</button>
+                <button class="btn-plus" onclick="addNewCategory()">+</button>
             </div>
         </div>
         <div><label>براند</label><input type="text" id="brand" placeholder="بێ براند"></div>
-        <div><label>دابینکەر (Supplier)</label><input type="text" id="supplier"></div>
+        <div><label>دابینکەر</label><input type="text" id="supplier"></div>
     </div>
 
-    <div class="section-title">📅 بەسەرچوون و پاراستن</div>
+    <div class="section-title">💰 نرخ و مەخزەن</div>
     <div class="grid">
+        <div><label>نرخی کڕین</label><input type="number" id="buyPrice" value="0"></div>
+        <div><label>نرخی فرۆش (تاک)</label><input type="number" id="sellPrice" value="0"></div>
+        <div><label>بڕی ئێستا (Initial Qty)</label><input type="number" id="initialQty" value="0"></div>
+    </div>
+    <div class="grid">
+        <div><label>یەکە</label><select id="unit"><option>دانە</option><option>کارتۆن</option><option>پاکەت</option></select></div>
         <div><label>ڕێکەوتی بەسەرچوون</label><input type="date" id="expiryDate"></div>
-        <div><label>ئاگادارکردنەوە پێش (ڕۆژ)</label><input type="number" id="expiryAlertDays" value="30"></div>
-    </div>
-
-    <div class="section-title">💰 نرخ و پێوانە</div>
-    <div class="grid">
-        <div><label>نرخی کڕین</label><input type="number" id="buyPrice"></div>
-        <div><label>نرخی فرۆش (تاک)</label><input type="number" id="sellPrice"></div>
-        <div><label>نرخی فرۆشی کۆ</label><input type="number" id="wholesalePrice"></div>
-    </div>
-    <div class="grid">
-        <div><label>یەکە (Unit)</label><select id="unit"><option>دانە</option><option>کارتۆن</option></select></div>
-        <div><label>بڕی یەکە لەناو کارتۆن</label><input type="number" id="pcsInCarton" value="1"></div>
         <div><label>کەمترین بڕی ئاگادارکردنەوە</label><input type="number" id="alertQty" value="5"></div>
     </div>
 
@@ -77,7 +77,7 @@
         <label><input type="checkbox" id="isActive" checked> چالاکە</label>
     </div>
 
-    <button class="btn-save" onclick="saveFullItem()">تۆمارکردن لە کۆگا ✅</button>
+    <button class="btn-save" id="saveBtn" onclick="saveFullItem()">تۆمارکردن لە کۆگا ✅</button>
 </div>
 
 <script>
@@ -85,7 +85,11 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // فەنکشن بۆ زیادکردنی کاتیگۆری نوێ بە شێوەی کاتی
+    // وەرگرتنی زانیاری لق لە مێمۆری
+    const userBranchId = localStorage.getItem("userBranchId");
+    const userBranchName = localStorage.getItem("userBranchName") || "نادیار";
+    document.getElementById('currentBranch').innerText = "لق: " + userBranchName;
+
     function addNewCategory() {
         const newCat = prompt("ناوی کاتیگۆرییە نوێیەکە بنووسە:");
         if (newCat && newCat.trim() !== "") {
@@ -94,40 +98,49 @@
             option.text = newCat;
             option.value = newCat;
             select.add(option);
-            select.value = newCat; // یەکسەر هەڵبژێردرێت
+            select.value = newCat;
         }
     }
 
     async function saveFullItem() {
+        const saveBtn = document.getElementById('saveBtn');
+        const itemName = document.getElementById('itemName').value.trim();
+        const barcode = document.getElementById('barcode').value.trim();
+
+        if(!itemName || !barcode) return alert("تکایە ناو و بارکۆد بنووسە!");
+        if(!userBranchId) return alert("هەڵە: لقی تۆ دیار نییە، تکایە دووبارە لۆگین بکەوە.");
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "خەریکی تۆمارکردن...";
+
         const payload = {
-            item_name: document.getElementById('itemName').value,
+            item_name: itemName,
             scientific_name: document.getElementById('sciName').value,
-            barcode: document.getElementById('barcode').value,
+            barcode: barcode,
             category: document.getElementById('cat').value,
             brand: document.getElementById('brand').value,
             supplier: document.getElementById('supplier').value,
             expiry_date: document.getElementById('expiryDate').value || null,
-            expiry_alert_days: document.getElementById('expiryAlertDays').value || 30,
-            cost_price_usd: document.getElementById('buyPrice').value || 0,
-            sale_price_retail: document.getElementById('sellPrice').value || 0,
-            sale_price_wholesale: document.getElementById('wholesalePrice').value || 0,
+            cost_price_usd: parseFloat(document.getElementById('buyPrice').value) || 0,
+            sale_price_retail: parseFloat(document.getElementById('sellPrice').value) || 0,
+            quantity: parseFloat(document.getElementById('initialQty').value) || 0,
             unit: document.getElementById('unit').value,
-            pcs_in_carton: document.getElementById('pcsInCarton').value || 1,
-            alert_quantity: document.getElementById('alertQty').value || 5,
+            alert_quantity: parseInt(document.getElementById('alertQty').value) || 5,
             is_service: document.getElementById('isService').checked,
             has_expiry: document.getElementById('hasExpiry').checked,
-            is_active: document.getElementById('isActive').checked
+            is_active: document.getElementById('isActive').checked,
+            branch_id: userBranchId // بەستنەوەی کاڵاکە بە لقەوە
         };
-
-        if(!payload.item_name || !payload.barcode) return alert("تکایە ناو و بارکۆد بەتاڵ مەکە!");
 
         const { error } = await _supabase.from('purchases').insert([payload]);
 
         if(!error) {
-            alert("کاڵای (" + payload.item_name + ") بە سەرکەوتوویی پاشەکەوت کرا! 🚀");
+            alert("کاڵای (" + itemName + ") بە سەرکەوتوویی لە لقی " + userBranchName + " تۆمارکرا! 🚀");
             location.reload();
         } else {
-            alert("هەڵە: " + error.message);
+            alert("هەڵە ڕوویدا: " + error.message);
+            saveBtn.disabled = false;
+            saveBtn.innerText = "تۆمارکردن لە کۆگا ✅";
         }
     }
 </script>
