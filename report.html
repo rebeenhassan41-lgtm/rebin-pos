@@ -2,88 +2,131 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ڕاپۆرتی گشتی | ڕێبین سیستم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R - ڕاپۆرتی گشتی</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
             --primary: #1a1a2e; --accent: #3498db; --success: #2ecc71; 
-            --danger: #e74c3c; --warning: #f1c40f; --bg: #f8f9fa; 
+            --danger: #e74c3c; --warning: #f1c40f; --bg: #f0f2f5; 
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; direction: rtl; color: #333; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; direction: rtl; color: #333; padding-bottom: 40px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 15px; }
         
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .btn-home { background: var(--primary); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        /* Header */
+        .dashboard-header { 
+            background: var(--primary); color: white; padding: 25px; 
+            border-radius: 20px; margin-bottom: 25px; display: flex; 
+            justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
 
         /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid; text-align: center; }
-        .stat-card h3 { margin: 0; font-size: 13px; color: #7f8c8d; }
-        .stat-card .value { font-size: 24px; font-weight: bold; display: block; margin-top: 8px; }
-        
-        /* Filter Bar */
-        .filter-bar { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 25px; }
-        .filter-bar input { padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
-        
-        /* Tabs Section */
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; background: #eaeff2; padding: 8px; border-radius: 12px; margin-bottom: 20px; }
-        .btn-tab { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; background: transparent; transition: 0.2s; color: #555; }
-        .btn-tab.active { background: white; box-shadow: 0 3px 8px rgba(0,0,0,0.1); color: var(--accent); }
-        .btn-tab:hover:not(.active) { background: #dce4e8; }
+        .stats-grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 12px; margin-bottom: 25px; 
+        }
+        .stat-card { 
+            background: white; padding: 18px; border-radius: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border-bottom: 4px solid; 
+            text-align: center; transition: 0.3s;
+        }
+        .stat-card:active { transform: scale(0.98); }
+        .stat-card h3 { margin: 0; font-size: 12px; color: #7f8c8d; margin-bottom: 8px; }
+        .stat-card .value { font-size: 20px; font-weight: bold; color: var(--primary); }
+
+        /* Controls */
+        .filter-section { 
+            background: white; padding: 20px; border-radius: 20px; 
+            margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .date-inputs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .date-inputs input, .date-inputs select { 
+            flex: 1; padding: 12px; border: 1px solid #ddd; 
+            border-radius: 10px; font-family: inherit; font-size: 14px;
+        }
+
+        /* Tabs */
+        .tabs-container { 
+            overflow-x: auto; white-space: nowrap; padding-bottom: 10px; 
+            display: flex; gap: 8px; margin-bottom: 15px;
+        }
+        .tab { 
+            padding: 10px 20px; background: #e0e6ed; border-radius: 10px; 
+            border: none; font-weight: bold; cursor: pointer; color: #555;
+        }
+        .tab.active { background: var(--accent); color: white; }
 
         /* Table */
-        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #eee; }
-        td { padding: 15px; text-align: center; border-bottom: 1px solid #f1f1f1; }
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+        .table-wrap { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #eee; text-align: center; }
+        td { padding: 15px; text-align: center; border-bottom: 1px solid #f9f9f9; }
+        
+        .type-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .sales-bg { background: #dcfce7; color: #166534; }
+        .buy-bg { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="dashboard-header">
-        <h1>📊 شیکردنەوەی دارایی ڕێبین</h1>
-        <a href="dashboard.html" class="btn-home">🏠 گەڕانەوە</a>
+        <div>
+            <h2 style="margin:0;">📊 ڕاپۆرتی گشتی</h2>
+            <small id="branchInfo" style="opacity: 0.8;">لقی ...</small>
+        </div>
+        <a href="dashboard.html" style="color:white; font-size:24px; text-decoration:none;">🏠</a>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card" style="border-color: var(--success);"><h3>کۆی فرۆشتن</h3><span class="value" id="tSales">0 $</span></div>
-        <div class="stat-card" style="border-color: var(--danger);"><h3>کۆی کڕین</h3><span class="value" id="tPurchases">0 $</span></div>
-        <div class="stat-card" style="border-color: var(--accent);"><h3>قازانجی پاک</h3><span class="value" id="tProfit">0 $</span></div>
-        <div class="stat-card" style="border-color: #9b59b6;"><h3>شایەنی وەرگرتن (قەرزی من)</h3><span class="value" id="tReceivable">0 $</span></div>
-        <div class="stat-card" style="border-color: #e67e22;"><h3>شایەنی سەرفکردن (قەرزی خەڵک)</h3><span class="value" id="tPayable">0 $</span></div>
+        <div class="stat-card" style="border-color: var(--success);">
+            <h3>کۆی فرۆشتن</h3>
+            <span class="value" id="tSales">0 $</span>
+        </div>
+        <div class="stat-card" style="border-color: var(--accent);">
+            <h3>قازانج</h3>
+            <span class="value" id="tProfit" style="color:var(--success)">0 $</span>
+        </div>
+        <div class="stat-card" style="border-color: var(--danger);">
+            <h3>قەرزی بازرگان</h3>
+            <span class="value" id="tPayable">0 $</span>
+        </div>
+        <div class="stat-card" style="border-color: var(--warning);">
+            <h3>قەرزی کڕیار</h3>
+            <span class="value" id="tReceivable">0 $</span>
+        </div>
     </div>
 
-    <div class="filter-bar">
-        <input type="date" id="dateFrom">
-        <span>بۆ</span>
-        <input type="date" id="dateTo">
-        <input type="text" id="searchInput" placeholder="گەڕان بەپێی ناو..." style="flex-grow: 1;">
-        <button onclick="loadData()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">🔍 نوێکردنەوە</button>
+    <div class="filter-section">
+        <div class="date-inputs">
+            <input type="date" id="dateFrom">
+            <input type="date" id="dateTo">
+            <button onclick="loadData()" style="background:var(--primary); color:white; border:none; padding:12px 25px; border-radius:10px; cursor:pointer; font-weight:bold;">نوێکردنەوە</button>
+        </div>
+        
+        <div class="tabs-container">
+            <button class="tab active" onclick="setTab('all', this)">هەموو</button>
+            <button class="tab" onclick="setTab('sales', this)">فرۆشتن</button>
+            <button class="tab" onclick="setTab('purchases', this)">کڕین</button>
+            <button class="tab" onclick="setTab('debts_in', this)">قەرزی کڕیار</button>
+            <button class="tab" onclick="setTab('debts_out', this)">قەرزی بازرگان</button>
+        </div>
     </div>
 
-    <div class="btn-group">
-        <button class="btn-tab active" onclick="setTab('all', this)">هەموو جوڵەکان</button>
-        <button class="btn-tab" onclick="setTab('sales', this)">فرۆشتنەکان 💰</button>
-        <button class="btn-tab" onclick="setTab('purchases', this)">کڕینەکان 📥</button>
-        <button class="btn-tab" onclick="setTab('debts_in', this)">شایەنی وەرگرتن (قەرزی کڕیار)</button>
-        <button class="btn-tab" onclick="setTab('debts_out', this)">شایەنی سەرفکردن (قەرزی بازرگان)</button>
-    </div>
-
-    <div class="table-container">
+    <div class="table-wrap">
         <table>
             <thead>
                 <tr>
                     <th>بەروار</th>
-                    <th>جۆری چالاکی</th>
-                    <th>لایەن (ناو)</th>
-                    <th>بڕی پارە</th>
-                    <th>تێبینی</th>
+                    <th>جۆر</th>
+                    <th>ناو</th>
+                    <th>بڕ ($)</th>
                 </tr>
             </thead>
-            <tbody id="reportTbody"></tbody>
+            <tbody id="reportTbody">
+                <tr><td colspan="4">خەریکە داتا دەخوێنرێتەوە...</td></tr>
+            </tbody>
         </table>
     </div>
 </div>
@@ -94,74 +137,77 @@
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     let currentTab = 'all';
-    document.getElementById('dateFrom').valueAsDate = new Date();
-    document.getElementById('dateTo').valueAsDate = new Date();
+    const branchId = localStorage.getItem("userBranchId");
+
+    // ڕێکخستنی بەروار بۆ ئەمڕۆ
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateFrom').value = today;
+    document.getElementById('dateTo').value = today;
 
     function setTab(tab, btn) {
         currentTab = tab;
-        document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         loadData();
     }
 
     async function loadData() {
+        document.getElementById('branchInfo').innerText = "لق: " + (localStorage.getItem("userBranchName") || "گشتی");
         const from = document.getElementById('dateFrom').value + "T00:00:00";
         const to = document.getElementById('dateTo').value + "T23:59:59";
-        const search = document.getElementById('searchInput').value.toLowerCase();
         
-        let ts=0, tp=0, tprof=0, tRec=0, tPay=0;
-        let html = "";
+        let ts=0, tprof=0, tRec=0, tPay=0;
         let dataList = [];
 
-        // ١. فرۆشتنەکان
-        const { data: sales } = await _supabase.from('sales').select('*').gte('created_at', from).lte('created_at', to);
+        // هێنانی فرۆشتنەکان
+        let qSales = _supabase.from('sales').select('*').gte('created_at', from).lte('created_at', to);
+        if(branchId) qSales = qSales.eq('branch_id', branchId);
+        const { data: sales } = await qSales;
+        
         if(sales) sales.forEach(s => {
-            ts += s.total_usd; tprof += (s.total_usd - (s.total_cost_usd || 0));
-            if(currentTab==='all' || currentTab==='sales') dataList.push({date: s.created_at, type: 'فرۆشتن', name: s.customer_name, amt: s.total_usd, note: s.pay_method});
+            ts += s.total_usd;
+            tprof += (s.total_usd - (s.cost_usd || 0));
+            if(currentTab==='all' || currentTab==='sales') {
+                dataList.push({date: s.created_at, type: 'فرۆشتن', name: s.customer_name, amt: s.total_usd, cls: 'sales-bg'});
+            }
         });
 
-        // ٢. کڕینەکان
-        const { data: buys } = await _supabase.from('purchases').select('*').gte('created_at', from).lte('created_at', to);
-        if(buys) buys.forEach(b => {
-            tp += b.total_price_usd;
-            if(currentTab==='all' || currentTab==='purchases') dataList.push({date: b.created_at, type: 'کڕین', name: b.supplier_name, amt: b.total_price_usd, note: b.is_debt ? 'قەرز' : 'نەقد'});
-        });
-
-        // ٣. قەرزی کڕیار (شایەنی وەرگرتن)
-        const { data: qKriar } = await _supabase.from('qerzi_kriar').select('*');
-        if(qKriar) qKriar.forEach(q => {
+        // هێنانی قەرزی کڕیار (تەنها ئەوانەی ساف نەکراون)
+        let qReceiv = _supabase.from('qerzi_kriar').select('*').gt('amount', 0);
+        if(branchId) qReceiv = qReceiv.eq('branch_id', branchId);
+        const { data: dIn } = await qReceiv;
+        if(dIn) dIn.forEach(q => {
             tRec += q.amount;
-            if(currentTab==='debts_in') dataList.push({date: q.created_at, type: 'قەرزی کڕیار', name: q.name, amt: q.amount, note: 'وەرگرتن'});
+            if(currentTab==='debts_in') dataList.push({date: q.created_at, type: 'قەرز', name: q.name, amt: q.amount, cls: 'buy-bg'});
         });
 
-        // ٤. قەرزی بازرگان (شایەنی سەرفکردن)
-        const { data: qBazrgan } = await _supabase.from('qerzi_bazrgan').select('*');
-        if(qBazrgan) qBazrgan.forEach(q => {
-            tPay += q.amount;
-            if(currentTab==='debts_out') dataList.push({date: q.created_at, type: 'قەرزی بازرگان', name: q.name, amt: q.amount, note: 'سەرفکردن'});
+        // هێنانی قەرزی بازرگان
+        let qPayab = _supabase.from('merchant_debts').select('*').gt('amount_usd', 0);
+        if(branchId) qPayab = qPayab.eq('branch_id', branchId);
+        const { data: dOut } = await qPayab;
+        if(dOut) dOut.forEach(q => {
+            tPay += q.amount_usd;
+            if(currentTab==='debts_out') dataList.push({date: q.created_at, type: 'بازرگان', name: q.merchant_name, amt: q.amount_usd, cls: 'buy-bg'});
         });
 
-        // فلتەری ناو
-        dataList = dataList.filter(d => d.name.toLowerCase().includes(search));
+        // نیشاندان لە خشتە
         dataList.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-        dataList.forEach(d => {
-            html += `<tr>
-                <td>${new Date(d.date).toLocaleDateString()}</td>
-                <td><span class="badge" style="background:#eee;">${d.type}</span></td>
+        let html = dataList.map(d => `
+            <tr>
+                <td style="font-size:11px;">${new Date(d.date).toLocaleDateString('ku-IQ')}</td>
+                <td><span class="type-badge ${d.cls}">${d.type}</span></td>
                 <td>${d.name}</td>
-                <td style="font-weight:bold;">${d.amt.toLocaleString()} $</td>
-                <td>${d.note}</td>
-            </tr>`;
-        });
+                <td style="font-weight:bold;">$${d.amt.toFixed(2)}</td>
+            </tr>
+        `).join('');
 
-        document.getElementById('tSales').innerText = ts.toLocaleString() + " $";
-        document.getElementById('tPurchases').innerText = tp.toLocaleString() + " $";
-        document.getElementById('tProfit').innerText = tprof.toLocaleString() + " $";
-        document.getElementById('tReceivable').innerText = tRec.toLocaleString() + " $";
-        document.getElementById('tPayable').innerText = tPay.toLocaleString() + " $";
-        document.getElementById('reportTbody').innerHTML = html || "<tr><td colspan='5'>داتا بەردەست نییە</td></tr>";
+        document.getElementById('tSales').innerText = "$" + ts.toLocaleString();
+        document.getElementById('tProfit').innerText = "$" + tprof.toLocaleString();
+        document.getElementById('tReceivable').innerText = "$" + tRec.toLocaleString();
+        document.getElementById('tPayable').innerText = "$" + tPay.toLocaleString();
+        document.getElementById('reportTbody').innerHTML = html || "<tr><td colspan='4'>هیچ داتایەک نییە</td></tr>";
     }
+
     window.onload = loadData;
 </script>
 </body>
