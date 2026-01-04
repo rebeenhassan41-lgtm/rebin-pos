@@ -12,7 +12,7 @@
         h2 { border-bottom: 2px solid var(--s); padding-bottom: 10px; color: var(--p); }
         input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
         button { background: var(--s); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .balance-box { background: #e8f4fd; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; }
+        .balance-box { background: #e8f4fd; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; border-right: 4px solid #3498db; }
     </style>
 </head>
 <body>
@@ -22,14 +22,15 @@
         <h2>🏢 دروستکردنی لقی نوێ</h2>
         <input type="text" id="branchName" placeholder="ناوی لق (بۆ نموونە: لقی هەولێر)">
         <input type="text" id="branchLoc" placeholder="ناونیشان">
-        <button onclick="addBranch()">تۆمارکردنی لق</button>
+        <button onclick="addBranch()" id="saveBtn">تۆمارکردنی لق</button>
         
         <div id="branchList" style="margin-top:20px;">
-            </div>
+            <p>خەریکە بار دەکرێت...</p>
+        </div>
     </div>
 
     <div class="card">
-        <h2>💸 ئاڵوگۆڕی پارە لە نێوان لقەکان</h2>
+        <h2>💸 ئاڵوگۆڕی پارە</h2>
         <label>لە لقی:</label>
         <select id="fromBranch"></select>
         
@@ -44,57 +45,65 @@
 </div>
 
 <script>
+    // لێرە زانیارییەکانی خۆت دابنێوە
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     async function addBranch() {
-        const name = document.getElementById('branchName').value;
-        const loc = document.getElementById('branchLoc').value;
-        
-        const { data, error } = await _supabase.from('branches').insert([{ branch_name: name, location: loc }]).select();
-        if(!error) {
-            // دروستکردنی سندوق بۆ لقە نوێیەکە
-            await _supabase.from('cashboxes').insert([{ branch_id: data[0].id, balance_usd: 0 }]);
-            alert("لقەکە دروستکرا ✅");
+        const name = document.getElementById('branchName').value.trim();
+        const loc = document.getElementById('branchLoc').value.trim();
+        const btn = document.getElementById('saveBtn');
+
+        if(!name) return alert("تکایە ناوی لق بنووسە");
+
+        btn.disabled = true;
+        btn.innerText = "خەریکە پاشەکەوت دەکرێت...";
+
+        try {
+            // ١. دروستکردنی لق
+            const { data, error } = await _supabase.from('branches').insert([{ branch_name: name, location: loc }]).select();
+            
+            if(error) throw error;
+
+            // ٢. دروستکردنی سندوق بۆ لقەکە
+            const { error: boxError } = await _supabase.from('cashboxes').insert([{ branch_id: data[0].id, balance_usd: 0 }]);
+            
+            if(boxError) throw boxError;
+
+            alert("لق و سندوق بە سەرکەوتوویی دروستکران ✅");
             location.reload();
+
+        } catch (err) {
+            console.error("Error:", err);
+            alert("هەڵە ڕوویدا: " + (err.message || "پەیوەندی لەگەڵ داتابەیس نییە"));
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "تۆمارکردنی لق";
         }
     }
 
     async function loadBranches() {
-        const { data } = await _supabase.from('branches').select('*');
-        const list = document.getElementById('branchList');
-        const fromSel = document.getElementById('fromBranch');
-        const toSel = document.getElementById('toBranch');
+        try {
+            const { data, error } = await _supabase.from('branches').select('*');
+            if(error) throw error;
 
-        data.forEach(b => {
-            list.innerHTML += `<div class="balance-box">📍 ${b.branch_name}</div>`;
-            fromSel.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
-            toSel.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
-        });
-    }
+            const list = document.getElementById('branchList');
+            const fromSel = document.getElementById('fromBranch');
+            const toSel = document.getElementById('toBranch');
 
-    async function transferMoney() {
-        const from = document.getElementById('fromBranch').value;
-        const to = document.getElementById('toBranch').value;
-        const amount = parseFloat(document.getElementById('transferAmount').value);
+            list.innerHTML = data.length === 0 ? "هیچ لقێک نییە" : "";
+            fromSel.innerHTML = "";
+            toSel.innerHTML = "";
 
-        if(from === to) return alert("ناتوانیت بۆ هەمان لق پارە بنێریت!");
-
-        // ١. کەمکردنەوە لە سندوقی یەکەم
-        const { data: box1 } = await _supabase.from('cashboxes').select('*').eq('branch_id', from).single();
-        if(box1.balance_usd < amount) return alert("پارەی پێویست لەم سندوقەدا نییە!");
-
-        await _supabase.from('cashboxes').update({ balance_usd: box1.balance_usd - amount }).eq('branch_id', from);
-
-        // ٢. زیادکردن بۆ سندوقی دووەم
-        const { data: box2 } = await _supabase.from('cashboxes').select('*').eq('branch_id', to).single();
-        await _supabase.from('cashboxes').update({ balance_usd: box2.balance_usd + amount }).eq('branch_id', to);
-
-        // ٣. تۆمارکردنی گواستنەوەکە
-        await _supabase.from('money_transfers').insert([{ from_branch_id: from, to_branch_id: to, amount_usd: amount }]);
-
-        alert("گواستنەوەکە سەرکەوتوو بوو 🚀");
+            data.forEach(b => {
+                list.innerHTML += `<div class="balance-box">📍 ${b.branch_name} (${b.location || 'بێ ناونیشان'})</div>`;
+                fromSel.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
+                toSel.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
+            });
+        } catch (err) {
+            document.getElementById('branchList').innerHTML = "<span style='color:red'>هەڵە لە بارکردنی لقەکان</span>";
+        }
     }
 
     window.onload = loadBranches;
