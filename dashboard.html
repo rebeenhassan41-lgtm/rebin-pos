@@ -2,46 +2,58 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>داشبۆرد - سیستەمی ڕێبین</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R</title>
+    <meta name="apple-mobile-web-app-title" content="R">
+    <meta name="application-name" content="R">
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         :root {
             --primary: #2c3e50;
             --accent: #34495e;
             --bg: #f0f2f5;
             --white: #ffffff;
+            --blue: #3498db;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; -webkit-tap-highlight-color: transparent; }
         
         .header { 
-            background: var(--primary); color: white; padding: 30px 20px; 
+            background: var(--primary); color: white; padding: 40px 20px 30px; 
             text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            border-bottom: 5px solid #3498db;
+            border-bottom: 5px solid var(--blue);
+            border-radius: 0 0 25px 25px;
         }
 
-        .container { padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
+        .container { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
         
         .grid-container { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 15px; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 12px; 
         }
 
         .card { 
-            background: var(--white); padding: 20px 10px; border-radius: 20px; 
-            box-shadow: 0 6px 15px rgba(0,0,0,0.05); text-align: center;
-            cursor: pointer; transition: all 0.3s ease; text-decoration: none; 
-            color: var(--primary); border-top: 8px solid #ccc; display: block;
+            background: var(--white); padding: 15px 5px; border-radius: 18px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;
+            cursor: pointer; transition: all 0.2s ease; text-decoration: none; 
+            color: var(--primary); border-top: 6px solid #ccc; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
         }
 
-        .card:hover { transform: translateY(-10px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
-        .card:active { transform: scale(0.95); }
+        .card:active { transform: scale(0.92); background: #f9f9f9; }
 
-        .icon { font-size: 40px; margin-bottom: 10px; display: block; }
-        h2 { margin: 10px 0 0; font-size: 16px; font-weight: bold; }
-        p { font-size: 11px; color: #7f8c8d; margin: 5px 0 0; }
+        .icon { font-size: 32px; margin-bottom: 8px; }
+        h2 { margin: 5px 0 0; font-size: 14px; font-weight: bold; }
+        p { font-size: 10px; color: #7f8c8d; margin: 3px 0 0; }
 
-        /* ڕەنگە تایبەتەکان */
+        /* ڕەنگە تایبەتەکان بۆ هەر بەشێک */
         .item-add { border-top-color: #8e44ad; } 
         .user-add { border-top-color: #607d8b; } 
         .buy { border-top-color: #3498db; }      
@@ -52,56 +64,34 @@
         .rep { border-top-color: #9b59b6; }      
         .rec { border-top-color: #e67e22; }      
         .pay { border-top-color: #e74c3c; }      
-        .branch-card { border-top-color: #e84393; } /* ڕەنگی پەمەیی بۆ لقەکان */
+        .branch-card { border-top-color: #e84393; }
 
-        .logout-section { text-align: center; margin-top: 40px; }
+        .logout-section { text-align: center; margin-top: 30px; margin-bottom: 30px; }
         .logout-btn { 
-            background: #e74c3c; color: white; border: none; padding: 12px 40px; 
-            border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; 
-            transition: 0.3s; width: 100%; max-width: 250px;
+            background: #fdfdfd; color: #e74c3c; border: 1px solid #e74c3c; padding: 12px 40px; 
+            border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; 
+            transition: 0.3s; width: 100%; max-width: 200px;
         }
-        #userWelcome { color: #f1c40f; font-weight: bold; display: block; margin-top: 8px; font-size: 14px; }
-        .branch-badge { background: #3498db; color: white; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 10px; }
+        
+        #userWelcome { color: white; font-weight: normal; display: block; margin-top: 10px; font-size: 15px; }
+        .branch-badge { background: var(--blue); color: white; padding: 3px 12px; border-radius: 20px; font-size: 12px; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1 style="font-size: 24px; margin: 0;">سیستەمی بەڕێوەبردنی ڕێبین 👋</h1>
-        <span id="userWelcome">بەخێربێیت</span>
+        <h1 style="font-size: 22px; margin: 0;">سیستەمی ڕێبین</h1>
+        <div id="userWelcome">خەریکە بار دەکرێت...</div>
+        <span id="branchDisplay" class="branch-badge">لق: ---</span>
     </div>
 
     <div class="container">
         <div class="grid-container">
             
-            <div onclick="navTo('add_item.html')" class="card item-add">
-                <span class="icon">📦</span>
-                <h2>ناساندنی کەرەستە</h2>
-                <p>تۆمارکردنی کاڵای نوێ</p>
-            </div>
-
-            <div onclick="navTo('add_user.html')" class="card user-add">
-                <span class="icon">👤</span>
-                <h2>زیادکردنی بەکارهێنەر</h2>
-                <p>دروستکردنی ئەکاونت</p>
-            </div>
-
-            <div onclick="navTo('branches.html')" class="card branch-card">
-                <span class="icon">🏢</span>
-                <h2>بەڕێوەبردنی لقەکان</h2>
-                <p>ئاڵوگۆڕی پارە و لق</p>
-            </div>
-
             <div onclick="navTo('sales.html')" class="card sell">
                 <span class="icon">💰</span>
                 <h2>فرۆشتن</h2>
                 <p>وەسڵی نوێ</p>
-            </div>
-
-            <div onclick="navTo('krin.html')" class="card buy">
-                <span class="icon">📥</span>
-                <h2>کڕین</h2>
-                <p>داخڵکردنی بڕی کاڵا</p>
             </div>
 
             <div onclick="navTo('inventory.html')" class="card inv">
@@ -110,16 +100,34 @@
                 <p>بینینی مەخزەن</p>
             </div>
 
+            <div onclick="navTo('krin.html')" class="card buy">
+                <span class="icon">📥</span>
+                <h2>کڕین</h2>
+                <p>داخڵکردنی کاڵا</p>
+            </div>
+
+            <div onclick="navTo('add_item.html')" class="card item-add">
+                <span class="icon">📦</span>
+                <h2>ناساندنی کەرەستە</h2>
+                <p>کاڵای نوێ</p>
+            </div>
+
             <div onclick="navTo('add_supplier.html')" class="card add-sup">
                 <span class="icon">📝</span>
                 <h2>ناساندنی بازرگان</h2>
-                <p>تۆمارکردنی ناوی نوێ</p>
+                <p>تۆمارکردنی فایل</p>
             </div>
 
             <div onclick="navTo('suppliers.html')" class="card sup">
                 <span class="icon">👥</span>
                 <h2>پڕۆفایلی بازرگانان</h2>
                 <p>کەشف حیساب</p>
+            </div>
+
+            <div onclick="navTo('add_user.html')" class="card user-add">
+                <span class="icon">👤</span>
+                <h2>کارمەندان</h2>
+                <p>بەڕێوەبردن</p>
             </div>
 
             <div onclick="navTo('report.html')" class="card rep">
@@ -140,6 +148,12 @@
                 <p>ئەو پارەیەی لەسەرتە</p>
             </div>
 
+            <div onclick="navTo('branches.html')" class="card branch-card">
+                <span class="icon">🏢</span>
+                <h2>لقەکان</h2>
+                <p>گۆڕینی لق</p>
+            </div>
+
         </div>
         
         <div class="logout-section">
@@ -149,28 +163,32 @@
 
     <script>
         function checkAuth() {
+            // پشکنینی لۆگین
             if (localStorage.getItem("rebeenAuth") !== "true") {
                 window.location.replace("login.html");
             } else {
-                const name = localStorage.getItem("userName") || "کارمەند";
-                const pos = localStorage.getItem("userPosition") || "";
-                // نیشاندانی ناوی لق ئەگەر هەبێت
-                const branch = localStorage.getItem("branchName") || "هەموو لقەکان";
-                document.getElementById("userWelcome").innerHTML = 
-                    `بەخێربێیت: ${name} <span class="branch-badge">${branch}</span>`;
+                const name = localStorage.getItem("userName") || "بەکارهێنەر";
+                const branchName = localStorage.getItem("userBranchName") || "نادیار";
+                
+                document.getElementById("userWelcome").innerText = `بەخێربێیت، ${name} 👋`;
+                document.getElementById("branchDisplay").innerText = `لق: ${branchName}`;
             }
         }
+        
         checkAuth();
 
         function logout() {
-            localStorage.clear(); 
-            window.location.replace("login.html");
+            if(confirm("دڵنیای لە چوونە دەرەوە؟")) {
+                localStorage.clear(); 
+                window.location.replace("login.html");
+            }
         }
 
         function navTo(page) {
             window.location.href = page;
         }
 
+        // بۆ ئەوەی کە گەڕایەوە دواوە لاپەڕەکە نوێ ببێتەوە
         window.onpageshow = function(event) {
             if (event.persisted) window.location.reload();
         };
