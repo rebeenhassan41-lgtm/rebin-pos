@@ -7,46 +7,46 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 10px; margin: 0; text-align: right; direction: rtl; }
-        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 10px; margin: 0; direction: rtl; }
+        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 1100px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
-        .back-btn { text-decoration: none; background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 14px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th { background: var(--primary); color: white; padding: 12px; }
-        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
-        .currency-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; color: white; }
-        .usd { background: #27ae60; } .iqd { background: #2980b9; }
-        .delete-btn { background: #e74c3c; border: none; cursor: pointer; padding: 5px 10px; border-radius: 5px; color: white; }
+        /* Search Box */
+        .search-area { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-area input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
         
-        @media (max-width: 600px) {
-            th, td { padding: 8px; font-size: 12px; }
-            .header h1 { font-size: 18px; }
+        /* Invoice Card Style */
+        .invoice-group { border: 2 inline solid #ddd; border-radius: 10px; margin-bottom: 30px; padding: 15px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .invoice-header { background: #f8f9fa; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-right: 5px solid var(--accent); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: var(--primary); color: white; padding: 10px; font-size: 13px; }
+        td { padding: 10px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
+        
+        .btn-print { background: var(--accent); color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        .back-btn { text-decoration: none; background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .container { box-shadow: none; width: 100%; max-width: 100%; }
+            .invoice-group { page-break-inside: avoid; border: 1px solid #000; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>📊 مەخزەنی گشتی</h1>
+    <div class="header no-print">
+        <h1>📊 مەخزەنی گشتی و وەسڵەکان</h1>
         <a href="dashboard.html" class="back-btn">گەڕانەوە</a>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>کاڵا</th>
-                <th>کۆگای ماوە</th>
-                <th>نرخی کڕین</th>
-                <th>دراو</th>
-                <th>کردار</th>
-            </tr>
-        </thead>
-        <tbody id="inventoryTable">
-            <tr><td colspan="5">خەریکە بار دەکرێت...</td></tr>
-        </tbody>
-    </table>
+    <div class="search-area no-print">
+        <input type="text" id="searchInput" placeholder="بگەڕێ بۆ ناوی کاڵا یان ژمارەی وەسڵ..." oninput="filterInvoices()">
+    </div>
+
+    <div id="invoiceContainer">
+        </div>
 </div>
 
 <script>
@@ -54,43 +54,99 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // پشکنینی لۆگین بۆ مۆبایل و کۆمپیوتەر
-    const isAuth = localStorage.getItem("rebeenAuth") === "true" || document.cookie.includes("rebeenAuth=true");
-    if (!isAuth) { window.location.href = "index.html"; }
+    let allData = [];
 
     async function loadInventory() {
-        // وەرگرتنی داتا لە خشتەی invoices (کە کڕینەکانت لێیە)
-        const { data, error } = await _supabase.from('invoices').select('*');
-        const table = document.getElementById('inventoryTable');
+        const { data, error } = await _supabase.from('purchases').select('*').order('created_at', { ascending: false });
         
         if (error) {
-            table.innerHTML = "<tr><td colspan='5'>هەڵە لە بارکردن</td></tr>";
+            document.getElementById('invoiceContainer').innerHTML = "هەڵە لە بارکردنی داتا";
             return;
         }
-
-        if (data.length === 0) {
-            table.innerHTML = "<tr><td colspan='5'>مەخزەن بەتاڵە</td></tr>";
-            return;
-        }
-
-        table.innerHTML = data.map(item => `
-            <tr>
-                <td><b>${item.item_name}</b></td>
-                <td><span style="color:green; font-weight:bold;">${item.quantity}</span> دانە</td>
-                <td>${Number(item.buy_price).toLocaleString()}</td>
-                <td><span class="currency-badge usd">${item.currency || 'USD'}</span></td>
-                <td>
-                    <button class="delete-btn" onclick="deleteItem(${item.id})">🗑️</button>
-                </td>
-            </tr>
-        `).join('');
+        allData = data;
+        renderInvoices(data);
     }
 
-    async function deleteItem(id) {
-        if(confirm("ئایا دڵنیای لە سڕینەوە؟")) {
-            const { error } = await _supabase.from('invoices').delete().eq('id', id);
-            if(!error) loadInventory();
+    function renderInvoices(items) {
+        const container = document.getElementById('invoiceContainer');
+        container.innerHTML = "";
+
+        // گروپکردنی داتا بەپێی ژمارەی وەسڵ (inv_no)
+        const groups = items.reduce((acc, item) => {
+            const inv = item.inv_no || "بێ وەسڵ";
+            if (!acc[inv]) acc[inv] = [];
+            acc[inv].push(item);
+            return acc;
+        }, {});
+
+        for (const invNo in groups) {
+            const groupItems = groups[invNo];
+            const merchant = groupItems[0].merchant || "نادیار";
+            const date = new Date(groupItems[0].created_at).toLocaleDateString('ku-IQ');
+            
+            let totalUSD = 0;
+            const rows = groupItems.map(item => {
+                const lineTotal = item.buy_price * item.quantity;
+                totalUSD += lineTotal;
+                return `
+                    <tr>
+                        <td>${item.item_name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.buy_price} $</td>
+                        <td>${lineTotal.toFixed(2)} $</td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML += `
+                <div class="invoice-group" id="inv-${invNo}">
+                    <div class="invoice-header">
+                        <div>
+                            <b>🧾 وەسڵی #: ${invNo}</b> | 
+                            <span>👤 بازرگان: ${merchant}</span> |
+                            <span>📅 ڕێکەوت: ${date}</span>
+                        </div>
+                        <button class="btn-print no-print" onclick="printInvoice('inv-${invNo}')">🖨️ چاپکردن</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ناوی کاڵا</th>
+                                <th>بڕ (دانە)</th>
+                                <th>نرخی کڕین</th>
+                                <th>کۆی گشتی</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="text-align:left; font-weight:bold;">کۆی گشتی وەسڵ:</td>
+                                <td style="color:var(--success); font-weight:bold;">${totalUSD.toFixed(2)} $</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            `;
         }
+    }
+
+    function filterInvoices() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allData.filter(item => 
+            item.item_name.toLowerCase().includes(term) || 
+            (item.inv_no && item.inv_no.toLowerCase().includes(term))
+        );
+        renderInvoices(filtered);
+    }
+
+    function printInvoice(divId) {
+        const content = document.getElementById(divId).innerHTML;
+        const originalContent = document.body.innerHTML;
+        
+        document.body.innerHTML = `<div class="container" dir="rtl">${content}</div>`;
+        window.print();
+        document.body.innerHTML = originalContent;
+        window.location.reload(); // بۆ گەڕانەوەی فەنکشنەکان دوای چاپ
     }
 
     window.onload = loadInventory;
