@@ -12,13 +12,12 @@
         .section-title { background: #eee; padding: 10px; border-radius: 8px; margin-top: 20px; color: var(--p); font-weight: bold; border-right: 5px solid var(--s); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
         label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; }
-        input:focus { border-color: var(--s); box-shadow: 0 0 5px rgba(52,152,219,0.3); }
-        input:disabled { background: #f0f0f0; cursor: not-allowed; opacity: 0.6; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        input:focus { border-color: var(--s); outline: none; }
+        input:disabled { background: #f0f0f0; cursor: not-allowed; }
         .flex-row { display: flex; gap: 5px; }
         .btn-plus { background: var(--s); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; font-weight: bold; font-size: 20px; }
-        .btn-save { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; transition: 0.3s; }
-        .btn-save:disabled { background: #95a5a6; cursor: not-allowed; }
+        .btn-save { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; }
         .branch-badge { background: #34495e; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-top: 5px; }
     </style>
 </head>
@@ -35,34 +34,22 @@
 
     <div class="section-title">📝 زانیارییە سەرەکییەکان</div>
     <div class="grid">
-        <div style="grid-column: span 2;">
-            <label>ناوی کاڵا*</label>
-            <input type="text" id="itemName" placeholder="نموونە: شامپۆی کلێر">
-        </div>
-        <div>
-            <label>بارکۆد*</label>
-            <input type="text" id="barcode" placeholder="بارکۆد لێرە لێبدە" autofocus>
-        </div>
+        <div style="grid-column: span 2;"><label>ناوی کاڵا*</label><input type="text" id="itemName" placeholder="نموونە: شامپۆی کلێر"></div>
+        <div><label>بارکۆد*</label><input type="text" id="barcode" placeholder="بارکۆد" autofocus></div>
     </div>
     
     <div class="grid">
         <div>
             <label>کاتیگۆری</label>
             <div class="flex-row">
-                <select id="cat">
-                    <option value="گشتی">گشتی</option>
-                    <option value="دەرمان">دەرمان</option>
-                    <option value="خۆراک">خۆراک</option>
-                </select>
+                <select id="cat"><option value="گشتی">گشتی</option><option value="دەرمان">دەرمان</option><option value="خۆراک">خۆراک</option></select>
                 <button class="btn-plus" onclick="addNewOption('cat', 'کاتیگۆری')">+</button>
             </div>
         </div>
         <div>
             <label>براند</label>
             <div class="flex-row">
-                <select id="brand">
-                    <option value="بێ براند">بێ براند</option>
-                </select>
+                <select id="brand"><option value="بێ براند">بێ براند</option></select>
                 <button class="btn-plus" onclick="addNewOption('brand', 'براند')">+</button>
             </div>
         </div>
@@ -71,10 +58,8 @@
 
     <div class="section-title">📅 کات و کۆگا</div>
     <div class="grid">
-        <div style="background: #fff9c4; padding: 10px; border-radius: 10px; border: 1px solid #f1c40f;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#d35400;">
-                <input type="checkbox" id="hasExpiry" onchange="toggleExpiry()"> ئیکسپایەری هەیە؟
-            </label>
+        <div style="background: #fff9c4; padding: 10px; border-radius: 10px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="hasExpiry" onchange="toggleExpiry()"> ئیکسپایەری هەیە؟</label>
             <input type="date" id="expiryDate" disabled style="margin-top: 10px;">
         </div>
         <div><label>بڕی سەرەتایی</label><input type="number" id="initialQty" value="0"></div>
@@ -89,76 +74,58 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // وەرگرتنی ID ی لق
     const userBranchId = localStorage.getItem("userBranchId");
     const userBranchName = localStorage.getItem("userBranchName") || "نادیار";
     document.getElementById('currentBranch').innerText = "لق: " + userBranchName;
 
-    function addNewOption(elementId, label) {
-        const newVal = prompt(`ناوی ${label}ی نوێ بنووسە:`);
-        if (newVal && newVal.trim() !== "") {
-            const select = document.getElementById(elementId);
-            const option = document.createElement("option");
-            option.text = newVal; option.value = newVal;
-            select.add(option);
-            select.value = newVal;
+    function addNewOption(el, label) {
+        const val = prompt(`ناوی ${label}ی نوێ:`);
+        if (val) {
+            const s = document.getElementById(el);
+            const opt = document.createElement("option");
+            opt.text = val; opt.value = val;
+            s.add(opt); s.value = val;
         }
     }
 
     function toggleExpiry() {
-        const hasExp = document.getElementById('hasExpiry').checked;
-        const expInp = document.getElementById('expiryDate');
-        expInp.disabled = !hasExp;
-        if(!hasExp) expInp.value = "";
+        const h = document.getElementById('hasExpiry').checked;
+        const e = document.getElementById('expiryDate');
+        e.disabled = !h; if(!h) e.value = "";
     }
 
     async function saveSimpleItem() {
-        const itemName = document.getElementById('itemName').value.trim();
-        const barcode = document.getElementById('barcode').value.trim();
-        
-        if(!itemName || !barcode) return alert("⚠️ تکایە ناو و بارکۆد بە دروستی بنووسە");
-        if(!userBranchId) return alert("⚠️ لقی تۆ دیار نییە، تکایە جارێکی تر لۆگین بکەوە");
+        const name = document.getElementById('itemName').value.trim();
+        const code = document.getElementById('barcode').value.trim();
+        if(!name || !code) return alert("ناو و بارکۆد پڕ بکەرەوە");
 
-        const saveBtn = document.getElementById('saveBtn');
-        saveBtn.disabled = true;
-        saveBtn.innerText = "خەریکی تۆمارکردنم...";
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true; btn.innerText = "خەریکە تۆمار دەبێت...";
 
-        // دروستکردنی داتا بۆ ناردن
-        const payload = {
-            "item_name": itemName,
-            "barcode": barcode,
-            "category": document.getElementById('cat').value,
-            "brand": document.getElementById('brand').value,
-            "quantity": parseFloat(document.getElementById('initialQty').value) || 0,
-            "unit": document.getElementById('unit').value,
-            "expiry_date": document.getElementById('expiryDate').value || null,
-            "has_expiry": document.getElementById('hasExpiry').checked,
-            "alert_quantity": parseInt(document.getElementById('alertQty').value) || 0,
-            "branch_id": userBranchId, // ئەگەر لە داتابەیس بە ژمارەیە لێرە دەتوانیت بیگریت بۆ Number(userBranchId)
-            "is_active": true,
-            "buy_price": 0,
-            "sell_price": 0,
-            "wholesale_price": 0
-        };
-
-        const { error } = await _supabase.from('purchases').insert([payload]);
+        // لێرەدا هەموو ستوونەکانمان وەک خۆی ناو هێناوە
+        const { error } = await _supabase.from('purchases').insert([{
+            item_name: name,
+            barcode: code,
+            category: document.getElementById('cat').value,
+            brand: document.getElementById('brand').value,
+            quantity: parseFloat(document.getElementById('initialQty').value) || 0,
+            unit: document.getElementById('unit').value,
+            expiry_date: document.getElementById('expiryDate').value || null,
+            has_expiry: document.getElementById('hasExpiry').checked,
+            alert_quantity: parseInt(document.getElementById('alertQty').value) || 0,
+            branch_id: userBranchId, // ئەگەر کێشەی هەبوو لێرە دەبێت ناوەکەی بگۆڕیت
+            is_active: true,
+            buy_price: 0, sell_price: 0, wholesale_price: 0
+        }]);
 
         if(!error) {
-            alert("✅ کاڵاکە بە سەرکەوتوویی تۆمارکرا");
-            // پاککردنەوەی فۆرم
-            document.getElementById('itemName').value = "";
-            document.getElementById('barcode').value = "";
-            document.getElementById('initialQty').value = "0";
-            document.getElementById('hasExpiry').checked = false;
-            toggleExpiry();
-            document.getElementById('barcode').focus();
+            alert("✅ سەرکەوتوو بوو");
+            location.reload();
         } else {
-            console.error("Supabase Error:", error);
-            alert("❌ هەڵە ڕوویدا: " + error.message);
+            console.error(error);
+            alert("❌ هەڵە: " + error.message);
+            btn.disabled = false; btn.innerText = "تۆمارکردنی کاڵا ✅";
         }
-        
-        saveBtn.disabled = false;
-        saveBtn.innerText = "تۆمارکردنی کاڵا ✅";
     }
 </script>
 </body>
