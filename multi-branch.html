@@ -13,102 +13,78 @@
         input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
         button { background: var(--s); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
         .balance-box { background: #e8f4fd; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; border-right: 5px solid var(--s); display: flex; justify-content: space-between; }
-        .status-badge { padding: 5px; border-radius: 5px; font-size: 12px; margin-bottom: 10px; display: block; text-align: center; }
-        .error { background: #ff7675; color: white; }
-        .success { background: #55efc4; color: #2d3436; }
+        #status { padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        .error { background: #fab1a0; color: #d63031; }
+        .success { background: #55efc4; color: #00b894; }
     </style>
 </head>
 <body>
 
-<div id="status" class="status-badge">خەریکە پەیوەندی بە داتابەیسەوە دەکرێت...</div>
+<div id="status">خەریکە پەیوەندی بە داتابەیسەوە دەکرێت...</div>
 
 <div class="grid">
     <div class="card">
         <h2>🏢 دروستکردنی لقی نوێ</h2>
-        <input type="text" id="branchName" placeholder="ناوی لق (بۆ نموونە: لقی سلێمانی)">
+        <input type="text" id="branchName" placeholder="ناوی لق">
         <input type="text" id="branchLoc" placeholder="ناونیشان">
         <button onclick="addBranch()">تۆمارکردنی لق ✅</button>
-        
-        <div id="branchList" style="margin-top:20px;">
-            </div>
+        <div id="branchList" style="margin-top:20px;"></div>
     </div>
 
     <div class="card">
         <h2>💸 گواستنەوەی پارە</h2>
-        <label>لە لقی:</label>
-        <select id="fromBranch"></select>
-        <label>بۆ لقی:</label>
-        <select id="toBranch"></select>
-        <label>بڕی پارە ($):</label>
-        <input type="number" id="transferAmount" placeholder="0.00">
+        <label>لە لقی:</label><select id="fromBranch"></select>
+        <label>بۆ لقی:</label><select id="toBranch"></select>
+        <label>بڕی پارە ($):</label><input type="number" id="transferAmount" placeholder="0.00">
         <button onclick="transferMoney()" style="background:#27ae60;">ئەنجامدانی گواستنەوە 🔃</button>
     </div>
 </div>
 
 <script>
-    // دڵنیابەرەوە ئەم زانیاریانە ڕاستن
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // پشکنینی سەرەتایی
-    async function checkConnection() {
-        const statusDiv = document.getElementById('status');
-        try {
-            const { error } = await _supabase.from('branches').select('id').limit(1);
-            if (error) throw error;
-            statusDiv.innerText = "پەیوەندی داتابەیس جێگیرە ✅";
-            statusDiv.className = "status-badge success";
-            loadBranches();
-        } catch (err) {
-            statusDiv.innerText = "هەڵە: " + err.message + " (دڵنیابەرەوە خشتەکانت دروستکردووە)";
-            statusDiv.className = "status-badge error";
+    async function checkAndLoad() {
+        const stat = document.getElementById('status');
+        const { data, error } = await _supabase.from('branches').select('*');
+        
+        if (error) {
+            stat.innerText = "⚠️ کێشە: " + error.message;
+            stat.className = "error";
+        } else {
+            stat.innerText = "✅ پەیوەندی جێگیرە - داتابەیس ئامادەیە";
+            stat.className = "success";
+            renderList(data);
         }
     }
 
     async function addBranch() {
         const name = document.getElementById('branchName').value;
         const loc = document.getElementById('branchLoc').value;
+        if(!name) return alert("ناو بنووسە");
 
-        if(!name) return alert("ناوی لق پێویستە!");
-
-        // ١. زیادکردنی لق
         const { data, error } = await _supabase.from('branches').insert([{ branch_name: name, location: loc }]).select();
-        
-        if(error) {
-            alert("هەڵە لە دروستکردنی لق: " + error.message);
-            return;
-        }
+        if(error) return alert("هەڵە: " + error.message);
 
-        // ٢. دروستکردنی سندوقی سەرەتایی بۆ لقەکە
-        const { error: boxError } = await _supabase.from('cashboxes').insert([{ branch_id: data[0].id, balance_usd: 0 }]);
-        
-        if(boxError) {
-            alert("لق دروست بوو بەڵام سندوق دروست نەبوو: " + boxError.message);
-        } else {
-            alert("لق و سندوقی تایبەت بە سەرکەوتوویی تۆمار کران ✅");
-            location.reload();
-        }
+        await _supabase.from('cashboxes').insert([{ branch_id: data[0].id, balance_usd: 0 }]);
+        alert("تۆمارکرا ✅");
+        location.reload();
     }
 
-    async function loadBranches() {
-        const { data, error } = await _supabase.from('branches').select('*');
-        if(error) return;
-
+    function renderList(data) {
         const list = document.getElementById('branchList');
-        const fromSel = document.getElementById('fromBranch');
-        const toSel = document.getElementById('toBranch');
-
+        const fromS = document.getElementById('fromBranch');
+        const toS = document.getElementById('toBranch');
         list.innerHTML = "";
         data.forEach(b => {
-            list.innerHTML += `<div class="balance-box"><span>📍 ${b.branch_name}</span> <small>${b.location || ''}</small></div>`;
-            fromSel.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
-            toSel.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
+            list.innerHTML += `<div class="balance-box">📍 ${b.branch_name}</div>`;
+            fromS.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
+            toS.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
         });
     }
 
-    // دەستپێکردن
-    checkConnection();
+    window.onload = checkAndLoad;
 </script>
 </body>
 </html>
