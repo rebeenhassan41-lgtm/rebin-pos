@@ -2,50 +2,27 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بەڕێوەبردنی لقەکان - Rebin System</title>
+    <title>بەڕێوەبردنی لقەکان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #3498db; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { border-bottom: 2px solid var(--s); padding-bottom: 10px; color: var(--p); }
-        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { background: var(--s); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
-        .balance-box { background: #e8f4fd; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; border-right: 5px solid var(--s); display: flex; justify-content: space-between; align-items: center; }
-        #status { padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }
-        .success { background: #55efc4; color: #00b894; }
-        .error { background: #fab1a0; color: #d63031; }
+        body { font-family: sans-serif; direction: rtl; padding: 20px; background: #f0f2f5; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #2ecc71; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        #debug { margin-top: 20px; padding: 10px; border-radius: 5px; font-size: 13px; white-space: pre-wrap; direction: ltr; text-align: left; }
+        .err { background: #ffdada; color: #a30000; border: 1px solid #a30000; }
+        .ok { background: #d4ffd4; color: #006400; border: 1px solid #006400; }
     </style>
 </head>
 <body>
 
-<div id="status">خەریکە پەیوەندی داتابەیس دەپشکنرێت...</div>
-
-<div class="grid">
-    <div class="card">
-        <h2>🏢 دروستکردنی لقی نوێ</h2>
-        <input type="text" id="branchName" placeholder="ناوی لق (بۆ نموونە: لقی سلێمانی)">
-        <input type="text" id="branchLoc" placeholder="ناونیشان">
-        <button onclick="addBranch()">تۆمارکردنی لق ✅</button>
-        
-        <div id="branchList" style="margin-top:20px;">
-            </div>
-    </div>
-
-    <div class="card">
-        <h2>💸 گواستنەوەی پارە لە نێوان لقەکان</h2>
-        <label>لە لقی:</label>
-        <select id="fromBranch"></select>
-        
-        <label>بۆ لقی:</label>
-        <select id="toBranch"></select>
-        
-        <label>بڕی پارە ($):</label>
-        <input type="number" id="transferAmount" placeholder="0.00">
-        
-        <button onclick="transferMoney()" style="background:#27ae60;">ئەنجامدانی گواستنەوە 🔃</button>
-    </div>
+<div class="box">
+    <h3>🏢 دروستکردنی لق</h3>
+    <div id="debug">خەریکە پەیوەندی دەپشکنرێت...</div>
+    <hr>
+    <input type="text" id="bName" placeholder="ناوی لق بنووسە...">
+    <button onclick="saveBranch()">تۆمارکردن</button>
+    <div id="bList" style="margin-top: 15px;"></div>
 </div>
 
 <script>
@@ -53,69 +30,44 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    async function init() {
-        const stat = document.getElementById('status');
+    async function check() {
+        const dbg = document.getElementById('debug');
         try {
+            // پشکنینی خشتەی لقەکان
             const { data, error } = await _supabase.from('branches').select('*');
-            if (error) throw error;
-
-            stat.innerText = "✅ داتابەیس ئامادەیە و بەستراوەتەوە";
-            stat.className = "success";
-            renderData(data);
-        } catch (err) {
-            stat.innerText = "❌ هەڵە: " + err.message;
-            stat.className = "error";
+            if (error) {
+                dbg.className = "err";
+                dbg.innerText = "Error: " + error.message + "\nCode: " + error.code;
+            } else {
+                dbg.className = "ok";
+                dbg.innerText = "✅ پەیوەندی داتابەیس دروستە.\nژمارەی لقەکان: " + data.length;
+                showList(data);
+            }
+        } catch (e) {
+            dbg.className = "err";
+            dbg.innerText = "Connection Failed: " + e.message;
         }
     }
 
-    async function addBranch() {
-        const name = document.getElementById('branchName').value.trim();
-        const loc = document.getElementById('branchLoc').value.trim();
+    async function saveBranch() {
+        const name = document.getElementById('bName').value;
+        if(!name) return alert("ناو بنووسە");
 
-        if(!name) return alert("ناوی لق بنووسە");
-
-        const { data, error } = await _supabase.from('branches').insert([{ 
-            branch_name: name, 
-            location: loc 
-        }]).select();
-
+        const { error } = await _supabase.from('branches').insert([{ branch_name: name }]);
         if(error) {
-            alert("هەڵە: " + error.message);
+            alert("هەڵە لە کاتی پاشەکەوتکردن: " + error.message);
         } else {
-            // دروستکردنی سندوق بۆ لقەکە
-            await _supabase.from('cashboxes').insert([{ branch_id: data[0].id, balance_usd: 0 }]);
-            alert("لق و سندوق تۆمارکران ✅");
-            location.reload();
+            alert("سەرکەوتوو بوو ✅");
+            check();
         }
     }
 
-    function renderData(branches) {
-        const list = document.getElementById('branchList');
-        const fromS = document.getElementById('fromBranch');
-        const toS = document.getElementById('toBranch');
-
-        list.innerHTML = branches.length === 0 ? "هیچ لقێک نییە" : "";
-        
-        branches.forEach(b => {
-            list.innerHTML += `<div class="balance-box">📍 ${b.branch_name} <small>${b.location || ''}</small></div>`;
-            fromS.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
-            toS.innerHTML += `<option value="${b.id}">${b.branch_name}</option>`;
-        });
+    function showList(data) {
+        const list = document.getElementById('bList');
+        list.innerHTML = data.map(b => `<div style="padding:5px; border-bottom:1px solid #eee;">📍 ${b.branch_name}</div>`).join('');
     }
 
-    async function transferMoney() {
-        const from = document.getElementById('fromBranch').value;
-        const to = document.getElementById('toBranch').value;
-        const amount = parseFloat(document.getElementById('transferAmount').value);
-
-        if(from === to) return alert("بۆ هەمان لق نابێت!");
-        if(!amount || amount <= 0) return alert("بڕی پارە بنووسە");
-
-        // ئەم بەشە دواتر بۆت تەواو دەکەم کاتێک سندوقەکانت پارەی تێچوو
-        alert("سیستەمی گواستنەوە چالاک کرا، بەڵام پێویستت بە بوونی پارەیە لە سندوقی لقەکەدا.");
-    }
-
-    window.onload = init;
+    check();
 </script>
 </body>
 </html>
