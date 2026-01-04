@@ -2,27 +2,82 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بەڕێوەبردنی لقەکان</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R - بەڕێوەبردنی لقەکان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; direction: rtl; padding: 20px; background: #f0f2f5; }
-        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #2ecc71; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        #debug { margin-top: 20px; padding: 10px; border-radius: 5px; font-size: 13px; white-space: pre-wrap; direction: ltr; text-align: left; }
-        .err { background: #ffdada; color: #a30000; border: 1px solid #a30000; }
-        .ok { background: #d4ffd4; color: #006400; border: 1px solid #006400; }
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f0f2f5; --success: #2ecc71; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        
+        .container { max-width: 500px; margin: auto; }
+        
+        .header { 
+            background: var(--primary); color: white; padding: 20px; 
+            border-radius: 15px; text-align: center; margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .box { 
+            background: white; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; 
+        }
+
+        h3 { margin-top: 0; color: var(--primary); font-size: 18px; }
+        
+        input { 
+            width: 100%; padding: 15px; margin: 10px 0; 
+            border: 2px solid #eee; border-radius: 12px; 
+            box-sizing: border-box; font-size: 16px; outline: none;
+        }
+        input:focus { border-color: var(--accent); }
+
+        button { 
+            width: 100%; padding: 15px; background: var(--success); 
+            color: white; border: none; cursor: pointer; 
+            border-radius: 12px; font-weight: bold; font-size: 16px;
+            transition: 0.3s;
+        }
+        button:active { transform: scale(0.95); }
+
+        .status { 
+            font-size: 12px; padding: 10px; border-radius: 10px; 
+            margin-bottom: 15px; text-align: center; font-weight: bold;
+        }
+        .err { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+        .branch-item { 
+            background: #f8fafc; padding: 15px; border-radius: 10px;
+            margin-bottom: 10px; display: flex; justify-content: space-between;
+            align-items: center; border-right: 5px solid var(--accent);
+        }
+        .back-link { 
+            display: block; text-align: center; margin-top: 20px;
+            color: var(--primary); text-decoration: none; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h3>🏢 دروستکردنی لق</h3>
-    <div id="debug">خەریکە پەیوەندی دەپشکنرێت...</div>
-    <hr>
-    <input type="text" id="bName" placeholder="ناوی لق بنووسە...">
-    <button onclick="saveBranch()">تۆمارکردن</button>
-    <div id="bList" style="margin-top: 15px;"></div>
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0;">🏢 بەڕێوەبردنی لقەکان</h2>
+    </div>
+
+    <div id="statusMsg" class="status">خەریکە پەیوەندی دەپشکنرێت...</div>
+
+    <div class="box">
+        <h3>➕ زانیاری لقی نوێ</h3>
+        <input type="text" id="bName" placeholder="ناوی لق (بۆ نموونە: لقی هەولێر)">
+        <button onclick="saveBranch()">تۆمارکردنی لق</button>
+    </div>
+
+    <div class="box">
+        <h3>📍 لقە تۆمارکراوەکان</h3>
+        <div id="bList">بار دەکرێت...</div>
+    </div>
+
+    <a href="dashboard.html" class="back-link">🏠 گەڕانەوە بۆ سەرەکی</a>
 </div>
 
 <script>
@@ -30,44 +85,60 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    async function check() {
-        const dbg = document.getElementById('debug');
+    async function checkStatus() {
+        const msg = document.getElementById('statusMsg');
         try {
-            // پشکنینی خشتەی لقەکان
-            const { data, error } = await _supabase.from('branches').select('*');
+            const { data, error } = await _supabase.from('branches').select('*').order('created_at', { ascending: false });
             if (error) {
-                dbg.className = "err";
-                dbg.innerText = "Error: " + error.message + "\nCode: " + error.code;
+                msg.className = "status err";
+                msg.innerText = "هەڵە: پەیوەندی داتابەیس نییە";
             } else {
-                dbg.className = "ok";
-                dbg.innerText = "✅ پەیوەندی داتابەیس دروستە.\nژمارەی لقەکان: " + data.length;
+                msg.className = "status ok";
+                msg.innerText = "✅ پەیوەندی داتابەیس چالاکە - " + data.length + " لق هەیە";
                 showList(data);
             }
         } catch (e) {
-            dbg.className = "err";
-            dbg.innerText = "Connection Failed: " + e.message;
+            msg.className = "status err";
+            msg.innerText = "هەڵە لە ئینتەرنێت";
         }
     }
 
     async function saveBranch() {
-        const name = document.getElementById('bName').value;
-        if(!name) return alert("ناو بنووسە");
+        const name = document.getElementById('bName').value.trim();
+        if(!name) return alert("تکایە ناوی لق بنووسە");
+
+        const btn = document.querySelector('button');
+        btn.disabled = true;
+        btn.innerText = "خەریکی تۆمارکردنە...";
 
         const { error } = await _supabase.from('branches').insert([{ branch_name: name }]);
+        
+        btn.disabled = false;
+        btn.innerText = "تۆمارکردنی لق";
+
         if(error) {
-            alert("هەڵە لە کاتی پاشەکەوتکردن: " + error.message);
+            alert("نەتوانرا تۆمار بکرێت: " + error.message);
         } else {
-            alert("سەرکەوتوو بوو ✅");
-            check();
+            document.getElementById('bName').value = "";
+            checkStatus();
         }
     }
 
     function showList(data) {
         const list = document.getElementById('bList');
-        list.innerHTML = data.map(b => `<div style="padding:5px; border-bottom:1px solid #eee;">📍 ${b.branch_name}</div>`).join('');
+        if(data.length === 0) {
+            list.innerHTML = "<p style='color:#888; text-align:center;'>هیچ لقێک نییە</p>";
+            return;
+        }
+        list.innerHTML = data.map(b => `
+            <div class="branch-item">
+                <span>📍 ${b.branch_name}</span>
+                <small style="color:#94a3b8; font-size:10px;">ID: ${b.id}</small>
+            </div>
+        `).join('');
     }
 
-    check();
+    checkStatus();
 </script>
 </body>
 </html>
