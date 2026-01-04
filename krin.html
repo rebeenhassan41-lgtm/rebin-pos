@@ -2,89 +2,79 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>کڕینی پێشکەوتوو - Rebin POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f1f2f6; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 10px; direction: rtl; }
-        .container { max-width: 1300px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
-        .rate-bar { background: #fff3e0; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border: 1px solid #ffe0b2; }
-        .rate-bar input { width: 100px; padding: 5px; border: 1px solid #ff9800; text-align: center; font-weight: bold; }
-        .header-box { background: var(--main); color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px; }
-        label { display: block; font-size: 11px; margin-bottom: 4px; color: #555; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        .container { max-width: 1300px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        .header-box { background: var(--main); color: white; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; }
+        label { display: block; font-size: 12px; margin-bottom: 5px; color: #555; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--accent); }
         .item-section { background: #e3f2fd; border: 1px solid #bbdefb; }
-        .btn-add { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .btn-finish { background: var(--success); color: white; border: none; padding: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; }
-        .table-wrap { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: #ecf0f1; padding: 12px; border: 1px solid #ddd; font-size: 12px; }
-        td { padding: 10px; border: 1px solid #eee; text-align: center; font-size: 13px; }
-        .inv-badge { background: #f1c40f; color: black; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .btn-add { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
+        .btn-finish { background: var(--success); color: white; border: none; padding: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        .table-wrap { overflow-x: auto; margin-top: 20px; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 600px; }
+        th { background: #eee; padding: 12px; border: 1px solid #ddd; font-size: 13px; }
+        td { padding: 12px; border: 1px solid #eee; text-align: center; font-size: 14px; }
+        .inv-badge { background: #f1c40f; color: black; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="rate-bar">
-        <span>💵 نرخی دۆلار:</span>
-        <input type="number" id="dollarRate" value="1500">
-        <button onclick="createNewInvoice()" style="margin-right:auto; padding:5px 15px; border-radius:5px; cursor:pointer;">🆕 وەسڵی نوێ</button>
-    </div>
-
     <div class="header-box">
-        <h2 style="margin:0;">📥 داخڵکردنی وەسڵی کڕین</h2>
-        <div>وەسڵ: <span id="invDisplay" class="inv-badge">---</span></div>
-        <a href="dashboard.html" style="color:white; text-decoration:none;">🏠 گەڕانەوە</a>
+        <div>
+            <h2 style="margin:0; font-size: 18px;">📥 کڕینی کاڵا</h2>
+            <small id="branchTag" style="opacity: 0.8;"></small>
+        </div>
+        <div class="inv-badge" id="invDisplay">---</div>
+        <a href="dashboard.html" style="color:white; text-decoration:none; font-size: 20px;">🏠</a>
     </div>
 
     <div class="form-grid">
-        <div><label>👤 بازرگان/کۆمپانیا</label><input type="text" id="merchant" placeholder="ناوی کۆمپانیا"></div>
-        <div><label>💰 جۆری کڕین</label>
+        <div><label>👤 بازرگان</label><input type="text" id="merchant" placeholder="ناوی کۆمپانیا"></div>
+        <div><label>💰 جۆر</label>
             <select id="payType">
                 <option value="Cash">نەختینە (کاش)</option>
                 <option value="Debt">بە قەرز</option>
             </select>
         </div>
-        <div><label>🏳️ دراو</label>
-            <select id="curr">
-                <option value="USD">دۆلار ($)</option>
-                <option value="IQD">دینار (ع.د)</option>
-            </select>
-        </div>
+        <div><label>💵 نرخی دۆلار</label><input type="number" id="dollarRate" value="1500"></div>
     </div>
 
     <div class="form-grid item-section">
-        <div><label>🔢 بارکۆد</label><input type="text" id="barcode" onkeypress="if(event.key==='Enter') focusNext('itemName')"></div>
-        <div><label>📦 ناوی کاڵا</label><input type="text" id="itemName"></div>
+        <div style="grid-column: span 2;"><label>🔢 بارکۆد</label><input type="text" id="barcode" placeholder="سکان یان بنووسە"></div>
+        <div style="grid-column: span 2;"><label>📦 ناوی کاڵا</label><input type="text" id="itemName"></div>
         <div><label>📦 کارتۆن</label><input type="number" id="cartonQty" value="0" oninput="calcTotal()"></div>
-        <div><label>🔢 دانە لە کارتۆن</label><input type="number" id="pcsPerCarton" value="1" oninput="calcTotal()"></div>
+        <div><label>🔢 دانە/کارتۆن</label><input type="number" id="pcsPerCarton" value="1" oninput="calcTotal()"></div>
         <div><label>🧮 کۆی دانە</label><input type="number" id="totalQty" value="0" readonly style="background:#eee;"></div>
-        <div><label>💵 کڕین (دانە)</label><input type="number" id="buyPrice" value="0"></div>
-        <div><label>🛒 فرۆشی تاک</label><input type="number" id="saleRetail" value="0"></div>
+        <div><label>💵 تێچووی دانە ($)</label><input type="number" id="buyPrice" value="0"></div>
+        <div><label>🛒 فرۆشی تاک ($)</label><input type="number" id="saleRetail" value="0"></div>
     </div>
     
-    <button onclick="addToTempList()" class="btn-add">زیادکردن بۆ ناو وەسڵ ➕</button>
+    <button onclick="addToTempList()" class="btn-add">زیادکردن بۆ لیست ➕</button>
 
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>بارکۆد</th>
                     <th>ناو</th>
-                    <th>بڕ (دانە)</th>
-                    <th>نرخی کڕین</th>
-                    <th>کۆی گشتی</th>
-                    <th>کردار</th>
+                    <th>بڕ</th>
+                    <th>کڕین</th>
+                    <th>کۆ ($)</th>
+                    <th>لابردن</th>
                 </tr>
             </thead>
             <tbody id="tempListBody"></tbody>
         </table>
     </div>
 
-    <button onclick="finishInvoice()" class="btn-finish">تەواوکردنی وەسڵ و ناردن بۆ کۆگا ✅</button>
+    <button id="finishBtn" onclick="finishInvoice()" class="btn-finish">تەواوکردن و پاشەکەوت 💾</button>
 </div>
 
 <script>
@@ -94,11 +84,17 @@
 
     let tempItems = [];
     let currentInvNo = "";
+    const userBranchId = localStorage.getItem("userBranchId");
+    const userBranchName = localStorage.getItem("userBranchName");
 
-    window.onload = createNewInvoice;
+    window.onload = () => {
+        if(!userBranchId) { alert("تکایە لۆگین بکەوە"); window.location.href="login.html"; }
+        document.getElementById('branchTag').innerText = "لق: " + userBranchName;
+        createNewInvoice();
+    };
 
     function createNewInvoice() {
-        currentInvNo = "PUR-" + Math.floor(10000 + Math.random() * 90000);
+        currentInvNo = "PUR-" + Date.now().toString().slice(-6);
         document.getElementById('invDisplay').innerText = currentInvNo;
         tempItems = [];
         renderTempList();
@@ -111,83 +107,80 @@
     }
 
     function addToTempList() {
+        const name = document.getElementById('itemName').value;
+        const qty = parseFloat(document.getElementById('totalQty').value) || 0;
+        const buy = parseFloat(document.getElementById('buyPrice').value) || 0;
+
+        if(!name || qty <= 0) return alert("ناوی کاڵا و بڕ دیاری بکە");
+
         const item = {
             barcode: document.getElementById('barcode').value,
-            item_name: document.getElementById('itemName').value,
-            quantity: parseFloat(document.getElementById('totalQty').value) || 0,
-            buy_price: parseFloat(document.getElementById('buyPrice').value) || 0,
+            item_name: name,
+            quantity: qty,
+            buy_price: buy,
             sale_price_retail: parseFloat(document.getElementById('saleRetail').value) || 0,
-            carton_qty: parseFloat(document.getElementById('cartonQty').value) || 0,
-            currency: document.getElementById('curr').value
+            branch_id: userBranchId
         };
-
-        if(!item.item_name || item.quantity <= 0) return alert("زانیارییەکان تەواو نین");
 
         tempItems.push(item);
         renderTempList();
-        clearInputs();
+        clearInputFields();
     }
 
     function renderTempList() {
         const body = document.getElementById('tempListBody');
         body.innerHTML = tempItems.map((item, index) => `
             <tr>
-                <td>${item.barcode}</td>
                 <td>${item.item_name}</td>
                 <td>${item.quantity}</td>
-                <td>${item.buy_price} ${item.currency}</td>
-                <td>${(item.quantity * item.buy_price).toFixed(2)}</td>
-                <td><button onclick="tempItems.splice(${index},1);renderTempList()">🗑️</button></td>
+                <td>$${item.buy_price}</td>
+                <td>$${(item.quantity * item.buy_price).toFixed(2)}</td>
+                <td><button onclick="tempItems.splice(${index},1);renderTempList()" style="border:none; background:none; cursor:pointer;">❌</button></td>
             </tr>
         `).join('');
     }
 
     async function finishInvoice() {
-        if(tempItems.length === 0) return alert("وەسڵەکە بەتاڵە!");
+        if(tempItems.length === 0) return alert("لیستەکە بەتاڵە!");
         
+        const btn = document.getElementById('finishBtn');
+        btn.disabled = true;
+        btn.innerText = "خەریکە پاشەکەوت دەبێت...";
+
         const merchant = document.getElementById('merchant').value || "گشتی";
-        const payType = document.getElementById('payType').value;
-        const rate = parseFloat(document.getElementById('dollarRate').value);
 
         for(let item of tempItems) {
-            // ١. پشکنین: ئایا کاڵاکە پێشتر هەیە؟
+            // پشکنینی ئەوەی ئایا کاڵاکە لەم لقەدا هەیە؟
             const { data: existing } = await _supabase.from('purchases')
-                .select('*').eq('barcode', item.barcode).maybeSingle();
+                .select('*')
+                .eq('barcode', item.barcode)
+                .eq('branch_id', userBranchId)
+                .maybeSingle();
 
             if(existing) {
-                // ئەگەر هەبوو: بڕەکەی زیاد بکە و نرخەکەی نوێ بکەرەوە
+                // ئەگەر هەبوو، بڕەکەی نوێ بکەرەوە
                 await _supabase.from('purchases').update({
                     quantity: existing.quantity + item.quantity,
                     buy_price: item.buy_price,
                     sale_price_retail: item.sale_price_retail,
-                    merchant: merchant,
+                    supplier: merchant,
                     inv_no: currentInvNo
                 }).eq('id', existing.id);
             } else {
-                // ئەگەر نەبوو: وەک کاڵای نوێ داخڵی بکە
+                // ئەگەر نەبوو، زیادی بکە
                 await _supabase.from('purchases').insert([{
                     ...item,
                     inv_no: currentInvNo,
-                    merchant: merchant
+                    supplier: merchant
                 }]);
             }
         }
 
-        // ٢. ئەگەر قەرز بوو، تۆماری بکە (نموونەیی)
-        if(payType === "Debt") {
-            const totalUSD = tempItems.reduce((s, i) => s + (i.currency === "USD" ? i.quantity * i.buy_price : 0), 0);
-            await _supabase.from('merchant_debts').insert([{
-                merchant_name: merchant,
-                amount_usd: totalUSD,
-                dollar_rate_at_time: rate
-            }]);
-        }
-
-        alert("وەسڵەکە بە سەرکەوتوویی نێردرا بۆ کۆگا ✅");
-        createNewInvoice();
+        alert("وەسڵەکە بە سەرکەوتوویی تۆمارکرا ✅");
+        location.reload();
     }
 
-    function clearInputs() {
+    function clearInputFields() {
         document.getElementById('barcode').value = "";
         document.getElementById('itemName').value = "";
         document.getElementById('cartonQty').value = "0";
