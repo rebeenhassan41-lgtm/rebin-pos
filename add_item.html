@@ -7,52 +7,85 @@
     <style>
         :root { --p: #2c3e50; --s: #3498db; --bg: #f4f7f6; --success: #27ae60; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; margin: 0; }
-        .btn-back { background: var(--p); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold; }
-        .form-card { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .form-card h2 { text-align: center; color: var(--p); margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: auto; }
+        .btn-back { background: var(--p); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .container { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; max-width: 1000px; margin: auto; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: var(--p); margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
         label { display: block; margin-top: 15px; font-weight: bold; color: var(--p); font-size: 14px; }
         input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; outline-color: var(--s); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .btn-save { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; margin-top: 30px; font-weight: bold; transition: 0.3s; }
-        .btn-save:hover { background: #219150; transform: translateY(-2px); }
+        .btn-save { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; margin-top: 30px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: right; }
+        th { background: #f8f9fa; }
+        .delete-btn { color: #e74c3c; cursor: pointer; border: none; background: none; }
     </style>
 </head>
 <body>
 
-    <a href="dashboard.html" class="btn-back">🔙 گەڕانەوە</a>
+    <div class="nav-bar">
+        <h2>📦 ناساندنی کەرەستە</h2>
+        <a href="dashboard.html" class="btn-back">🔙 گەڕانەوە</a>
+    </div>
 
-    <div class="form-card">
-        <h2>📦 ناساندنی کەرەستەی نوێ</h2>
-        
-        <label>🔍 بارکۆدی کەرەستە (Barcode):</label>
-        <input type="text" id="barcode" placeholder="بارکۆد سکان بکە یان بنووسە" autofocus>
+    <div class="container">
+        <div class="card">
+            <label>🔍 بارکۆد (Barcode):</label>
+            <input type="text" id="barcode" placeholder="سکان بکە..." autofocus>
 
-        <label>📝 ناوی کەرەستە:</label>
-        <input type="text" id="itemName" placeholder="ناوی کاڵاکە بنووسە...">
+            <label>📝 ناوی کەرەستە:</label>
+            <input type="text" id="itemName" placeholder="ناوی کاڵا بنووسە...">
 
-        <div class="grid">
-            <div>
-                <label>📂 کاتیگۆری:</label>
-                <select id="itemCat">
-                    <option value="گشتی">گشتی</option>
-                    <option value="خۆراک">خۆراک</option>
-                    <option value="کارەبایی">کارەبایی</option>
-                    <option value="کۆسمێتیک">کۆسمێتیک</option>
-                </select>
-            </div>
-            <div>
-                <label>🏷️ براند (Brand):</label>
-                <input type="text" id="brand" placeholder="بۆ نموونە: LG, Apple...">
-            </div>
+            <label>📂 کاتیگۆری:</label>
+            <select id="itemCat">
+                <option value="گشتی">گشتی</option>
+                <option value="خۆراک">خۆراک</option>
+                <option value="کارەبایی">کارەبایی</option>
+                <option value="کۆسمێتیک">کۆسمێتیک</option>
+            </select>
+
+            <label>🏷️ براند (Brand):</label>
+            <input type="text" id="brand" placeholder="بۆ نموونە: LG, Apple...">
+
+            <button class="btn-save" id="saveBtn" onclick="saveItem()">تۆمارکردن ✅</button>
         </div>
 
-        <button class="btn-save" id="saveBtn" onclick="saveItem()">تۆمارکردن لە لیست ✅</button>
+        <div class="card">
+            <h3>📋 دوایین کاڵا تۆمارکراوەکان</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ناو</th>
+                        <th>بارکۆد</th>
+                        <th>کاتیگۆری</th>
+                        <th>کردار</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTable"></tbody>
+            </table>
+        </div>
     </div>
 
 <script>
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    // هێنانی لیستەکە
+    async function loadItems() {
+        const { data, error } = await _supabase.from('purchases').select('*').order('created_at', { ascending: false }).limit(10);
+        if (error) return;
+        const tbody = document.getElementById('itemsTable');
+        tbody.innerHTML = "";
+        data.forEach(item => {
+            tbody.innerHTML += `<tr>
+                <td><b>${item.item_name}</b></td>
+                <td>${item.barcode}</td>
+                <td>${item.category}</td>
+                <td><button class="delete-btn" onclick="deleteItem('${item.id}')">سڕینەوە</button></td>
+            </tr>`;
+        });
+    }
 
     async function saveItem() {
         const barcode = document.getElementById('barcode').value.trim();
@@ -64,52 +97,33 @@
         if(!barcode || !name) return alert("تکایە ناو و بارکۆد پڕ بکەرەوە!");
 
         btn.disabled = true;
-        btn.innerText = "خەریکی پشکنینە...";
+        btn.innerText = "خەریکی تۆمارکردنە...";
 
-        try {
-            // ١. پشکنینی دووبارە نەبوونەوە
-            const { data: existing } = await _supabase
-                .from('purchases')
-                .select('id')
-                .eq('barcode', barcode)
-                .maybeSingle();
-            
-            if (existing) {
-                alert("ئەم بارکۆدە پێشتر ناسێنراوە!");
-                btn.disabled = false;
-                btn.innerText = "تۆمارکردن لە لیست ✅";
-                return;
-            }
+        const { error } = await _supabase.from('purchases').insert([{
+            barcode, item_name: name, category: cat, brand, quantity: 0,
+            cost_price_usd: 0, sale_price_retail: 0, sale_price_wholesale: 0
+        }]);
 
-            // ٢. دروستکردنی داتا بۆ ناردن (بەتەنها ئەو ستوونانەی دڵنیاین هەن)
-            const payload = {
-                barcode: barcode,
-                item_name: name,
-                quantity: 0,
-                cost_price_usd: 0,
-                sale_price_retail: 0,
-                sale_price_wholesale: 0,
-                category: cat, // دڵنیابەوە لە Supabase پیتەکان بچوکن
-                brand: brand   // دڵنیابەوە لە Supabase پیتەکان بچوکن
-            };
+        if(!error) {
+            document.getElementById('barcode').value = "";
+            document.getElementById('itemName').value = "";
+            document.getElementById('barcode').focus();
+            loadItems();
+        } else {
+            alert("هەڵە: " + error.message);
+        }
+        btn.disabled = false;
+        btn.innerText = "تۆمارکردن لە لیست ✅";
+    }
 
-            // ٣. ناردن بۆ داتابەیس
-            const { error } = await _supabase.from('purchases').insert([payload]);
-
-            if(!error) {
-                alert("کەرەستەی (" + name + ") بە سەرکەوتوویی تۆمار کرا ✅");
-                location.reload();
-            } else {
-                console.error("Supabase Error:", error);
-                alert("کێشەیەک لە ستوونەکان هەیە: " + error.message);
-                btn.disabled = false;
-                btn.innerText = "تۆمارکردن لە لیست ✅";
-            }
-        } catch (err) {
-            alert("هەڵەیەکی چاوەڕواننەکراو: " + err.message);
-            btn.disabled = false;
+    async function deleteItem(id) {
+        if(confirm("دڵنیای لە سڕینەوە؟")) {
+            await _supabase.from('purchases').delete().eq('id', id);
+            loadItems();
         }
     }
+
+    loadItems();
 </script>
 </body>
 </html>
