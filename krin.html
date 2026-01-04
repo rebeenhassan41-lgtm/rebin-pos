@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ڕێبین سیستم | کڕینی کاڵای ناسێنراو</title>
+    <title>ڕێبین سیستم | کڕین بە دۆلار و دینار</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --main: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f1f2f6; --danger: #e74c3c; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 10px; direction: rtl; }
         .container { max-width: 1300px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
         .header-box { background: var(--main); color: white; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; }
         label { display: block; font-size: 12px; margin-bottom: 5px; color: #555; font-weight: bold; }
         input, select { width: 100%; padding: 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; outline: none; }
-        .read-only-input { background: #e9ecef; cursor: not-allowed; border-color: #dee2e6; }
-        .item-section { background: #fffde7; border: 1px solid #fff59d; }
-        .btn-add { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
-        .btn-finish { background: var(--success); color: white; border: none; padding: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #eee; padding: 12px; border: 1px solid #ddd; }
-        td { padding: 12px; border: 1px solid #eee; text-align: center; }
-        .error-msg { color: var(--danger); font-size: 12px; display: none; margin-top: 5px; }
+        .read-only-input { background: #e9ecef; cursor: not-allowed; }
+        .item-section { background: #e3f2fd; border: 1px solid #bbdefb; }
+        .btn-add { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
+        .btn-finish { background: var(--success); color: white; border: none; padding: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        .table-wrap { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { background: #eee; padding: 12px; border: 1px solid #ddd; font-size: 13px; }
+        td { padding: 12px; border: 1px solid #eee; text-align: center; font-size: 14px; }
+        .currency-info { display: flex; justify-content: space-between; background: #fff3cd; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -28,50 +29,62 @@
 <div class="container">
     <div class="header-box">
         <div>
-            <h2 style="margin:0; font-size: 18px;">📥 کڕینی کاڵا (تەنها ناسێنراو)</h2>
+            <h2 style="margin:0; font-size: 18px;">📥 وەسڵی کڕین (دۆلار و دینار)</h2>
             <small id="branchTag"></small>
         </div>
         <div id="invDisplay" style="background: #f1c40f; color: black; padding: 4px 10px; border-radius: 6px; font-weight: bold;">---</div>
     </div>
 
     <div class="form-grid">
-        <div><label>👤 بازرگان</label><input type="text" id="merchant" placeholder="ناوی کۆمپانیا"></div>
+        <div><label>👤 کۆمپانیا / بازرگان</label><input type="text" id="merchant" placeholder="ناوی بازرگان"></div>
+        <div><label>💵 نرخی 100$ بە دینار</label><input type="number" id="dollarRate" value="150000" oninput="renderTempList()"></div>
         <div><label>💰 جۆری کڕین</label>
             <select id="payType">
                 <option value="Cash">نەختینە (کاش)</option>
                 <option value="Debt">بە قەرز</option>
             </select>
         </div>
-        <div><label>💵 نرخی دۆلار</label><input type="number" id="dollarRate" value="1500"></div>
     </div>
 
     <div class="form-grid item-section">
         <div style="grid-column: span 2;">
-            <label>🔢 بارکۆد (سکان بکە بۆ دۆزینەوە)</label>
-            <input type="text" id="barcode" placeholder="بارکۆد لێرە لێبدە..." autofocus onkeypress="if(event.key==='Enter') fetchProductInfo()">
-            <span id="barcodeError" class="error-msg">⚠️ ئەم کاڵایە پێشتر نەناسێنراوە!</span>
+            <label>🔍 گەڕان (بارکۆد یان ناوی کاڵا)</label>
+            <input type="text" id="searchInp" placeholder="لێرە بنووسە و Enter دابگرە..." autofocus onkeypress="if(event.key==='Enter') fetchProductInfo()">
         </div>
         <div style="grid-column: span 2;">
             <label>📦 ناوی کاڵا (خۆکار)</label>
-            <input type="text" id="itemName" class="read-only-input" readonly placeholder="سەرەتا بارکۆد لێبدە">
+            <input type="text" id="itemName" class="read-only-input" readonly>
         </div>
         <div><label>📦 بڕ (کارتۆن)</label><input type="number" id="cartonQty" value="0" oninput="calcTotal()"></div>
-        <div><label>🔢 دانە لە کارتۆن</label><input type="number" id="pcsPerCarton" class="read-only-input" readonly value="1"></div>
+        <div><label>🔢 دانە/کارتۆن</label><input type="number" id="pcsPerCarton" class="read-only-input" readonly></div>
         <div><label>🧮 کۆی دانە</label><input type="number" id="totalQty" value="0" readonly class="read-only-input"></div>
-        <div><label>💵 تێچووی دانە ($)</label><input type="number" id="buyPrice" value="0"></div>
-        <div><label>🛒 فرۆشی ئێستا ($)</label><input type="number" id="saleRetail" class="read-only-input" readonly value="0"></div>
+        <div><label>💵 کڕینی دانە ($)</label><input type="number" id="buyPrice" value="0" step="0.01"></div>
     </div>
     
-    <button onclick="addToTempList()" id="addBtn" class="btn-add" disabled>زیادکردن بۆ وەسڵ ➕</button>
+    <button onclick="addToTempList()" id="addBtn" class="btn-add" disabled>زیادکردن بۆ لیست ➕</button>
 
-    <table>
-        <thead>
-            <tr><th>ناو</th><th>بڕی کڕدراو</th><th>نرخی کڕین</th><th>کۆ ($)</th><th>لابردن</th></tr>
-        </thead>
-        <tbody id="tempListBody"></tbody>
-    </table>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>کاڵا</th>
+                    <th>بڕ (دانە)</th>
+                    <th>نرخی کڕین ($)</th>
+                    <th>کۆی گشتی ($)</th>
+                    <th>بۆ دینار (IQD)</th>
+                    <th>لابردن</th>
+                </tr>
+            </thead>
+            <tbody id="tempListBody"></tbody>
+        </table>
+    </div>
 
-    <button id="finishBtn" onclick="finishInvoice()" class="btn-finish">تەواوکردنی وەسڵی کڕین 💾</button>
+    <div class="currency-info">
+        <span>کۆی گشتی بە دۆلار: <span id="totalUSD">0.00</span> $</span>
+        <span>کۆی گشتی بە دینار: <span id="totalIQD">0</span> IQD</span>
+    </div>
+
+    <button id="finishBtn" onclick="finishInvoice()" class="btn-finish">پاشەکەوتکردنی وەسڵی کڕین 💾</button>
 </div>
 
 <script>
@@ -80,36 +93,36 @@
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     let tempItems = [];
+    let currentProduct = null;
     let currentInvNo = "PUR-" + Date.now().toString().slice(-6);
     const userBranchId = localStorage.getItem("userBranchId");
-    document.getElementById('invDisplay').innerText = currentInvNo;
 
-    // دۆزینەوەی کاڵا لە خشتەی "باکۆدەکان" یان "ناساندن"
+    window.onload = () => {
+        document.getElementById('branchTag').innerText = "لق: " + localStorage.getItem("userBranchName");
+        document.getElementById('invDisplay').innerText = currentInvNo;
+    };
+
     async function fetchProductInfo() {
-        const barcode = document.getElementById('barcode').value;
-        const errorMsg = document.getElementById('barcodeError');
-        const addBtn = document.getElementById('addBtn');
-        
-        // گریمانە دەکەین ناوی خشتەی ناساندنەکانت 'products' یان 'purchases' ە
+        const val = document.getElementById('searchInp').value;
+        if(!val) return;
+
+        // گەڕان بە بارکۆد یان ناو
         const { data, error } = await _supabase.from('purchases')
             .select('*')
-            .eq('barcode', barcode)
+            .or(`barcode.eq."${val}",item_name.ilike."%${val}%"`)
             .eq('branch_id', userBranchId)
             .maybeSingle();
 
         if (data) {
+            currentProduct = data;
             document.getElementById('itemName').value = data.item_name;
             document.getElementById('pcsPerCarton').value = data.pcs_in_carton || 1;
-            document.getElementById('saleRetail').value = data.sale_price_retail;
             document.getElementById('buyPrice').value = data.buy_price;
-            errorMsg.style.display = 'none';
-            addBtn.disabled = false;
+            document.getElementById('addBtn').disabled = false;
             document.getElementById('cartonQty').focus();
         } else {
-            document.getElementById('itemName').value = "";
-            errorMsg.style.display = 'block';
-            addBtn.disabled = true;
-            alert("⚠️ ئەم بارکۆدە نەناسێنراوە! تکایە سەرەتا لە بەشی 'ناساندنی کاڵا' تۆماری بکە.");
+            alert("⚠️ ئەم کاڵایە نەدۆزرایەوە! تکایە سەرەتا لە 'ناساندنی کاڵا' تۆماری بکە.");
+            document.getElementById('addBtn').disabled = true;
         }
     }
 
@@ -120,18 +133,17 @@
     }
 
     function addToTempList() {
-        const name = document.getElementById('itemName').value;
         const qty = parseFloat(document.getElementById('totalQty').value) || 0;
         const buy = parseFloat(document.getElementById('buyPrice').value) || 0;
 
-        if(!name || qty <= 0) return;
+        if(qty <= 0) return alert("بڕ دیاری بکە");
 
         tempItems.push({
-            barcode: document.getElementById('barcode').value,
-            item_name: name,
+            id: currentProduct.id,
+            barcode: currentProduct.barcode,
+            item_name: currentProduct.item_name,
             quantity: qty,
-            buy_price: buy,
-            sale_price_retail: parseFloat(document.getElementById('saleRetail').value)
+            buy_price: buy
         });
 
         renderTempList();
@@ -139,48 +151,15 @@
     }
 
     function renderTempList() {
-        document.getElementById('tempListBody').innerHTML = tempItems.map((item, index) => `
-            <tr>
-                <td>${item.item_name}</td>
-                <td>${item.quantity} دانە</td>
-                <td>$${item.buy_price}</td>
-                <td>$${(item.quantity * item.buy_price).toFixed(2)}</td>
-                <td><button onclick="tempItems.splice(${index},1);renderTempList()">❌</button></td>
-            </tr>
-        `).join('');
-    }
+        const rate = (parseFloat(document.getElementById('dollarRate').value) || 0) / 100;
+        let totalUSD = 0;
 
-    async function finishInvoice() {
-        if(tempItems.length === 0) return alert("وەسڵەکە بەتاڵە");
-        
-        for(let item of tempItems) {
-            // تەنها بڕ نوێ دەکەینەوە چونکە کاڵاکە دڵنیاین هەیە
-            const { data: existing } = await _supabase.from('purchases')
-                .select('quantity')
-                .eq('barcode', item.barcode)
-                .eq('branch_id', userBranchId)
-                .single();
+        document.getElementById('tempListBody').innerHTML = tempItems.map((item, index) => {
+            const lineTotalUSD = item.quantity * item.buy_price;
+            totalUSD += lineTotalUSD;
+            const lineTotalIQD = Math.round(lineTotalUSD * rate);
 
-            await _supabase.from('purchases').update({
-                quantity: existing.quantity + item.quantity,
-                buy_price: item.buy_price,
-                supplier: document.getElementById('merchant').value,
-                inv_no: currentInvNo
-            }).eq('barcode', item.barcode).eq('branch_id', userBranchId);
-        }
-
-        alert("کڕینەکە بە سەرکەوتوویی زیادکرا بۆ مەخزەن ✅");
-        location.reload();
-    }
-
-    function resetFields() {
-        document.getElementById('barcode').value = "";
-        document.getElementById('itemName').value = "";
-        document.getElementById('cartonQty').value = "0";
-        document.getElementById('totalQty').value = "0";
-        document.getElementById('addBtn').disabled = true;
-        document.getElementById('barcode').focus();
-    }
-</script>
-</body>
-</html>
+            return `
+                <tr>
+                    <td>${item.item_name}</td>
+                    <td>
