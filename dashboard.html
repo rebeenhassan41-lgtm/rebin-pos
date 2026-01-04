@@ -52,6 +52,7 @@
         .rep { border-top-color: #9b59b6; }      
         .rec { border-top-color: #e67e22; }      
         .pay { border-top-color: #e74c3c; }      
+        .branch-card { border-top-color: #e84393; } /* ڕەنگی پەمەیی بۆ لقەکان */
 
         .logout-section { text-align: center; margin-top: 40px; }
         .logout-btn { 
@@ -60,6 +61,7 @@
             transition: 0.3s; width: 100%; max-width: 250px;
         }
         #userWelcome { color: #f1c40f; font-weight: bold; display: block; margin-top: 8px; font-size: 14px; }
+        .branch-badge { background: #3498db; color: white; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 10px; }
     </style>
 </head>
 <body>
@@ -82,6 +84,12 @@
                 <span class="icon">👤</span>
                 <h2>زیادکردنی بەکارهێنەر</h2>
                 <p>دروستکردنی ئەکاونت</p>
+            </div>
+
+            <div onclick="navTo('branches.html')" class="card branch-card">
+                <span class="icon">🏢</span>
+                <h2>بەڕێوەبردنی لقەکان</h2>
+                <p>ئاڵوگۆڕی پارە و لق</p>
             </div>
 
             <div onclick="navTo('sales.html')" class="card sell">
@@ -140,14 +148,16 @@
     </div>
 
     <script>
-        // پشکنینی ئۆتۆنتیکەیشن و نیشاندانی ناوی بەکارهێنەر
         function checkAuth() {
             if (localStorage.getItem("rebeenAuth") !== "true") {
                 window.location.replace("login.html");
             } else {
                 const name = localStorage.getItem("userName") || "کارمەند";
                 const pos = localStorage.getItem("userPosition") || "";
-                document.getElementById("userWelcome").innerText = "بەخێربێیت: " + name + " (" + pos + ")";
+                // نیشاندانی ناوی لق ئەگەر هەبێت
+                const branch = localStorage.getItem("branchName") || "هەموو لقەکان";
+                document.getElementById("userWelcome").innerHTML = 
+                    `بەخێربێیت: ${name} <span class="branch-badge">${branch}</span>`;
             }
         }
         checkAuth();
