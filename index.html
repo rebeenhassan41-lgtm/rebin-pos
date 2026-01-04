@@ -1,8 +1,41 @@
-<script>
-    // پشکنین: ئەگەر داخل نەبووە، بینێرە بۆ لاپەڕەی لۆگین
-    if (localStorage.getItem("rebeenAuth") !== "true") {
-        window.location.replace("login.html");
-    } else {
-        window.location.replace("dashboard.html");
-    }
-</script>
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>R</title>
+    <meta name="apple-mobile-web-app-title" content="R">
+    <meta name="application-name" content="R">
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        body { background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        .loader { color: white; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="loader">
+        <img src="https://img.icons8.com/color/96/r.png" alt="R"><br>
+        <p>خەریکە بار دەکرێت...</p>
+    </div>
+
+    <script>
+        // پشکنین: ئەگەر داخل نەبووە، بینێرە بۆ لاپەڕەی لۆگین
+        setTimeout(() => {
+            if (localStorage.getItem("rebeenAuth") !== "true") {
+                window.location.replace("login.html");
+            } else {
+                window.location.replace("dashboard.html");
+            }
+        }, 500); // کەمێک وەستان بۆ ئەوەی لۆگۆکە ببینرێت و ئەپەکە جێگیر بێت
+    </script>
+</body>
+</html>
