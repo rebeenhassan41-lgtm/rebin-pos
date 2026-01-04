@@ -28,11 +28,8 @@
     </div>
 
 <script>
-    // ڕێکخستنی سۆپەبەیست
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
-    
-    // دروستکردنی کلاینت
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     async function login() {
@@ -52,30 +49,38 @@
         err.style.display = "none";
 
         try {
-            // گەڕان لە داتابەیس
+            // گەڕان لە داتابەیس و هێنانی زانیاری لقەکان لە هەمان کاتدا
             const { data, error } = await _supabase
                 .from('system_users')
-                .select('*')
+                .select(`
+                    *,
+                    branches ( id, branch_name )
+                `)
                 .eq('username', u)
-                .eq('password', p);
+                .eq('password', p)
+                .single(); // تەنها یەک دانەمان دەوێت
 
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                // سەرکەوتوو بوو - سەیڤکردنی زانیارییەکان
-                localStorage.setItem("rebeenAuth", "true");
-                localStorage.setItem("userName", data[0].full_name);
-                localStorage.setItem("userPosition", data[0].position);
-                
-                // گواستنەوە بۆ داشبۆرد
-                window.location.replace("dashboard.html");
-            } else {
-                // ناو یان پاسوۆرد هەڵە بوو
+            if (error || !data) {
                 err.innerText = "ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە! ❌";
                 err.style.display = "block";
                 btn.disabled = false;
                 btn.innerText = "چوونە ژوورەوە";
+                return;
             }
+
+            // سەرکەوتوو بوو - پاشەکەوتکردنی زانیارییەکان لە مێمۆری براوزەر
+            localStorage.setItem("rebeenAuth", "true");
+            localStorage.setItem("userName", data.full_name);
+            localStorage.setItem("userPosition", data.position);
+            
+            // خەزنکردنی ID و ناوی لق بۆ پەنجەرەی فرۆشتن
+            localStorage.setItem("userBranchId", data.branch_id);
+            const bName = data.branches ? data.branches.branch_name : "لقی نەناسراو";
+            localStorage.setItem("userBranchName", bName);
+            
+            // گواستنەوە بۆ داشبۆرد
+            window.location.replace("dashboard.html");
+
         } catch (e) {
             console.error(e);
             err.innerText = "هەڵەیەک ڕوویدا: " + (e.message || "پەیوەندی دروست نەبوو");
@@ -85,7 +90,6 @@
         }
     }
 
-    // کارکردن بە Enter
     document.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') login();
     });
