@@ -2,33 +2,46 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بەڕێوەبردنی کارمەندان</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R</title>
+    <meta name="apple-mobile-web-app-title" content="R">
+    <meta name="application-name" content="R">
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --p: #2c3e50; --s: #3498db; --success: #27ae60; --warn: #f39c12; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; margin: 0; direction: rtl; padding: 20px; }
-        .header-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .btn-back { background: var(--p); color: white; padding: 8px 18px; border-radius: 10px; text-decoration: none; font-weight: bold; }
-        .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; font-size: 16px; outline: none; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; margin: 0; direction: rtl; padding: 15px; }
+        .header-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .btn-back { background: var(--p); color: white; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; }
+        .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); height: fit-content; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1.5px solid #eee; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
         .btn-save { width: 100%; padding: 14px; background: var(--success); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 17px; font-weight: bold; }
-        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fafafa; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fafafa; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; }
         .edit-btn { color: var(--warn); cursor: pointer; border: none; background: none; font-weight: bold; margin-left: 10px; }
         .del-btn { color: #e74c3c; cursor: pointer; border: none; background: none; font-weight: bold; }
+        .branch-tag { background: #34495e; color: white; padding: 3px 10px; border-radius: 5px; font-size: 11px; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div class="header-nav">
-        <h2 style="margin:0;">👥 بەڕێوەبردنی کارمەندان</h2>
-        <a href="dashboard.html" class="btn-back">🔙 گەڕانەوە</a>
+        <div>
+            <h2 style="margin:0; font-size: 18px;">👥 کارمەندان</h2>
+            <small id="bName" style="color: #666;"></small>
+        </div>
+        <a href="dashboard.html" class="btn-back">🏠 سەرەکی</a>
     </div>
 
     <div class="container">
         <div class="card">
-            <h3 id="formTitle">👤 زیادکردنی بەکارهێنەر</h3>
+            <h3 id="formTitle" style="margin-top:0;">👤 زیادکردنی نوێ</h3>
             <input type="text" id="fullName" placeholder="ناوی تەواو">
             <input type="text" id="username" placeholder="ناوی بەکارهێنەر">
             <input type="password" id="password" placeholder="پاسوۆرد">
@@ -37,11 +50,11 @@
                 <option value="بەڕێوەبەر">بەڕێوەبەر</option>
             </select>
             <button class="btn-save" id="mainBtn" onclick="createUser()">تۆمارکردن ✅</button>
-            <button id="cancelBtn" style="display:none; width:100%; margin-top:10px; border:none; background:none; cursor:pointer;" onclick="resetForm()">پاشگەزبوونەوە</button>
+            <button id="cancelBtn" style="display:none; width:100%; margin-top:10px; border:none; background:none; cursor:pointer; color: #666;" onclick="resetForm()">پاشگەزبوونەوە</button>
         </div>
 
         <div class="card">
-            <h3>📋 لیستی ئێستا</h3>
+            <h3 style="margin-top:0;">📋 لیستی کارمەندان</h3>
             <div id="userList">خەریکی بارکردنە...</div>
         </div>
     </div>
@@ -50,42 +63,69 @@
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+    
     let editingId = null;
+    const currentBranchId = localStorage.getItem("userBranchId");
+    const currentBranchName = localStorage.getItem("userBranchName");
+    document.getElementById('bName').innerText = "لق: " + (currentBranchName || "نادیار");
 
     async function fetchUsers() {
-        const { data, error } = await _supabase.from('system_users').select('*').order('created_at', { ascending: false });
+        if(!currentBranchId) return;
+        // تەنها ئەو کارمەندانە نیشان بدە کە هی ئەم لقەن
+        const { data, error } = await _supabase
+            .from('system_users')
+            .select('*')
+            .eq('branch_id', currentBranchId)
+            .order('created_at', { ascending: false });
+
         if (error) return;
         const listDiv = document.getElementById('userList');
-        listDiv.innerHTML = "";
+        listDiv.innerHTML = data.length === 0 ? "هیچ کارمەندێک نییە" : "";
+        
         data.forEach(user => {
             listDiv.innerHTML += `
                 <div class="user-item">
-                    <div><b>${user.full_name}</b><br><small>${user.username}</small></div>
                     <div>
-                        <button class="edit-btn" onclick="prepareEdit('${user.id}', '${user.full_name}', '${user.username}', '${user.password}', '${user.position}')">دەستکاری</button>
-                        <button class="del-btn" onclick="deleteUser('${user.id}')">سڕینەوە</button>
+                        <b>${user.full_name}</b><br>
+                        <small style="color:#888;">@${user.username}</small><br>
+                        <span style="font-size:11px; color:var(--s)">${user.position}</span>
+                    </div>
+                    <div>
+                        <button class="edit-btn" onclick="prepareEdit('${user.id}', '${user.full_name}', '${user.username}', '${user.password}', '${user.position}')">⚙️</button>
+                        <button class="del-btn" onclick="deleteUser('${user.id}')">🗑️</button>
                     </div>
                 </div>`;
         });
     }
 
     async function createUser() {
-        const name = document.getElementById('fullName').value;
-        const user = document.getElementById('username').value;
+        const name = document.getElementById('fullName').value.trim();
+        const user = document.getElementById('username').value.trim();
         const pass = document.getElementById('password').value;
         const pos = document.getElementById('position').value;
 
         if(!name || !user || !pass) return alert("تکایە هەموو خانەکان پڕ بکەرەوە");
+        if(!currentBranchId) return alert("ئایدی لق بەردەست نییە، تکایە دووبارە بچۆوە ژوورەوە");
+
+        const btn = document.getElementById('mainBtn');
+        btn.disabled = true;
 
         if(editingId) {
-            const { error } = await _supabase.from('system_users').update({ full_name: name, username: user, password: pass, position: pos }).eq('id', editingId);
+            const { error } = await _supabase.from('system_users').update({ 
+                full_name: name, username: user, password: pass, position: pos 
+            }).eq('id', editingId);
+            
             if(error) alert("هەڵە: " + error.message);
-            else { alert("نوێکرایەوە ✅"); resetForm(); fetchUsers(); }
+            else { alert("گۆڕانکارییەکان پاشەکەوت کران ✅"); resetForm(); fetchUsers(); }
         } else {
-            const { error } = await _supabase.from('system_users').insert([{ full_name: name, username: user, password: pass, position: pos }]);
-            if(error) alert(error.message.includes("unique") ? "ئەم ناوە پێشتر هەیە!" : error.message);
-            else { alert("زیادکرا ✅"); resetForm(); fetchUsers(); }
+            const { error } = await _supabase.from('system_users').insert([{ 
+                full_name: name, username: user, password: pass, position: pos, branch_id: currentBranchId 
+            }]);
+            
+            if(error) alert(error.message.includes("unique") ? "ئەم ناوی بەکارهێنەرە پێشتر هەیە!" : error.message);
+            else { alert("کارمەند بە سەرکەوتوویی زیادکرا ✅"); resetForm(); fetchUsers(); }
         }
+        btn.disabled = false;
     }
 
     function prepareEdit(id, name, user, pass, pos) {
@@ -94,10 +134,11 @@
         document.getElementById('username').value = user;
         document.getElementById('password').value = pass;
         document.getElementById('position').value = pos;
-        document.getElementById('formTitle').innerText = "🔄 دەستکاری یوسەر";
-        document.getElementById('mainBtn').innerText = "پاشەکەوتکردنی گۆڕانکارییەکان";
+        document.getElementById('formTitle').innerText = "🔄 دەستکاری";
+        document.getElementById('mainBtn').innerText = "پاشەکەوتکردن";
         document.getElementById('mainBtn').style.background = "var(--warn)";
         document.getElementById('cancelBtn').style.display = "block";
+        window.scrollTo(0,0);
     }
 
     function resetForm() {
@@ -105,20 +146,21 @@
         document.getElementById('fullName').value = '';
         document.getElementById('username').value = '';
         document.getElementById('password').value = '';
-        document.getElementById('formTitle').innerText = "👤 زیادکردنی بەکارهێنەر";
+        document.getElementById('formTitle').innerText = "👤 زیادکردنی نوێ";
         document.getElementById('mainBtn').innerText = "تۆمارکردن ✅";
         document.getElementById('mainBtn').style.background = "var(--success)";
         document.getElementById('cancelBtn').style.display = "none";
     }
 
     async function deleteUser(id) {
-        if(confirm("دڵنیای لە سڕینەوە؟")) {
-            await _supabase.from('system_users').delete().eq('id', id);
-            fetchUsers();
+        if(confirm("ئایا دڵنیای لە سڕینەوەی ئەم کارمەندە؟")) {
+            const { error } = await _supabase.from('system_users').delete().eq('id', id);
+            if(!error) fetchUsers();
+            else alert("نەتوانرا بسڕێتەوە");
         }
     }
 
-    fetchUsers();
+    window.onload = fetchUsers;
 </script>
 </body>
 </html>
