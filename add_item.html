@@ -34,8 +34,8 @@
 
     <div class="section-title">📝 زانیارییە سەرەکییەکان</div>
     <div class="grid">
-        <div style="grid-column: span 2;"><label>ناوی کاڵا*</label><input type="text" id="itemName" placeholder="نموونە: شامپۆی کلێر"></div>
-        <div><label>بارکۆد*</label><input type="text" id="barcode" placeholder="بارکۆد" autofocus></div>
+        <div style="grid-column: span 2;"><label>ناوی کاڵا*</label><input type="text" id="itemName" placeholder="ناو بنووسە..."></div>
+        <div><label>بارکۆد*</label><input type="text" id="barcode" placeholder="سکان یان نوسین" autofocus></div>
     </div>
     
     <div class="grid">
@@ -58,7 +58,7 @@
 
     <div class="section-title">📅 کات و کۆگا</div>
     <div class="grid">
-        <div style="background: #fff9c4; padding: 10px; border-radius: 10px;">
+        <div style="background: #fff9c4; padding: 10px; border-radius: 10px; border: 1px solid #e67e22;">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="hasExpiry" onchange="toggleExpiry()"> ئیکسپایەری هەیە؟</label>
             <input type="date" id="expiryDate" disabled style="margin-top: 10px;">
         </div>
@@ -97,33 +97,41 @@
     async function saveSimpleItem() {
         const name = document.getElementById('itemName').value.trim();
         const code = document.getElementById('barcode').value.trim();
-        if(!name || !code) return alert("ناو و بارکۆد پڕ بکەرەوە");
+        if(!name || !code) return alert("تکایە ناو و بارکۆد پڕ بکەرەوە");
+        if(!userBranchId) return alert("هەڵە: ناسنامەی لق (Branch ID) بوونی نییە!");
 
         const btn = document.getElementById('saveBtn');
         btn.disabled = true; btn.innerText = "خەریکە تۆمار دەبێت...";
 
-        // لێرەدا هەموو ستوونەکانمان وەک خۆی ناو هێناوە
-        const { error } = await _supabase.from('purchases').insert([{
-            item_name: name,
-            barcode: code,
-            category: document.getElementById('cat').value,
-            brand: document.getElementById('brand').value,
-            quantity: parseFloat(document.getElementById('initialQty').value) || 0,
-            unit: document.getElementById('unit').value,
-            expiry_date: document.getElementById('expiryDate').value || null,
-            has_expiry: document.getElementById('hasExpiry').checked,
-            alert_quantity: parseInt(document.getElementById('alertQty').value) || 0,
-            branch_id: userBranchId, // ئەگەر کێشەی هەبوو لێرە دەبێت ناوەکەی بگۆڕیت
-            is_active: true,
-            buy_price: 0, sell_price: 0, wholesale_price: 0
-        }]);
+        // ئامادەکردنی داتا - لێرەدا دڵنیای دەبینەوە کە ستوونەکان وەک یەک بن
+        const dataToInsert = {
+            "item_name": name,
+            "barcode": code,
+            "category": document.getElementById('cat').value,
+            "brand": document.getElementById('brand').value,
+            "quantity": parseFloat(document.getElementById('initialQty').value) || 0,
+            "unit": document.getElementById('unit').value,
+            "expiry_date": document.getElementById('expiryDate').value || null,
+            "has_expiry": document.getElementById('hasExpiry').checked,
+            "alert_quantity": parseInt(document.getElementById('alertQty').value) || 0,
+            "branch_id": isNaN(userBranchId) ? userBranchId : parseInt(userBranchId),
+            "is_active": true,
+            "buy_price": 0,
+            "sell_price": 0,
+            "wholesale_price": 0
+        };
+
+        const { error } = await _supabase
+            .from('purchases')
+            .insert([dataToInsert]);
 
         if(!error) {
-            alert("✅ سەرکەوتوو بوو");
+            alert("✅ کاڵاکە بە سەرکەوتوویی تۆمارکرا");
             location.reload();
         } else {
-            console.error(error);
-            alert("❌ هەڵە: " + error.message);
+            console.error("Supabase Error Details:", error);
+            // ئەگەر کێشەی Cache مابێت، لێرە پێت دەڵێت چ ستوونێک نابینێت
+            alert("❌ هەڵە لە داتابەیس: " + error.message);
             btn.disabled = false; btn.innerText = "تۆمارکردنی کاڵا ✅";
         }
     }
