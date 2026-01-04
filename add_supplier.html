@@ -2,68 +2,60 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R - کەشف حیسابی بازرگانان</title>
+    <title>R</title>
+    <meta name="apple-mobile-web-app-title" content="R">
+    <meta name="application-name" content="R">
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #1a1a2e; --s: #3498db; --bg: #f0f2f5; --danger: #e74c3c; --success: #27ae60; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); direction: rtl; margin: 0; padding: 10px; }
-        
-        .top-bar { max-width: 1200px; margin: 0 auto 15px auto; display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        .layout { max-width: 1200px; margin: auto; display: grid; grid-template-columns: 300px 1fr; gap: 15px; }
-        @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
-
-        /* Sidebar */
-        .sidebar { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); height: calc(100vh - 120px); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; background: var(--p); color: white; font-weight: bold; text-align: center; }
-        .sup-list { overflow-y: auto; flex: 1; }
-        .sup-item { padding: 15px; border-bottom: 1px solid #f1f1f1; cursor: pointer; transition: 0.2s; border-right: 4px solid transparent; }
-        .sup-item:hover { background: #f8faff; border-right-color: var(--s); }
-        .sup-item.active { background: #eef6ff; border-right-color: var(--s); font-weight: bold; }
-
-        /* Main Content */
-        .main-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); min-height: 70vh; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .stat-box { padding: 15px; background: #f8f9fa; border-radius: 12px; text-align: center; border: 1px solid #eee; }
-        .stat-box small { font-size: 11px; color: #777; display: block; margin-bottom: 5px; }
-        .stat-box b { font-size: 18px; color: var(--p); }
-
-        /* Invoice Styling */
-        .invoice-item { 
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px;
-            border-right: 5px solid #ddd;
-        }
-        .inv-debt { border-right-color: var(--danger); background: #fffcfc; }
-        .inv-paid { border-right-color: var(--success); background: #fcfdfc; }
-        
-        .badge { padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; }
-        .bg-red { background: #fee2e2; color: #dc2626; }
-        .bg-green { background: #dcfce7; color: #166534; }
+        :root { --p: #2c3e50; --s: #1abc9c; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 15px; margin: 0; }
+        .wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; max-width: 1300px; margin: auto; }
+        .card-form { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); height: fit-content; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; font-size: 15px; }
+        .btn-add { width: 100%; padding: 14px; background: var(--s); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        .card-list { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .sup-card { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-bottom: 10px; cursor: pointer; background: #fff; transition: 0.2s; }
+        .sup-card:active { transform: scale(0.98); }
+        .badge { background: #e8f8f5; color: #1abc9c; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .branch-info { font-size: 12px; color: #7f8c8d; margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
 
-<div class="top-bar">
-    <h3 style="margin:0; color:var(--p);">📋 حیساباتی بازرگانان</h3>
-    <a href="dashboard.html" style="text-decoration:none; background:var(--p); color:white; padding:8px 15px; border-radius:8px; font-size:14px;">🏠 سەرەتا</a>
+<div style="display:flex; justify-content:space-between; align-items:center; max-width:1300px; margin: 0 auto 20px auto; padding: 0 5px;">
+    <div>
+        <h2 style="margin:0;">🗂️ ناساندنی بازرگان</h2>
+        <small id="branchNameDisplay" class="branch-info">بار دەکرێت...</small>
+    </div>
+    <button onclick="location.href='dashboard.html'" style="padding:10px 15px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-weight:bold;">🏠 سەرەکی</button>
 </div>
 
-<div class="layout">
-    <div class="sidebar">
-        <div class="sidebar-header">لیستی بازرگانان</div>
-        <div id="supplierList" class="sup-list">
-            <p style="text-align:center; padding:20px; color:#999;">بار دەکرێت...</p>
-        </div>
+<div class="wrapper">
+    <div class="card-form">
+        <h3 style="margin-top:0; border-bottom: 2px solid var(--s); padding-bottom: 10px;">📝 فایلی نوێ</h3>
+        <input type="text" id="name" placeholder="ناوی بازرگان">
+        <input type="text" id="phone" placeholder="ژمارەی مۆبایل">
+        <select id="cat">
+            <option value="گشتی">پیشە: گشتی</option>
+            <option value="خۆراک">خۆراک</option>
+            <option value="دەرمان">دەرمان</option>
+            <option value="کۆسمێتیک">کۆسمێتیک</option>
+        </select>
+        <input type="text" id="addr" placeholder="ناونیشان">
+        <button id="saveBtn" class="btn-add" onclick="saveSup()">تۆمارکردن ✅</button>
     </div>
 
-    <div class="main-card" id="detailsArea">
-        <div style="text-align:center; margin-top:100px; color:#aaa;">
-            <img src="https://cdn-icons-png.flaticon.com/512/1532/1532624.png" width="80" style="opacity: 0.2;">
-            <h3>تکایە ناوی بازرگانێک هەڵبژێرە</h3>
-            <p>بۆ بینینی وردەکاری کڕین و قەرزەکان</p>
-        </div>
+    <div class="card-list">
+        <input type="text" id="search" placeholder="🔍 گەڕان لەناو بازرگانان..." oninput="doSearch()" style="width:100%; padding:12px; margin-bottom:15px; border-radius:10px; border:1px solid #ddd;">
+        <div id="list">خەریکە بار دەکرێت...</div>
     </div>
 </div>
 
@@ -72,76 +64,76 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // ١. هێنانی بازرگانەکان
-    async function loadSuppliers() {
-        const { data: suppliers } = await _supabase.from('suppliers').select('*').order('name');
-        const listDiv = document.getElementById('supplierList');
-        
-        if (suppliers) {
-            listDiv.innerHTML = suppliers.map(s => `
-                <div class="sup-item" onclick="viewProfile('${s.name}', this)">
-                    <div style="font-weight:bold;">${s.name}</div>
-                    <div style="font-size:11px; color:#888;">📦 ${s.category || 'گشتی'}</div>
+    // زانیاری لق
+    const userBranchId = localStorage.getItem("userBranchId");
+    const userBranchName = localStorage.getItem("userBranchName") || "نادیار";
+    document.getElementById('branchNameDisplay').innerText = "لق: " + userBranchName;
+
+    let sups = [];
+
+    async function getSups() {
+        if(!userBranchId) return;
+        // تەنها ئەو بازرگانانە بهێنە کە هی ئەم لقەن
+        const { data } = await _supabase
+            .from('suppliers')
+            .select('*')
+            .eq('branch_id', userBranchId)
+            .order('name');
+        sups = data || [];
+        showList(sups);
+    }
+
+    function showList(data) {
+        const div = document.getElementById('list');
+        if(data.length === 0) {
+            div.innerHTML = "<p style='text-align:center; color:#999;'>هیچ فایلێک نییە</p>";
+            return;
+        }
+        div.innerHTML = data.map(s => `
+            <div class="sup-card" onclick="location.href='supplier_details.html?id=${s.id}'">
+                <div>
+                    <strong>${s.name}</strong>
+                    <div style="font-size:12px; color:#666;">📞 ${s.phone || '---'}</div>
                 </div>
-            `).join('');
+                <span class="badge">${s.category || 'گشتی'}</span>
+            </div>
+        `).join('');
+    }
+
+    function doSearch() {
+        const txt = document.getElementById('search').value.toLowerCase();
+        showList(sups.filter(s => s.name.toLowerCase().includes(txt)));
+    }
+
+    async function saveSup() {
+        const name = document.getElementById('name').value.trim();
+        const btn = document.getElementById('saveBtn');
+        
+        if(!name) return alert("تکایە ناو بنووسە");
+        if(!userBranchId) return alert("لقی تۆ دیار نییە، دووبارە لۆگین بکەوە");
+
+        btn.disabled = true;
+        btn.innerText = "خەریکە...";
+
+        const { error } = await _supabase.from('suppliers').insert([{ 
+            name: name, 
+            phone: document.getElementById('phone').value, 
+            category: document.getElementById('cat').value, 
+            address: document.getElementById('addr').value,
+            branch_id: userBranchId // تۆمارکردنی ئایدی لق
+        }]);
+
+        if(!error) { 
+            alert("بازرگان (" + name + ") بە سەرکەوتوویی تۆمارکرا"); 
+            location.reload(); 
+        } else {
+            alert("هەڵە: " + error.message);
+            btn.disabled = false;
+            btn.innerText = "تۆمارکردن ✅";
         }
     }
 
-    // ٢. بینینی کەشف حیساب
-    async function viewProfile(name, element) {
-        document.querySelectorAll('.sup-item').forEach(el => el.classList.remove('active'));
-        if(element) element.classList.add('active');
-
-        const detailsArea = document.getElementById('detailsArea');
-        detailsArea.innerHTML = "<p style='text-align:center;'>خەریکە زانیارییەکان دەهێنرێن...</p>";
-
-        // هێنانی وەسڵەکانی کڕین بۆ ئەم بازرگانە
-        const { data: purchases } = await _supabase.from('purchases')
-            .select('*')
-            .eq('supplier_name', name)
-            .order('created_at', { ascending: false });
-
-        let totalAmount = 0;
-        let debtAmount = 0;
-
-        let itemsHtml = purchases.map(p => {
-            totalAmount += p.total_price_usd;
-            if(p.is_debt) debtAmount += p.total_price_usd;
-
-            return `
-                <div class="invoice-item ${p.is_debt ? 'inv-debt' : 'inv-paid'}">
-                    <div>
-                        <div style="font-weight:bold;">${p.item_name}</div>
-                        <small style="color:#888;">📅 ${new Date(p.created_at).toLocaleDateString('ku-IQ')}</small>
-                    </div>
-                    <div style="text-align:left;">
-                        <div style="font-weight:bold; color:var(--p);">$${p.total_price_usd.toLocaleString()}</div>
-                        <span class="badge ${p.is_debt ? 'bg-red' : 'bg-green'}">${p.is_debt ? 'قەرز' : 'نەقد'}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        detailsArea.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid #f1f1f1; padding-bottom:10px;">
-                <h2 style="margin:0; color:var(--s);">${name}</h2>
-                <button onclick="window.print()" style="background:#eee; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">🖨️ چاپ</button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-box"><small>کۆی گشتی کڕین</small><b>$${totalAmount.toLocaleString()}</b></div>
-                <div class="stat-box" style="border-bottom-color:var(--danger)"><small>قەرزی ماوە</small><b style="color:var(--danger)">$${debtAmount.toLocaleString()}</b></div>
-                <div class="stat-box"><small>ژمارەی وەسڵەکان</small><b>${purchases.length}</b></div>
-            </div>
-
-            <h4 style="margin-bottom:10px; color:#555;">📜 مێژووی مامەڵەکان</h4>
-            <div style="max-height: 450px; overflow-y: auto; padding-left:5px;">
-                ${itemsHtml || '<p style="text-align:center; padding:40px; color:#999;">هیچ وەسڵێک نەدۆزرایەوە.</p>'}
-            </div>
-        `;
-    }
-
-    window.onload = loadSuppliers;
+    window.onload = getSups;
 </script>
 </body>
 </html>
