@@ -2,29 +2,77 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چوونە ژوورەوە - ڕێبین سیستم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R - چوونە ژوورەوە</title>
+    <meta name="apple-mobile-web-app-title" content="R">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #3498db; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; direction: rtl; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 350px; text-align: center; }
-        h2 { color: var(--p); margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; text-align: center; }
-        button { width: 100%; padding: 12px; background: var(--s); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #2980b9; }
-        button:disabled { background: #ccc; }
-        #errorMsg { color: #e74c3c; font-size: 14px; margin-bottom: 10px; display: none; background: #fdf2f2; padding: 8px; border-radius: 5px; }
+        :root { --p: #2c3e50; --s: #3498db; --bg: #f8f9fa; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: var(--bg); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            direction: rtl; 
+            overflow: hidden;
+        }
+        .login-box { 
+            background: white; 
+            padding: 40px 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            width: 85%; 
+            max-width: 360px; 
+            text-align: center; 
+            border-bottom: 6px solid var(--s);
+        }
+        .logo-circle {
+            width: 80px; height: 80px; background: var(--p);
+            border-radius: 50%; margin: 0 auto 20px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 40px; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+        }
+        h2 { color: var(--p); margin-bottom: 25px; font-size: 22px; }
+        input { 
+            width: 100%; padding: 15px; margin-bottom: 15px; 
+            border: 2px solid #eee; border-radius: 12px; 
+            box-sizing: border-box; font-size: 16px; 
+            text-align: center; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--s); background: #f0f7ff; }
+        button { 
+            width: 100%; padding: 15px; background: var(--s); 
+            color: white; border: none; border-radius: 12px; 
+            cursor: pointer; font-size: 18px; font-weight: bold; 
+            transition: 0.3s; margin-top: 10px;
+        }
+        button:active { transform: scale(0.96); opacity: 0.9; }
+        button:disabled { background: #bdc3c7; cursor: not-allowed; }
+        #errorMsg { 
+            color: #e74c3c; font-size: 14px; margin-bottom: 15px; 
+            display: none; background: #fdf2f2; padding: 10px; 
+            border-radius: 10px; border: 1px solid #fab1a0;
+        }
+        .footer-text { margin-top: 20px; color: #bdc3c7; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div class="login-box">
-        <h2>چوونە ژوورەوە 🔐</h2>
+        <div class="logo-circle">R</div>
+        <h2>سیستەمی ڕێبین</h2>
         <div id="errorMsg"></div>
         <input type="text" id="username" placeholder="ناوی بەکارهێنەر" autocomplete="off">
         <input type="password" id="password" placeholder="پاسوۆرد">
         <button id="loginBtn" onclick="login()">چوونە ژوورەوە</button>
+        <div class="footer-text">وەشانی 2026 - گەشەپێدراوە بۆ مۆبایل</div>
     </div>
 
 <script>
@@ -39,8 +87,7 @@
         const err = document.getElementById('errorMsg');
 
         if (!u || !p) {
-            err.innerText = "تکایە هەموو خانەکان پڕ بکەرەوە";
-            err.style.display = "block";
+            showError("تکایە هەموو خانەکان پڕ بکەرەوە");
             return;
         }
 
@@ -49,45 +96,44 @@
         err.style.display = "none";
 
         try {
-            // گەڕان لە داتابەیس و هێنانی زانیاری لقەکان لە هەمان کاتدا
+            // هێنانی یوزەر و بەستنەوەی بە خشتەی لقەکان (Branches)
             const { data, error } = await _supabase
                 .from('system_users')
-                .select(`
-                    *,
-                    branches ( id, branch_name )
-                `)
+                .select('*, branches(id, branch_name)')
                 .eq('username', u)
                 .eq('password', p)
-                .single(); // تەنها یەک دانەمان دەوێت
+                .maybeSingle();
 
             if (error || !data) {
-                err.innerText = "ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە! ❌";
-                err.style.display = "block";
+                showError("ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە! ❌");
                 btn.disabled = false;
                 btn.innerText = "چوونە ژوورەوە";
                 return;
             }
 
-            // سەرکەوتوو بوو - پاشەکەوتکردنی زانیارییەکان لە مێمۆری براوزەر
+            // پاشەکەوتکردنی زانیارییەکان بۆ ئەوەی هەموو لاپەڕەکان بیناسنەوە
             localStorage.setItem("rebeenAuth", "true");
             localStorage.setItem("userName", data.full_name);
             localStorage.setItem("userPosition", data.position);
-            
-            // خەزنکردنی ID و ناوی لق بۆ پەنجەرەی فرۆشتن
             localStorage.setItem("userBranchId", data.branch_id);
-            const bName = data.branches ? data.branches.branch_name : "لقی نەناسراو";
+            
+            const bName = data.branches ? data.branches.branch_name : "لقی سەرەکی";
             localStorage.setItem("userBranchName", bName);
             
-            // گواستنەوە بۆ داشبۆرد
+            // چوون بەرەو داشبۆرد
             window.location.replace("dashboard.html");
 
         } catch (e) {
-            console.error(e);
-            err.innerText = "هەڵەیەک ڕوویدا: " + (e.message || "پەیوەندی دروست نەبوو");
-            err.style.display = "block";
+            showError("پەیوەندی ئینتەرنێت جێگیر نییە");
             btn.disabled = false;
             btn.innerText = "چوونە ژوورەوە";
         }
+    }
+
+    function showError(msg) {
+        const err = document.getElementById('errorMsg');
+        err.innerText = msg;
+        err.style.display = "block";
     }
 
     document.addEventListener('keypress', (e) => {
