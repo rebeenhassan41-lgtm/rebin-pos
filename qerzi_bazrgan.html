@@ -2,57 +2,78 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بەڕێوەبردنی قەرزی بازرگان</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>R - قەرزی بازرگان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --main: #2c3e50; --danger: #e74c3c; --success: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; direction: rtl; }
-        .container { padding: 20px; max-width: 900px; margin: auto; }
-        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-right: 8px solid var(--danger); }
-        .cleared { border-right-color: var(--success) !important; background: #f0fff4; }
-        .flex-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 2px; }
-        .btn-pay { background: var(--success); color: white; }
-        .btn-print { background: var(--main); color: white; }
+        :root { --main: #2c3e50; --danger: #e74c3c; --success: #27ae60; --bg: #f4f7f6; --accent: #3498db; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 10px; direction: rtl; }
+        .container { max-width: 600px; margin: auto; padding-bottom: 50px; }
         
-        /* شێوازی پرنت */
-        @media print {
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; direction: rtl; }
-            .no-print { display: none; }
-        }
+        .header { background: var(--main); color: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; position: relative; }
+        .back-btn { position: absolute; right: 15px; top: 20px; color: white; text-decoration: none; font-size: 20px; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        .card { 
+            background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-right: 6px solid var(--danger);
+            position: relative; overflow: hidden;
+        }
+        .cleared { border-right-color: var(--success) !important; opacity: 0.8; }
+        
+        .merchant-info b { font-size: 18px; color: var(--main); }
+        .merchant-info small { color: #888; display: block; margin-top: 3px; }
+        
+        .debt-amount { text-align: left; }
+        .debt-amount .usd { color: var(--success); font-size: 20px; font-weight: bold; display: block; }
+        .debt-amount .iqd { color: #7f8c8d; font-size: 13px; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-pay { background: var(--success); color: white; }
+        .btn-print { background: #eee; color: var(--main); }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 2000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-content h3 { margin-top: 0; color: var(--main); }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--accent); }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .print-invoice { display: block !important; padding: 20px; border: 2px solid #000; direction: rtl; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align:center;">📊 لیستی قەرزی بازرگانەکان</h2>
-    <div id="debtList">بار دەکرێت...</div>
+    <div class="header no-print">
+        <a href="dashboard.html" class="back-btn">🏠</a>
+        <h2 style="margin:0;">💳 قەرزی بازرگانەکان</h2>
+        <small id="branchName">لقی ...</small>
+    </div>
+
+    <div id="debtList" class="no-print">
+        <p style="text-align:center; color:#888;">خەریکە قەرزەکان بار دەکرێن...</p>
+    </div>
 </div>
 
 <div id="payModal" class="modal">
     <div class="modal-content">
         <h3 id="mName">پارەدان</h3>
-        <p style="font-size:12px; color:red;">* ئەگەر بە دینار پارە بدەیت، خۆی لە دۆلارەکەی دەشکێنێتەوە بەپێی نرخی وەسڵەکە.</p>
-        <label>بڕی دۆلار $</label><input type="number" id="pUSD" value="0">
-        <label>بڕی دینار (ع.د)</label><input type="number" id="pIQD" value="0">
-        <button class="btn btn-pay" onclick="processPayment()" style="width:100%;">تۆمارکردن ✅</button>
-        <button class="btn" onclick="closeModal()" style="width:100%; margin-top:5px;">پاشگەزبوونەوە</button>
+        <p style="font-size:12px; color:var(--danger); margin-bottom: 15px;">* ئەگەر بە دینار پارە بدەیت، سیستمەکە خۆی دەیگۆڕێت بۆ دۆلار بەپێی نرخی کاتی وەسڵەکە.</p>
+        
+        <label style="font-weight:bold; font-size:14px;">💵 بڕی دراو بە دۆلار ($)</label>
+        <input type="number" id="pUSD" placeholder="0.00">
+        
+        <label style="font-weight:bold; font-size:14px;">🇮🇶 بڕی دراو بە دینار</label>
+        <input type="number" id="pIQD" placeholder="0">
+        
+        <button class="btn btn-pay" onclick="processPayment()" style="width:100%; margin-top:10px;">پاشەکەوتکردن ✅</button>
+        <button class="btn" onclick="closeModal()" style="width:100%; margin-top:8px; background:#f8f9fa;">پاشگەزبوونەوە</button>
     </div>
-</div>
-
-<div id="printArea" style="display:none; padding:30px; border:1px solid #000;">
-    <h2 style="text-align:center;">وەسڵی کڕین (قەرز)</h2>
-    <hr>
-    <div id="printDetails"></div>
-    <br><br>
-    <p style="text-align:left;">واژووی بازرگان: ____________</p>
 </div>
 
 <script>
@@ -62,27 +83,37 @@
 
     let activeId = null;
     let activeRate = 1500;
+    const branchId = localStorage.getItem("userBranchId");
 
     async function loadDebts() {
-        const { data } = await _supabase.from('merchant_debts').select('*').order('created_at', { ascending: false });
+        document.getElementById('branchName').innerText = "لق: " + (localStorage.getItem("userBranchName") || "هەمووی");
+        
+        let query = _supabase.from('merchant_debts').select('*').order('created_at', { ascending: false });
+        if(branchId) query = query.eq('branch_id', branchId);
+
+        const { data, error } = await query;
+        if(error) return;
+
         const list = document.getElementById('debtList');
         list.innerHTML = "";
 
         data.forEach(d => {
-            const isCleared = (d.amount_usd <= 0 && d.amount_iqd <= 0);
+            const isCleared = (d.amount_usd <= 0);
             list.innerHTML += `
                 <div class="card ${isCleared ? 'cleared' : ''}">
-                    <div class="flex-row">
-                        <div><b>👤 ${d.merchant_name}</b> <br> <small>${new Date(d.created_at).toLocaleString('ku-IQ')}</small></div>
-                        <div style="text-align:left;">
-                            <span style="color:green; font-weight:bold;">$${d.amount_usd.toFixed(2)}</span><br>
-                            <small>${d.amount_iqd.toLocaleString()} IQD</small>
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div class="merchant-info">
+                            <b>👤 ${d.merchant_name}</b>
+                            <small>📅 ${new Date(d.created_at).toLocaleDateString('ku-IQ')}</small>
+                        </div>
+                        <div class="debt-amount">
+                            <span class="usd">$${d.amount_usd.toFixed(2)}</span>
+                            <span class="iqd">نرخی دۆلار: ${d.dollar_rate_at_time}</span>
                         </div>
                     </div>
-                    <p style="font-size:13px; color:#555;">📦 ${d.items_details}</p>
-                    <div class="flex-row no-print">
-                        <button class="btn btn-print" onclick="printInvoice('${d.id}')">🖨️ پرنت</button>
-                        <button class="btn btn-pay" onclick="openModal('${d.id}', '${d.merchant_name}', ${d.dollar_rate_at_time || 1500})">💰 پارەدان</button>
+                    <div class="btn-group no-print">
+                        <button class="btn btn-print" onclick="printSimpleInvoice('${d.id}')">🖨️ وەسڵ</button>
+                        ${!isCleared ? `<button class="btn btn-pay" onclick="openModal('${d.id}', '${d.merchant_name}', ${d.dollar_rate_at_time})">💰 پارەدان</button>` : '<span style="color:green; font-weight:bold; padding:10px;">پاکاو کراوە ✅</span>'}
                     </div>
                 </div>
             `;
@@ -91,8 +122,8 @@
 
     function openModal(id, name, rate) {
         activeId = id;
-        activeRate = rate;
-        document.getElementById('mName').innerText = "پارەدان بۆ: " + name;
+        activeRate = rate || 1500;
+        document.getElementById('mName').innerText = "پارەدان: " + name;
         document.getElementById('payModal').style.display = 'flex';
     }
 
@@ -104,41 +135,41 @@
 
         const { data: debt } = await _supabase.from('merchant_debts').select('*').eq('id', activeId).single();
 
-        // لێرە فۆرمۆڵەی سکاندنەوەی دینار بۆ دۆلار جێگیر کراوە
-        // بڕی دینارە دراوەکە دابەشی نرخی دۆلاری کاتی وەسڵەکە دەکەین
+        // فۆرمۆڵەی گۆڕینەوە: دینار دابەشی نرخی کڕین
         const convertedUSD = pIQD / activeRate;
-        const totalDeductionUSD = pUSD + convertedUSD;
+        const totalPaidUSD = pUSD + convertedUSD;
 
-        const newUSD = debt.amount_usd - totalDeductionUSD;
-        const newIQD = debt.amount_iqd; // لێرە قەرزەکە تەنها لە دۆلارەکە کەمدەکەینەوە وەک داوات کردبوو
+        const newUSD = Math.max(0, debt.amount_usd - totalPaidUSD);
 
-        await _supabase.from('merchant_debts').update({
-            amount_usd: newUSD < 0 ? 0 : newUSD,
-            amount_iqd: 0 // ئەگەر دینارەکەی دابوو، قەرزەکە لێرە ساف دەبێت
+        const { error } = await _supabase.from('merchant_debts').update({
+            amount_usd: newUSD
         }).eq('id', activeId);
 
-        alert("پارەکە وەرگیرا و لە دۆلارەکەی شکایەوە ✅");
-        closeModal();
-        loadDebts();
+        if(!error) {
+            alert("پارەکە بە سەرکەوتوویی لە قەرزەکە شکایەوە ✅");
+            closeModal();
+            loadDebts();
+        }
     }
 
-    async function printInvoice(id) {
+    async function printSimpleInvoice(id) {
         const { data: d } = await _supabase.from('merchant_debts').select('*').eq('id', id).single();
-        const area = document.getElementById('printArea');
-        const details = document.getElementById('printDetails');
-        
-        details.innerHTML = `
-            <p><b>بازرگان:</b> ${d.merchant_name}</p>
-            <p><b>بەرواری وەسڵ:</b> ${new Date(d.created_at).toLocaleString('ku-IQ')}</p>
-            <p><b>وردەکاری:</b> ${d.items_details}</p>
-            <p><b>نرخی دۆلار لە کاتی کڕین:</b> 100$ = ${d.dollar_rate_at_time || 1500} دینار</p>
-            <hr>
-            <h3>ماوەی قەرز: $${d.amount_usd.toFixed(2)}</h3>
-        `;
-        
-        area.style.display = 'block';
-        window.print();
-        area.style.display = 'none';
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <div dir="rtl" style="font-family:sans-serif; padding:40px; border:2px solid #000; text-align:center;">
+                <h2>ڕێبین سیستم - وەسڵی قەرز</h2>
+                <hr>
+                <p style="text-align:right;"><b>بازرگان:</b> ${d.merchant_name}</p>
+                <p style="text-align:right;"><b>ڕێکەوت:</b> ${new Date(d.created_at).toLocaleString('ku-IQ')}</p>
+                <p style="text-align:right;"><b>نرخی دۆلار لە وەسڵدا:</b> ${d.dollar_rate_at_time}</p>
+                <br>
+                <h1 style="background:#eee; padding:10px;">ماوەی قەرز: $${d.amount_usd.toFixed(2)}</h1>
+                <br><br>
+                <p>واژووی وەرگر: ________________</p>
+            </div>
+        `);
+        printWindow.document.close();
+        printWindow.print();
     }
 
     window.onload = loadDebts;
