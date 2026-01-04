@@ -111,29 +111,40 @@
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     let cart = [];
-    let currentCurrency = 'USD'; // USD یان IQD
+    let currentCurrency = 'USD';
 
     async function findProduct() {
-        const val = document.getElementById('scanInp').value;
+        const val = document.getElementById('scanInp').value.trim();
         if(!val) return;
 
-        const { data } = await _supabase.from('purchases')
+        // گەڕانی ورد بۆ ناو و بارکۆد
+        const { data, error } = await _supabase.from('purchases')
             .select('*')
             .or(`barcode.eq."${val}",item_name.ilike."%${val}%"`)
-            .gt('quantity', 0)
             .limit(1).maybeSingle();
 
         if(data) {
+            // پشکنین: ئەگەر بڕی کاڵاکە سفر یان کەمتر بوو
+            if (data.quantity <= 0) {
+                alert("⚠️ ئەم کاڵایە (" + data.item_name + ") لە کۆگا نەماوە و بڕەکەی سفرە!");
+                document.getElementById('scanInp').value = '';
+                return;
+            }
+
             const exist = cart.find(i => i.id === data.id);
             if(exist) {
-                exist.qty++;
+                if(exist.qty + 1 > data.quantity) {
+                    alert("بڕی پێویست لە کۆگا نییە! تەنها " + data.quantity + " دانە ماوە.");
+                } else {
+                    exist.qty++;
+                }
             } else {
                 cart.push({ ...data, qty: 1 });
             }
             document.getElementById('scanInp').value = '';
             updateTotals();
         } else {
-            alert("کاڵا نییە!");
+            alert("کاڵا نەدۆزرایەوە!");
         }
     }
 
@@ -150,13 +161,13 @@
         let totalUSD = 0;
 
         tbody.innerHTML = cart.map((item, index) => {
-            const price = item.sale_price_retail; // دەتوانیت لێرە بیگۆڕیت بۆ کۆ
+            const price = item.sale_price_retail || 0;
             const lineTotal = price * item.qty;
             totalUSD += lineTotal;
 
             return `<tr>
                 <td>${item.item_name}</td>
-                <td><input type="number" value="${item.qty}" style="width:50px" onchange="cart[${index}].qty=this.value;updateTotals()"></td>
+                <td><input type="number" value="${item.qty}" style="width:50px" onchange="if(this.value <= ${item.quantity}){ cart[${index}].qty=Number(this.value); updateTotals(); }else{ alert('بڕی پێویست نییە'); this.value=${item.qty}; }"></td>
                 <td>${price.toFixed(2)} $</td>
                 <td>${lineTotal.toFixed(2)} $</td>
                 <td class="no-print"><button onclick="cart.splice(${index},1);updateTotals()" style="border:none; background:none; cursor:pointer; color:red;">🗑️</button></td>
@@ -177,16 +188,18 @@
     async function saveSale() {
         if(cart.length === 0) return alert("سەبەتە خاڵییە");
         
-        const totalUSD = cart.reduce((sum, item) => sum + (item.sale_price_retail * item.qty), 0);
+        const totalUSD = cart.reduce((sum, item) => sum + ((item.sale_price_retail || 0) * item.qty), 0);
         const name = document.getElementById('custName').value || "کڕیاری گشتی";
         const mode = document.getElementById('payMode').value;
 
         // ١. تۆمارکردنی فرۆشتن
-        await _supabase.from('sales').insert([{
+        const { error: saleErr } = await _supabase.from('sales').insert([{
             customer_name: name,
             total_usd: totalUSD,
             pay_method: mode
         }]);
+
+        if(saleErr) return alert("هەڵە: " + saleErr.message);
 
         // ٢. کەمکردنەوە لە مەخزەن
         for(let item of cart) {
