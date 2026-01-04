@@ -12,10 +12,14 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
         label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
         input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        
+        /* شێوازی نوێ بۆ بەشی کاتیگۆری */
+        .flex-row { display: flex; gap: 5px; }
+        .btn-plus { background: var(--s); color: white; border: none; border-radius: 8px; width: 40px; cursor: pointer; font-weight: bold; font-size: 20px; }
+        
         .btn-save { width: 100%; padding: 20px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; transition: 0.3s; }
         .btn-save:hover { background: #219150; }
         .checkbox-grid { display: flex; gap: 20px; align-items: center; margin-top: 20px; background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px dashed #ccc; }
-        .alert-info { font-size: 12px; color: #e67e22; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -34,19 +38,25 @@
         <div><label>ئایدی</label><input type="text" id="itemId" placeholder="بە شێوەی خۆکار"></div>
     </div>
     <div class="grid">
-        <div><label>کاتیگۆری</label><select id="cat"><option>گشتی</option><option>دەرمان</option><option>خۆراک</option></select></div>
+        <div>
+            <label>کاتیگۆری</label>
+            <div class="flex-row">
+                <select id="cat">
+                    <option value="گشتی">گشتی</option>
+                    <option value="دەرمان">دەرمان</option>
+                    <option value="خۆراک">خۆراک</option>
+                </select>
+                <button class="btn-plus" onclick="addNewCategory()" title="زیادکردنی کاتیگۆری نوێ">+</button>
+            </div>
+        </div>
         <div><label>براند</label><input type="text" id="brand" placeholder="بێ براند"></div>
         <div><label>دابینکەر (Supplier)</label><input type="text" id="supplier"></div>
     </div>
 
     <div class="section-title">📅 بەسەرچوون و پاراستن</div>
     <div class="grid">
-        <div><label>ڕێکەوتی بەسەرچوون (Expiry Date)</label><input type="date" id="expiryDate"></div>
-        <div>
-            <label>ئاگادارکردنەوە پێش (ڕۆژ)</label>
-            <input type="number" id="expiryAlertDays" value="30">
-            <div class="alert-info">سیستمەکە ٣٠ ڕۆژ پێش کاتەکە ئاگادارت دەکاتەوە</div>
-        </div>
+        <div><label>ڕێکەوتی بەسەرچوون</label><input type="date" id="expiryDate"></div>
+        <div><label>ئاگادارکردنەوە پێش (ڕۆژ)</label><input type="number" id="expiryAlertDays" value="30"></div>
     </div>
 
     <div class="section-title">💰 نرخ و پێوانە</div>
@@ -56,9 +66,9 @@
         <div><label>نرخی فرۆشی کۆ</label><input type="number" id="wholesalePrice"></div>
     </div>
     <div class="grid">
-        <div><label>یەکە (Unit)</label><select id="unit"><option>دانە</option><option>کارتۆن</option><option>پاکەت</option></select></div>
-        <div><label>بڕی یەکە لەناو کارتۆن</label><input type="number" id="pcsInCarton" value="1" placeholder="بۆ نموونە: ١٢"></div>
-        <div><label>کەمترین بڕ بۆ ئاگادارکردنەوە</label><input type="number" id="alertQty" value="5"></div>
+        <div><label>یەکە (Unit)</label><select id="unit"><option>دانە</option><option>کارتۆن</option></select></div>
+        <div><label>بڕی یەکە لەناو کارتۆن</label><input type="number" id="pcsInCarton" value="1"></div>
+        <div><label>کەمترین بڕی ئاگادارکردنەوە</label><input type="number" id="alertQty" value="5"></div>
     </div>
 
     <div class="checkbox-grid">
@@ -74,6 +84,19 @@
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    // فەنکشن بۆ زیادکردنی کاتیگۆری نوێ بە شێوەی کاتی
+    function addNewCategory() {
+        const newCat = prompt("ناوی کاتیگۆرییە نوێیەکە بنووسە:");
+        if (newCat && newCat.trim() !== "") {
+            const select = document.getElementById('cat');
+            const option = document.createElement("option");
+            option.text = newCat;
+            option.value = newCat;
+            select.add(option);
+            select.value = newCat; // یەکسەر هەڵبژێردرێت
+        }
+    }
 
     async function saveFullItem() {
         const payload = {
@@ -104,8 +127,7 @@
             alert("کاڵای (" + payload.item_name + ") بە سەرکەوتوویی پاشەکەوت کرا! 🚀");
             location.reload();
         } else {
-            if(error.message.includes("unique")) alert("ئەم بارکۆدە پێشتر هەیە!");
-            else alert("هەڵە: " + error.message);
+            alert("هەڵە: " + error.message);
         }
     }
 </script>
