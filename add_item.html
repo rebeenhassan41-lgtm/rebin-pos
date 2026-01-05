@@ -3,71 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ناساندنی کەرەستە</title>
+    <title>ناساندنی کاڵا</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #8e44ad; --bg: #f4f7f6; --text: #2c3e50; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        :root { --p: #8e44ad; --bg: #f0f2f5; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px; margin: auto; }
-        h2 { color: var(--p); text-align: center; margin-bottom: 25px; }
+        h2 { color: var(--p); text-align: center; margin-top: 0; }
         
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text); }
+        .input-group { margin-bottom: 15px; position: relative; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text); font-size: 14px; }
         input, select { 
-            width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; 
+            width: 100%; padding: 12px; border: 2px solid #edf2f7; border-radius: 12px; 
             box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s;
+            background: #f8fafc;
         }
-        input:focus { border-color: var(--p); }
+        input:focus, select:focus { border-color: var(--p); background: white; }
+
+        .row { display: flex; gap: 10px; align-items: flex-end; }
+        .add-btn-small { 
+            background: var(--p); color: white; border: none; padding: 12px; 
+            border-radius: 12px; cursor: pointer; font-weight: bold;
+        }
 
         .img-preview {
-            width: 100%; height: 180px; border: 2px dashed #ccc; border-radius: 15px;
+            width: 100%; height: 160px; border: 2px dashed #cbd5e0; border-radius: 15px;
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 15px; cursor: pointer; overflow: hidden; background: #fafafa;
+            margin-bottom: 15px; cursor: pointer; overflow: hidden; background: #f8fafc;
         }
         .img-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
         
-        .btn { 
-            width: 100%; padding: 15px; background: var(--p); color: white; border: none; 
-            border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        .btn-main { 
+            width: 100%; padding: 16px; background: var(--p); color: white; border: none; 
+            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
-        .btn:active { transform: scale(0.98); }
-        .back-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; }
+        .btn-main:active { transform: scale(0.98); }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #64748b; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>📦 ناساندنی کاڵای نوێ</h2>
+        <h2>📦 ناساندنی کاڵا</h2>
         
         <div class="img-preview" onclick="document.getElementById('itemImg').click()">
-            <span id="placeholderText">📸 وێنەی کاڵا باربکە</span>
+            <span id="placeholderText">📸 وێنەی کاڵا</span>
             <img id="preview" src="">
         </div>
         <input type="file" id="itemImg" hidden accept="image/*" onchange="previewImage(event)">
 
         <div class="input-group">
             <label>ناوی کاڵا</label>
-            <input type="text" id="itemName" placeholder="بۆ نموونە: مۆبایل">
+            <input type="text" id="itemName" placeholder="بۆ نموونە: ئایفۆن ١٥">
         </div>
 
         <div class="input-group">
             <label>بارکۆد</label>
-            <input type="text" id="itemBarcode" placeholder="بارکۆد لێبدە یان بنووسە">
+            <input type="text" id="itemBarcode" placeholder="لێبدە یان بنووسە">
         </div>
 
         <div class="input-group">
-            <label>نرخی کڕین ($)</label>
-            <input type="number" id="buyPrice" placeholder="0.00">
+            <label>کاتیگۆری (جۆر)</label>
+            <div class="row">
+                <select id="itemCategory">
+                    <option value="">هەڵبژێرە...</option>
+                </select>
+                <button class="add-btn-small" onclick="addNewCategory()">+</button>
+            </div>
         </div>
 
         <div class="input-group">
-            <label>نرخی فرۆشتن ($)</label>
-            <input type="number" id="sellPrice" placeholder="0.00">
+            <label>براند (کۆمپانیا)</label>
+            <input type="text" id="itemBrand" placeholder="بۆ نموونە: Apple">
         </div>
 
-        <button class="btn" id="saveBtn" onclick="saveItem()">تۆمارکردنی کاڵا ✅</button>
+        <button class="btn-main" id="saveBtn" onclick="saveItem()">تۆمارکردن ✅</button>
         
-        <a href="dashboard.html" class="back-link">گەڕانەوە بۆ سەرەکی</a>
+        <a href="dashboard.html" class="back-link">🏠 گەڕانەوە بۆ سەرەکی</a>
     </div>
 
 <script>
@@ -75,7 +87,25 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // پیشاندانی وێنەکە پێش بارکردن
+    // بارکردنی کاتیگۆرییەکان لە کاتی کردنەوەی لاپەڕە
+    async function loadCategories() {
+        const { data, error } = await _supabase.from('categories').select('*').order('name');
+        if (!error) {
+            const select = document.getElementById('itemCategory');
+            select.innerHTML = '<option value="">هەڵبژێرە...</option>' + 
+                data.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        }
+    }
+
+    async function addNewCategory() {
+        const cat = prompt("ناوی کاتیگۆری نوێ بنووسە:");
+        if (cat) {
+            const { error } = await _supabase.from('categories').insert([{ name: cat }]);
+            if (error) alert("ئەم جۆرە پێشتر هەیە");
+            else loadCategories();
+        }
+    }
+
     function previewImage(event) {
         const file = event.target.files[0];
         if (file) {
@@ -92,52 +122,46 @@
     async function saveItem() {
         const name = document.getElementById('itemName').value.trim();
         const barcode = document.getElementById('itemBarcode').value.trim();
-        const buy = document.getElementById('buyPrice').value;
-        const sell = document.getElementById('sellPrice').value;
+        const category = document.getElementById('itemCategory').value;
+        const brand = document.getElementById('itemBrand').value.trim();
         const file = document.getElementById('itemImg').files[0];
         const branchId = localStorage.getItem("userBranchId") || 1;
 
-        if (!name || !buy || !sell) return alert("تکایە زانیارییەکان پڕ بکەرەوە");
+        if (!name || !category) return alert("تکایە ناوی کاڵا و کاتیگۆری پڕ بکەرەوە");
 
         const btn = document.getElementById('saveBtn');
         btn.disabled = true;
-        btn.innerText = "خەریکی تۆمارکردنە...";
+        btn.innerText = "خەریکی پاشەکەوتکردنە...";
 
         let imageUrl = "";
-
-        // 1. بارکردنی وێنە ئەگەر هەبوو
         if (file) {
             const fileName = Date.now() + "_" + file.name;
             const { data: imgData, error: imgErr } = await _supabase.storage
-                .from('item-images')
-                .upload(fileName, file);
-            
+                .from('item-images').upload(fileName, file);
             if (!imgErr) {
-                const { data: urlData } = _supabase.storage.from('item-images').getPublicUrl(fileName);
-                imageUrl = urlData.publicUrl;
+                imageUrl = _supabase.storage.from('item-images').getPublicUrl(fileName).data.publicUrl;
             }
         }
 
-        // 2. پاشەکەوتکردن لە داتابەیس
         const { error } = await _supabase.from('items').insert([{
             item_name: name,
             barcode: barcode,
-            buy_price: parseFloat(buy),
-            sell_price: parseFloat(sell),
+            category: category,
+            brand: brand,
             image_url: imageUrl,
             branch_id: parseInt(branchId)
         }]);
 
-        if (error) {
-            alert("هەڵە ڕوویدا: " + error.message);
-        } else {
-            alert("کاڵا بە سەرکەوتوویی تۆمارکرا 📦");
+        if (error) alert("هەڵە: " + error.message);
+        else {
+            alert("کاڵا ناسێندرا ✅");
             location.reload();
         }
-        
         btn.disabled = false;
-        btn.innerText = "تۆمارکردنی کاڵا ✅";
+        btn.innerText = "تۆمارکردن ✅";
     }
+
+    loadCategories();
 </script>
 </body>
 </html>
