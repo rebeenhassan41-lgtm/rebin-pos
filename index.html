@@ -4,38 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <title>R</title>
-    <meta name="apple-mobile-web-app-title" content="R">
-    <meta name="application-name" content="R">
+    <title>R - دەستپێک</title>
     
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
     
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <style>
-        body { background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
-        .loader { color: white; text-align: center; }
+        body { 
+            background: #2c3e50; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+        }
+        .loader { 
+            color: white; 
+            text-align: center; 
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        img { width: 100px; margin-bottom: 15px; }
+        p { font-size: 18px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <div class="loader">
-        <img src="https://img.icons8.com/color/96/r.png" alt="R"><br>
+        <img src="https://img.icons8.com/color/192/r.png" alt="R"><br>
         <p>خەریکە بار دەکرێت...</p>
     </div>
 
     <script>
-        // پشکنین: ئەگەر داخل نەبووە، بینێرە بۆ لاپەڕەی لۆگین
+        // پشکنینی چوونەژوورەوە
         setTimeout(() => {
+            // ئەگەر بەکارهێنەر پێشتر داخل نەبووبوو (Auth نەبوو)
             if (localStorage.getItem("rebeenAuth") !== "true") {
-                window.location.replace("login.html");
+                // دڵنیابەرەوە ناوی فایلەکە login.html بێت یان هەر ناوێک کە خۆت لێت ناوە
+                window.location.replace("login.html"); 
             } else {
+                // ئەگەر داخل ببوو، ڕاستەوخۆ دەچێتە داشبۆرد
                 window.location.replace("dashboard.html");
             }
-        }, 500); // کەمێک وەستان بۆ ئەوەی لۆگۆکە ببینرێت و ئەپەکە جێگیر بێت
+        }, 1200); // کاتەکەم کەمێک زیاد کرد بۆ ئەوەی لۆگۆکە جوان دیار بێت
     </script>
 </body>
 </html>
