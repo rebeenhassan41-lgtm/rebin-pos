@@ -6,7 +6,7 @@
     <title>R - کارمەندان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #3498db; --success: #27ae60; --warn: #f39c12; }
+        :root { --p: #2c3e50; --s: #3498db; --success: #27ae60; --warn: #f39c12; --danger: #e74c3c; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; margin: 0; direction: rtl; padding: 15px; }
         .header-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .btn-back { background: var(--p); color: white; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; }
@@ -18,7 +18,14 @@
         .btn-save:disabled { background: #ccc; }
         .user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fafafa; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; }
         .edit-btn { color: var(--warn); cursor: pointer; border: none; background: none; font-size: 18px; }
-        .del-btn { color: #e74c3c; cursor: pointer; border: none; background: none; font-size: 18px; }
+        .del-btn { color: var(--danger); cursor: pointer; border: none; background: none; font-size: 18px; }
+        .perm-btn { color: var(--s); cursor: pointer; border: none; background: none; font-size: 18px; }
+
+        /* ستایلی پەنجەرەی مۆڵەتەکان */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+        .modal-content { background: white; margin: 15% auto; padding: 25px; border-radius: 20px; width: 85%; max-width: 380px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); position: relative; }
+        .perm-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f2f6; }
+        .perm-item span { font-weight: 600; color: #34495e; }
     </style>
 </head>
 <body>
@@ -51,14 +58,28 @@
         </div>
     </div>
 
+    <div id="permModal" class="modal">
+        <div class="modal-content">
+            <h3 style="text-align: center; margin-top: 0;">🛡️ مۆڵەتەکان</h3>
+            <div id="permList">
+                <div class="perm-item"><span>🛒 فرۆشتن</span> <input type="checkbox" id="p_sales" style="transform: scale(1.3);"></div>
+                <div class="perm-item"><span>📊 ڕاپۆرتەکان</span> <input type="checkbox" id="p_reports" style="transform: scale(1.3);"></div>
+                <div class="perm-item"><span>📦 کاڵاکان</span> <input type="checkbox" id="p_items" style="transform: scale(1.3);"></div>
+                <div class="perm-item"><span>🗑️ سڕینەوە</span> <input type="checkbox" id="p_delete" style="transform: scale(1.3);"></div>
+            </div>
+            <button class="btn-save" style="margin-top: 20px;" onclick="savePermissions()">پاشەکەوتکردن ✅</button>
+            <button onclick="closeModal()" style="width:100%; background:none; border:none; color:var(--danger); margin-top:15px; cursor:pointer; font-weight:bold;">داخستن</button>
+        </div>
+    </div>
+
 <script>
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
     
     let editingId = null;
+    let currentUserIdForPerms = null;
 
-    // وەرگرتنی زانیارییەکان و دڵنیابوونەوە لەوەی null نین وەک String
     const rawBranchId = localStorage.getItem("userBranchId");
     const currentBranchId = (rawBranchId && rawBranchId !== "null") ? rawBranchId : null;
     const currentBranchName = localStorage.getItem("userBranchName") || "نادیار";
@@ -93,8 +114,9 @@
                         <small style="color:#888;">@${user.username} | ${user.position}</small>
                     </div>
                     <div>
-                        <button class="edit-btn" onclick="prepareEdit('${user.id}', '${user.full_name}', '${user.username}', '${user.password}', '${user.position}')">⚙️</button>
-                        <button class="del-btn" onclick="deleteUser('${user.id}')">🗑️</button>
+                        <button class="perm-btn" onclick="openPermissions('${user.id}')" title="مۆڵەت">🛡️</button>
+                        <button class="edit-btn" onclick="prepareEdit('${user.id}', '${user.full_name}', '${user.username}', '${user.password}', '${user.position}')" title="دەستکاری">⚙️</button>
+                        <button class="del-btn" onclick="deleteUser('${user.id}')" title="سڕینەوە">🗑️</button>
                     </div>
                 </div>`;
         });
@@ -107,45 +129,79 @@
         const pos = document.getElementById('position').value;
 
         if(!name || !user || !pass) return alert("تکایە هەموو خانەکان پڕ بکەرەوە");
-        
-        // گرنگترین بەش: لێرە دڵنیای دەکەینەوە کە ئایدییەکە ژمارەیە و null نییە
-        if(!currentBranchId) return alert("هەڵە: ناسنامەی لق بەردەست نییە. تکایە دووبارە بچۆوە ژوورەوە.");
+        if(!currentBranchId) return alert("هەڵە: ناسنامەی لق بەردەست نییە.");
 
         const btn = document.getElementById('mainBtn');
         btn.disabled = true;
-
-        // گۆڕینی ئایدی لق بۆ ژمارە (BigInt) بۆ ئەوەی داتابەیس هەڵە نەگرێت
-        const branchNum = parseInt(currentBranchId);
 
         if(editingId) {
             const { error } = await _supabase.from('system_users').update({ 
                 full_name: name, username: user, password: pass, position: pos 
             }).eq('id', editingId);
             
-            if(error) alert("هەڵە لە کاتی گۆڕانکاری: " + error.message);
+            if(error) alert("هەڵە: " + error.message);
             else { alert("گۆڕانکارییەکان سەرکەوتوو بوون ✅"); resetForm(); fetchUsers(); }
         } else {
-            // ناردنی داتا بە شێوەی ژمارە بۆ branch_id
             const { error } = await _supabase.from('system_users').insert([{ 
                 full_name: name, 
                 username: user, 
                 password: pass, 
                 position: pos, 
-                branch_id: branchNum 
+                branch_id: parseInt(currentBranchId),
+                permissions: { sales: true, reports: false, items: true, delete: false } // مۆڵەتی سەرەتایی
             }]);
             
-            if(error) {
-                console.error(error);
-                alert("هەڵە: " + error.message);
-            } else { 
-                alert("کارمەند بە سەرکەوتوویی زیادکرا ✅"); 
-                resetForm(); 
-                fetchUsers(); 
-            }
+            if(error) alert("هەڵە: " + error.message);
+            else { alert("کارمەند زیادکرا ✅"); resetForm(); fetchUsers(); }
         }
         btn.disabled = false;
     }
 
+    // --- فەنکشنەکانی مۆڵەت (Permissions) ---
+    async function openPermissions(userId) {
+        currentUserIdForPerms = userId;
+        document.getElementById('permModal').style.display = 'block';
+
+        const { data, error } = await _supabase.from('system_users')
+            .select('permissions')
+            .eq('id', userId)
+            .single();
+
+        if (data && data.permissions) {
+            const p = data.permissions;
+            document.getElementById('p_sales').checked = !!p.sales;
+            document.getElementById('p_reports').checked = !!p.reports;
+            document.getElementById('p_items').checked = !!p.items;
+            document.getElementById('p_delete').checked = !!p.delete;
+        } else {
+            // ئەگەر بەتاڵ بوو، هەمووی لادە
+            document.querySelectorAll('#permList input').forEach(i => i.checked = false);
+        }
+    }
+
+    async function savePermissions() {
+        const perms = {
+            sales: document.getElementById('p_sales').checked,
+            reports: document.getElementById('p_reports').checked,
+            items: document.getElementById('p_items').checked,
+            delete: document.getElementById('p_delete').checked
+        };
+
+        const { error } = await _supabase.from('system_users')
+            .update({ permissions: perms })
+            .eq('id', currentUserIdForPerms);
+
+        if (!error) {
+            alert("مۆڵەتەکان نوێکرانەوە ✅");
+            closeModal();
+        } else {
+            alert("کێشەیەک ڕوویدا: " + error.message);
+        }
+    }
+
+    function closeModal() { document.getElementById('permModal').style.display = 'none'; }
+
+    // --- فەنکشنەکانی تر ---
     function prepareEdit(id, name, user, pass, pos) {
         editingId = id;
         document.getElementById('fullName').value = name;
@@ -171,10 +227,9 @@
     }
 
     async function deleteUser(id) {
-        if(confirm("ئایا دڵنیای لە سڕینەوەی ئەم کارمەندە؟")) {
+        if(confirm("ئایا دڵنیای لە سڕینەوە؟")) {
             const { error } = await _supabase.from('system_users').delete().eq('id', id);
             if(!error) fetchUsers();
-            else alert("سڕینەوە سەرکەوتوو نەبوو.");
         }
     }
 
