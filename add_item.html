@@ -2,138 +2,141 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>R | ناساندنی کاڵا</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ناساندنی کەرەستە</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #3498db; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 15px; margin: 0; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .section-title { background: #eee; padding: 10px; border-radius: 8px; margin-top: 20px; color: var(--p); font-weight: bold; border-right: 5px solid var(--s); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
-        label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        input:focus { border-color: var(--s); outline: none; }
-        input:disabled { background: #f0f0f0; cursor: not-allowed; }
-        .flex-row { display: flex; gap: 5px; }
-        .btn-plus { background: var(--s); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; font-weight: bold; font-size: 20px; }
-        .btn-save { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; }
-        .branch-badge { background: #34495e; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-top: 5px; }
+        :root { --p: #8e44ad; --bg: #f4f7f6; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px; margin: auto; }
+        h2 { color: var(--p); text-align: center; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text); }
+        input, select { 
+            width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; 
+            box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--p); }
+
+        .img-preview {
+            width: 100%; height: 180px; border: 2px dashed #ccc; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 15px; cursor: pointer; overflow: hidden; background: #fafafa;
+        }
+        .img-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        
+        .btn { 
+            width: 100%; padding: 15px; background: var(--p); color: white; border: none; 
+            border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div style="display:flex; justify-content:space-between; align-items: flex-start;">
-        <div>
-            <h2 style="margin:0;">📦 ناساندنی کاڵای نوێ</h2>
-            <span id="currentBranch" class="branch-badge">بار دەکرێت...</span>
+    <div class="card">
+        <h2>📦 ناساندنی کاڵای نوێ</h2>
+        
+        <div class="img-preview" onclick="document.getElementById('itemImg').click()">
+            <span id="placeholderText">📸 وێنەی کاڵا باربکە</span>
+            <img id="preview" src="">
         </div>
-        <a href="dashboard.html" style="text-decoration:none; color:#e74c3c; font-weight:bold; border: 1px solid #e74c3c; padding: 8px 15px; border-radius: 8px; font-size: 14px;">گه‌ڕانه‌وه‌ 🔙</a>
-    </div>
+        <input type="file" id="itemImg" hidden accept="image/*" onchange="previewImage(event)">
 
-    <div class="section-title">📝 زانیارییە سەرەکییەکان</div>
-    <div class="grid">
-        <div style="grid-column: span 2;"><label>ناوی کاڵا*</label><input type="text" id="itemName" placeholder="ناو بنووسە..."></div>
-        <div><label>بارکۆد*</label><input type="text" id="barcode" placeholder="سکان یان نوسین" autofocus></div>
-    </div>
-    
-    <div class="grid">
-        <div>
-            <label>کاتیگۆری</label>
-            <div class="flex-row">
-                <select id="cat"><option value="گشتی">گشتی</option><option value="دەرمان">دەرمان</option><option value="خۆراک">خۆراک</option></select>
-                <button class="btn-plus" onclick="addNewOption('cat', 'کاتیگۆری')">+</button>
-            </div>
+        <div class="input-group">
+            <label>ناوی کاڵا</label>
+            <input type="text" id="itemName" placeholder="بۆ نموونە: مۆبایل">
         </div>
-        <div>
-            <label>براند</label>
-            <div class="flex-row">
-                <select id="brand"><option value="بێ براند">بێ براند</option></select>
-                <button class="btn-plus" onclick="addNewOption('brand', 'براند')">+</button>
-            </div>
-        </div>
-        <div><label>یەکە</label><select id="unit"><option>دانە</option><option>کارتۆن</option><option>پاکەت</option></select></div>
-    </div>
 
-    <div class="section-title">📅 کات و کۆگا</div>
-    <div class="grid">
-        <div style="background: #fff9c4; padding: 10px; border-radius: 10px; border: 1px solid #e67e22;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="hasExpiry" onchange="toggleExpiry()"> ئیکسپایەری هەیە؟</label>
-            <input type="date" id="expiryDate" disabled style="margin-top: 10px;">
+        <div class="input-group">
+            <label>بارکۆد</label>
+            <input type="text" id="itemBarcode" placeholder="بارکۆد لێبدە یان بنووسە">
         </div>
-        <div><label>بڕی سەرەتایی</label><input type="number" id="initialQty" value="0"></div>
-        <div><label>کەمترین بڕ</label><input type="number" id="alertQty" value="5"></div>
-    </div>
 
-    <button class="btn-save" id="saveBtn" onclick="saveSimpleItem()">تۆمارکردنی کاڵا ✅</button>
-</div>
+        <div class="input-group">
+            <label>نرخی کڕین ($)</label>
+            <input type="number" id="buyPrice" placeholder="0.00">
+        </div>
+
+        <div class="input-group">
+            <label>نرخی فرۆشتن ($)</label>
+            <input type="number" id="sellPrice" placeholder="0.00">
+        </div>
+
+        <button class="btn" id="saveBtn" onclick="saveItem()">تۆمارکردنی کاڵا ✅</button>
+        
+        <a href="dashboard.html" class="back-link">گەڕانەوە بۆ سەرەکی</a>
+    </div>
 
 <script>
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    const userBranchId = localStorage.getItem("userBranchId");
-    const userBranchName = localStorage.getItem("userBranchName") || "نادیار";
-    document.getElementById('currentBranch').innerText = "لق: " + userBranchName;
-
-    function addNewOption(el, label) {
-        const val = prompt(`ناوی ${label}ی نوێ:`);
-        if (val) {
-            const s = document.getElementById(el);
-            const opt = document.createElement("option");
-            opt.text = val; opt.value = val;
-            s.add(opt); s.value = val;
+    // پیشاندانی وێنەکە پێش بارکردن
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview').src = e.target.result;
+                document.getElementById('preview').style.display = 'block';
+                document.getElementById('placeholderText').style.display = 'none';
+            }
+            reader.readAsDataURL(file);
         }
     }
 
-    function toggleExpiry() {
-        const h = document.getElementById('hasExpiry').checked;
-        const e = document.getElementById('expiryDate');
-        e.disabled = !h; if(!h) e.value = "";
-    }
-
-    async function saveSimpleItem() {
+    async function saveItem() {
         const name = document.getElementById('itemName').value.trim();
-        const code = document.getElementById('barcode').value.trim();
-        if(!name || !code) return alert("تکایە ناو و بارکۆد پڕ بکەرەوە");
-        if(!userBranchId) return alert("هەڵە: ناسنامەی لق (Branch ID) بوونی نییە!");
+        const barcode = document.getElementById('itemBarcode').value.trim();
+        const buy = document.getElementById('buyPrice').value;
+        const sell = document.getElementById('sellPrice').value;
+        const file = document.getElementById('itemImg').files[0];
+        const branchId = localStorage.getItem("userBranchId") || 1;
+
+        if (!name || !buy || !sell) return alert("تکایە زانیارییەکان پڕ بکەرەوە");
 
         const btn = document.getElementById('saveBtn');
-        btn.disabled = true; btn.innerText = "خەریکە تۆمار دەبێت...";
+        btn.disabled = true;
+        btn.innerText = "خەریکی تۆمارکردنە...";
 
-        // ئامادەکردنی داتا - لێرەدا دڵنیای دەبینەوە کە ستوونەکان وەک یەک بن
-        const dataToInsert = {
-            "item_name": name,
-            "barcode": code,
-            "category": document.getElementById('cat').value,
-            "brand": document.getElementById('brand').value,
-            "quantity": parseFloat(document.getElementById('initialQty').value) || 0,
-            "unit": document.getElementById('unit').value,
-            "expiry_date": document.getElementById('expiryDate').value || null,
-            "has_expiry": document.getElementById('hasExpiry').checked,
-            "alert_quantity": parseInt(document.getElementById('alertQty').value) || 0,
-            "branch_id": isNaN(userBranchId) ? userBranchId : parseInt(userBranchId),
-            "is_active": true,
-            "buy_price": 0,
-            "sell_price": 0,
-            "wholesale_price": 0
-        };
+        let imageUrl = "";
 
-        const { error } = await _supabase
-            .from('purchases')
-            .insert([dataToInsert]);
-
-        if(!error) {
-            alert("✅ کاڵاکە بە سەرکەوتوویی تۆمارکرا");
-            location.reload();
-        } else {
-            console.error("Supabase Error Details:", error);
-            // ئەگەر کێشەی Cache مابێت، لێرە پێت دەڵێت چ ستوونێک نابینێت
-            alert("❌ هەڵە لە داتابەیس: " + error.message);
-            btn.disabled = false; btn.innerText = "تۆمارکردنی کاڵا ✅";
+        // 1. بارکردنی وێنە ئەگەر هەبوو
+        if (file) {
+            const fileName = Date.now() + "_" + file.name;
+            const { data: imgData, error: imgErr } = await _supabase.storage
+                .from('item-images')
+                .upload(fileName, file);
+            
+            if (!imgErr) {
+                const { data: urlData } = _supabase.storage.from('item-images').getPublicUrl(fileName);
+                imageUrl = urlData.publicUrl;
+            }
         }
+
+        // 2. پاشەکەوتکردن لە داتابەیس
+        const { error } = await _supabase.from('items').insert([{
+            item_name: name,
+            barcode: barcode,
+            buy_price: parseFloat(buy),
+            sell_price: parseFloat(sell),
+            image_url: imageUrl,
+            branch_id: parseInt(branchId)
+        }]);
+
+        if (error) {
+            alert("هەڵە ڕوویدا: " + error.message);
+        } else {
+            alert("کاڵا بە سەرکەوتوویی تۆمارکرا 📦");
+            location.reload();
+        }
+        
+        btn.disabled = false;
+        btn.innerText = "تۆمارکردنی کاڵا ✅";
     }
 </script>
 </body>
