@@ -10,7 +10,7 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; direction: rtl; }
         .card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
         .logo { width: 70px; height: 70px; background: var(--p); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; margin: 0 auto 20px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #edf2f7; border-radius: 12px; text-align: center; outline: none; box-sizing: border-box; font-family: inherit; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #edf2f7; border-radius: 12px; text-align: center; outline: none; box-sizing: border-box; font-family: inherit; font-size: 16px; }
         button { width: 100%; padding: 14px; background: var(--p); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
         button:hover { opacity: 0.9; transform: translateY(-2px); }
         .footer { margin-top: 25px; color: #a0aec0; font-size: 12px; }
@@ -28,6 +28,7 @@
     </div>
 
 <script>
+    // بەستەری داتابەیسەکەت
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
@@ -37,40 +38,56 @@
         const p = document.getElementById('password').value.trim();
         const btn = document.getElementById('loginBtn');
 
-        if(!u || !p) return alert("تکایە هەموو خانەکان پڕ بکەرەوە");
+        if(!u || !p) {
+            alert("تکایە ناوی بەکارهێنەر و پاسوۆرد بنووسە");
+            return;
+        }
         
         btn.disabled = true;
         btn.innerText = "خەریکی پشکنینە...";
 
         try {
+            // تەنها زانیاری یوزەرەکە دەهێنین
             const { data, error } = await _supabase
                 .from('system_users')
-                .select('*, branches(branch_name)')
+                .select('*')
                 .eq('username', u)
                 .eq('password', p)
                 .maybeSingle();
 
-            if (error || !data) {
-                alert("ناوی بەکارهێنەر یان پاسۆرد هەڵەیە!");
-                btn.disabled = false;
-                btn.innerText = "چوونە ژوورەوە";
+            if (error) {
+                console.error(error);
+                alert("کێشەیەک لە داتابەیس هەیە");
+                resetBtn();
                 return;
             }
 
-            // پاشەکەوتکردنی زانیارییەکان بۆ بەکارهێنان لە لاپەڕەکانی تر
-            localStorage.setItem("rebeenAuth", "true");
-            localStorage.setItem("userPosition", data.position); // لێرە Admin یان Staff پاشەکەوت دەبێت
-            localStorage.setItem("userName", data.full_name);
-            localStorage.setItem("userBranch", data.branches ? data.branches.branch_name : "بێ لق");
+            if (!data) {
+                alert("ناوی بەکارهێنەر یان پاسۆرد هەڵەیە!");
+                resetBtn();
+                return;
+            }
 
-            // ڕاستەوخۆ بردن بۆ داشبۆرد بێ گوێدانە ئەوەی کێیە
-            window.location.replace("dashboard.html");
+            // پاشەکەوتکردنی زانیارییەکان بۆ ناو سیستم
+            localStorage.setItem("rebeenAuth", "true");
+            localStorage.setItem("userPosition", data.position);
+            localStorage.setItem("userName", data.full_name);
+            localStorage.setItem("userId", data.id);
+            localStorage.setItem("branchId", data.branch_id);
+
+            // بردن بۆ لاپەڕەی داشبۆرد - بێ هیچ مەرجێکی زیادە
+            window.location.href = "dashboard.html";
 
         } catch (err) {
-            alert("کێشەیەک لە پەیوەندی ڕوویدا");
-            btn.disabled = false;
-            btn.innerText = "چوونە ژوورەوە";
+            alert("کێشەیەک لە پەیوەندی ئینتەرنێت هەیە");
+            resetBtn();
         }
+    }
+
+    function resetBtn() {
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = false;
+        btn.innerText = "چوونە ژوورەوە";
     }
 </script>
 </body>
