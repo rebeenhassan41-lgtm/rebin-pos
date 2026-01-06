@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>R - داشبۆرد</title>
     
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
 
@@ -28,11 +30,32 @@
         .header { 
             background: var(--primary); 
             color: white; 
-            padding: 40px 20px 30px; 
+            padding: 30px 20px; 
             text-align: center; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
             border-bottom: 5px solid var(--blue);
             border-radius: 0 0 25px 25px;
+        }
+
+        .branch-selector-container {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 15px;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        #branchSelect {
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            outline: none;
         }
 
         .container { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
@@ -61,7 +84,6 @@
         }
 
         .card:active { transform: scale(0.92); background: #f9f9f9; }
-
         .icon { font-size: 32px; margin-bottom: 8px; }
         h2 { margin: 5px 0 0; font-size: 14px; font-weight: bold; }
         p { font-size: 10px; color: #7f8c8d; margin: 3px 0 0; }
@@ -81,13 +103,11 @@
 
         .logout-section { text-align: center; margin-top: 30px; margin-bottom: 30px; }
         .logout-btn { 
-            background: #fdfdfd; color: #e74c3c; border: 1px solid #e74c3c; padding: 12px 40px; 
-            border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; 
-            transition: 0.3s; width: 100%; max-width: 200px;
+            background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 12px 40px; 
+            border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; max-width: 200px;
         }
         
-        #userWelcome { color: white; font-weight: normal; display: block; margin-top: 10px; font-size: 15px; }
-        .branch-badge { background: var(--blue); color: white; padding: 3px 12px; border-radius: 20px; font-size: 12px; margin-top: 5px; display: inline-block; }
+        #userWelcome { color: white; margin-top: 5px; font-size: 16px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -95,78 +115,28 @@
     <div class="header">
         <h1 style="font-size: 22px; margin: 0;">سیستەمی ڕێبین</h1>
         <div id="userWelcome">بەخێربێیت...</div>
-        <span id="branchDisplay" class="branch-badge">لق: ---</span>
+        
+        <div class="branch-selector-container">
+            <span style="font-size: 11px; display: block; margin-bottom: 4px; opacity: 0.9;">لقى چالاک:</span>
+            <select id="branchSelect" onchange="updateSelectedBranch()">
+                <option value="">بار دەکرێت...</option>
+            </select>
+        </div>
     </div>
 
     <div class="container">
         <div class="grid-container">
-            
-            <div onclick="navTo('sales.html')" class="card sell">
-                <span class="icon">💰</span>
-                <h2>فرۆشتن</h2>
-                <p>وەسڵی نوێ</p>
-            </div>
-
-            <div onclick="navTo('inventory.html')" class="card inv">
-                <span class="icon">🏬</span>
-                <h2>کۆگا</h2>
-                <p>بینینی مەخزەن</p>
-            </div>
-
-            <div onclick="navTo('krin.html')" class="card buy">
-                <span class="icon">📥</span>
-                <h2>کڕین</h2>
-                <p>داخڵکردنی کاڵا</p>
-            </div>
-
-            <div onclick="navTo('add_item.html')" class="card item-add">
-                <span class="icon">📦</span>
-                <h2>ناساندنی کەرەستە</h2>
-                <p>کاڵای نوێ</p>
-            </div>
-
-            <div onclick="navTo('add_supplier.html')" class="card add-sup">
-                <span class="icon">📝</span>
-                <h2>ناساندنی بازرگان</h2>
-                <p>تۆمارکردنی فایل</p>
-            </div>
-
-            <div onclick="navTo('suppliers.html')" class="card sup">
-                <span class="icon">👥</span>
-                <h2>پڕۆفایلی بازرگانان</h2>
-                <p>کەشف حیساب</p>
-            </div>
-
-            <div onclick="navTo('add_user.html')" class="card user-add">
-                <span class="icon">👤</span>
-                <h2>کارمەندان</h2>
-                <p>بەڕێوەبردن</p>
-            </div>
-
-            <div onclick="navTo('report.html')" class="card rep">
-                <span class="icon">📊</span>
-                <h2>ڕاپۆرت</h2>
-                <p>قازانج و زەرەر</p>
-            </div>
-
-            <div onclick="navTo('qerzi_kriar.html')" class="card rec">
-                <span class="icon">🤝</span>
-                <h2>قەرزی کڕیار</h2>
-                <p>پارەی لای خەڵک</p>
-            </div>
-
-            <div onclick="navTo('qerzi_bazrgan.html')" class="card pay">
-                <span class="icon">💸</span>
-                <h2>قەرزی بازرگان</h2>
-                <p>ئەو پارەیەی لەسەرتە</p>
-            </div>
-
-            <div onclick="navTo('multi-branch.html')" class="card branch-card">
-                <span class="icon">🏢</span>
-                <h2>لقەکان</h2>
-                <p>بەڕێوەبردن</p>
-            </div>
-
+            <div onclick="navTo('sales.html')" class="card sell"><span class="icon">💰</span><h2>فرۆشتن</h2><p>وەسڵی نوێ</p></div>
+            <div onclick="navTo('inventory.html')" class="card inv"><span class="icon">🏬</span><h2>کۆگا</h2><p>بینینی مەخزەن</p></div>
+            <div onclick="navTo('krin.html')" class="card buy"><span class="icon">📥</span><h2>کڕین</h2><p>داخڵکردنی کاڵا</p></div>
+            <div onclick="navTo('add_item.html')" class="card item-add"><span class="icon">📦</span><h2>ناساندنی کەرەستە</h2><p>کاڵای نوێ</p></div>
+            <div onclick="navTo('add_supplier.html')" class="card add-sup"><span class="icon">📝</span><h2>ناساندنی بازرگان</h2><p>تۆمارکردنی فایل</p></div>
+            <div onclick="navTo('suppliers.html')" class="card sup"><span class="icon">👥</span><h2>پڕۆفایلی بازرگانان</h2><p>کەشف حیساب</p></div>
+            <div onclick="navTo('add_user.html')" class="card user-add"><span class="icon">👤</span><h2>کارمەندان</h2><p>بەڕێوەبردن</p></div>
+            <div onclick="navTo('report.html')" class="card rep"><span class="icon">📊</span><h2>ڕاپۆرت</h2><p>قازانج و زەرەر</p></div>
+            <div onclick="navTo('qerzi_kriar.html')" class="card rec"><span class="icon">🤝</span><h2>قەرزی کڕیار</h2><p>پارەی لای خەڵک</p></div>
+            <div onclick="navTo('qerzi_bazrgan.html')" class="card pay"><span class="icon">💸</span><h2>قەرزی بازرگان</h2><p>ئەو پارەیەی لەسەرتە</p></div>
+            <div onclick="navTo('multi-branch.html')" class="card branch-card"><span class="icon">🏢</span><h2>لقەکان</h2><p>بەڕێوەبردن</p></div>
         </div>
         
         <div class="logout-section">
@@ -175,18 +145,51 @@
     </div>
 
     <script>
-        function checkAuth() {
+        const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        async function initDashboard() {
             if (localStorage.getItem("rebeenAuth") !== "true") {
-                window.location.replace("index.html"); // گۆڕدرا بۆ index چونکە لۆگینەکەت لەوێیە
-            } else {
-                const name = localStorage.getItem("userName") || "بەکارهێنەر";
-                const branchName = localStorage.getItem("userBranchName") || "نادیار";
-                
-                document.getElementById("userWelcome").innerText = `بەخێربێیت، ${name} 👋`;
-                document.getElementById("branchDisplay").innerText = `لق: ${branchName}`;
-                
-                applyPermissions();
+                window.location.replace("index.html");
+                return;
             }
+
+            const name = localStorage.getItem("userName") || "بەکارهێنەر";
+            document.getElementById("userWelcome").innerText = `بەخێربێیت، ${name} 👋`;
+            
+            await loadBranches();
+            applyPermissions();
+        }
+
+        async function loadBranches() {
+            const { data, error } = await _supabase.from('branches').select('*').order('id');
+            const select = document.getElementById('branchSelect');
+            
+            if (!error && data) {
+                let options = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join('');
+                select.innerHTML = options;
+
+                // دیاریکردنی ئەو لقەی کە پێشتر هەڵبژێردراوە
+                const savedBranch = localStorage.getItem("userBranchId");
+                if (savedBranch) {
+                    select.value = savedBranch;
+                } else {
+                    // ئەگەر یەکەمجار بێت، یەکەم لق سەیڤ بکە
+                    updateSelectedBranch();
+                }
+            }
+        }
+
+        function updateSelectedBranch() {
+            const select = document.getElementById('branchSelect');
+            const branchId = select.value;
+            const branchName = select.options[select.selectedIndex].text;
+
+            localStorage.setItem("userBranchId", branchId);
+            localStorage.setItem("userBranchName", branchName);
+            
+            console.log("لق گۆڕدرا بۆ: " + branchName);
         }
 
         function applyPermissions() {
@@ -198,13 +201,9 @@
                     const perms = JSON.parse(permsRaw);
                     if (perms.sales === false) hideEl('.sell');
                     if (perms.reports === false) hideEl('.rep');
-                    if (perms.items === false) {
-                        hideEl('.item-add');
-                        hideEl('.inv');
-                    }
+                    if (perms.items === false) { hideEl('.item-add'); hideEl('.inv'); }
                 } catch(e) { console.error("Permissions error"); }
             }
-
             if (position !== "بەڕێوەبەر") {
                 hideEl('.user-add');
                 hideEl('.branch-card');
@@ -224,15 +223,10 @@
         }
 
         function navTo(page) {
-            // لە گیتھاب باشترە بەم شێوەیە بێت
             window.location.href = page;
         }
 
-        window.onpageshow = function(event) {
-            if (event.persisted) window.location.reload();
-        };
-
-        checkAuth();
+        window.onload = initDashboard;
     </script>
 </body>
 </html>
