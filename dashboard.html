@@ -66,7 +66,7 @@
         h2 { margin: 5px 0 0; font-size: 14px; font-weight: bold; }
         p { font-size: 10px; color: #7f8c8d; margin: 3px 0 0; }
 
-        /* ڕەنگە تایبەتەکان */
+        /* ڕەنگەکان */
         .item-add { border-top-color: #8e44ad; } 
         .user-add { border-top-color: #607d8b; } 
         .buy { border-top-color: #3498db; }      
@@ -161,10 +161,10 @@
                 <p>ئەو پارەیەی لەسەرتە</p>
             </div>
 
-            <div onclick="navTo('branches.html')" class="card branch-card">
+            <div onclick="navTo('multi-branch.html')" class="card branch-card">
                 <span class="icon">🏢</span>
                 <h2>لقەکان</h2>
-                <p>گۆڕینی لق</p>
+                <p>بەڕێوەبردن</p>
             </div>
 
         </div>
@@ -175,10 +175,9 @@
     </div>
 
     <script>
-        // فەنکشنی سەرەکی پشکنین
         function checkAuth() {
             if (localStorage.getItem("rebeenAuth") !== "true") {
-                window.location.replace("login.html");
+                window.location.replace("index.html"); // گۆڕدرا بۆ index چونکە لۆگینەکەت لەوێیە
             } else {
                 const name = localStorage.getItem("userName") || "بەکارهێنەر";
                 const branchName = localStorage.getItem("userBranchName") || "نادیار";
@@ -190,22 +189,22 @@
             }
         }
 
-        // فەنکشنی مۆڵەتەکان
         function applyPermissions() {
             const permsRaw = localStorage.getItem("userPermissions");
             const position = localStorage.getItem("userPosition");
 
             if (permsRaw) {
-                const perms = JSON.parse(permsRaw);
-                if (perms.sales === false) hideEl('.sell');
-                if (perms.reports === false) hideEl('.rep');
-                if (perms.items === false) {
-                    hideEl('.item-add');
-                    hideEl('.inv');
-                }
+                try {
+                    const perms = JSON.parse(permsRaw);
+                    if (perms.sales === false) hideEl('.sell');
+                    if (perms.reports === false) hideEl('.rep');
+                    if (perms.items === false) {
+                        hideEl('.item-add');
+                        hideEl('.inv');
+                    }
+                } catch(e) { console.error("Permissions error"); }
             }
 
-            // مەرجی بەڕێوەبەر
             if (position !== "بەڕێوەبەر") {
                 hideEl('.user-add');
                 hideEl('.branch-card');
@@ -220,11 +219,12 @@
         function logout() {
             if(confirm("دڵنیای لە چوونە دەرەوە؟")) {
                 localStorage.clear(); 
-                window.location.replace("login.html");
+                window.location.replace("index.html");
             }
         }
 
         function navTo(page) {
+            // لە گیتھاب باشترە بەم شێوەیە بێت
             window.location.href = page;
         }
 
@@ -232,7 +232,6 @@
             if (event.persisted) window.location.reload();
         };
 
-        // دەستپێکردن
         checkAuth();
     </script>
 </body>
