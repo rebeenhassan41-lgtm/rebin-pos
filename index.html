@@ -3,33 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <title>R - دەستپێک</title>
-    
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
-    
     <style>
         body { 
             background: #2c3e50; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; 
         }
-        .loader { 
-            color: white; 
-            text-align: center; 
-            animation: fadeIn 1s ease-in;
-        }
+        .loader { color: white; text-align: center; animation: fadeIn 1s ease-in; }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
         }
         img { width: 100px; margin-bottom: 15px; }
-        p { font-size: 18px; letter-spacing: 1px; }
+        p { font-size: 18px; letter-spacing: 1px; color: #ecf0f1; }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            width: 36px; height: 36px; border-radius: 50%;
+            border-left-color: #3498db; margin: 10px auto;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -37,20 +32,26 @@
     <div class="loader">
         <img src="https://img.icons8.com/color/192/r.png" alt="R"><br>
         <p>خەریکە بار دەکرێت...</p>
+        <div class="spinner"></div>
     </div>
 
     <script>
-        // پشکنینی چوونەژوورەوە
         setTimeout(() => {
-            // ئەگەر بەکارهێنەر پێشتر داخل نەبووبوو (Auth نەبوو)
-            if (localStorage.getItem("rebeenAuth") !== "true") {
-                // دڵنیابەرەوە ناوی فایلەکە login.html بێت یان هەر ناوێک کە خۆت لێت ناوە
+            const auth = localStorage.getItem("rebeenAuth");
+            const role = localStorage.getItem("userPosition");
+
+            if (auth !== "true") {
+                // ئەگەر داخل نەبووبوو، بڕۆ بۆ لاپەڕەی لۆگین
                 window.location.replace("login.html"); 
             } else {
-                // ئەگەر داخل ببوو، ڕاستەوخۆ دەچێتە داشبۆرد
-                window.location.replace("dashboard.html");
+                // ئەگەر داخل ببوو، سەیری پلەکەی بکە
+                if (role === "Admin") {
+                    window.location.replace("admin.html");
+                } else {
+                    window.location.replace("dashboard.html");
+                }
             }
-        }, 1200); // کاتەکەم کەمێک زیاد کرد بۆ ئەوەی لۆگۆکە جوان دیار بێت
+        }, 1500); 
     </script>
 </body>
 </html>
