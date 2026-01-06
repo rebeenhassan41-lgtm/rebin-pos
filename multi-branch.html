@@ -4,50 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R - بەڕێوەبردنی لقەکان</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         :root { --primary: #2c3e50; --accent: #3498db; --bg: #f0f2f5; --success: #2ecc71; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
         .container { max-width: 500px; margin: auto; }
-        .header { background: var(--primary); color: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
+        .header { background: var(--primary); color: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 15px; background: var(--success); color: white; border: none; cursor: pointer; border-radius: 12px; font-weight: bold; font-size: 16px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); }
+        button { width: 100%; padding: 15px; background: var(--success); color: white; border: none; cursor: pointer; border-radius: 12px; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        button:active { transform: scale(0.95); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
         .status { font-size: 13px; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-weight: bold; }
-        .err { background: #fee2e2; color: #991b1b; }
-        .ok { background: #dcfce7; color: #166534; }
+        .err { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .branch-item { background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-right: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header"><h2>🏢 بەڕێوەبردنی لقەکان</h2></div>
-    <div id="statusMsg" class="status">خەریکە پەیوەندی بە داتابەیس دەکرێت...</div>
+    <div class="header">
+        <h2 style="margin:0;">🏢 بەڕێوەبردنی لقەکان</h2>
+    </div>
+
+    <div id="statusMsg" class="status">خەریکە پەیوەندی بە داتابەیسەوە دەکرێت...</div>
 
     <div class="box">
-        <input type="text" id="bName" placeholder="ناوی لق بنووسە...">
+        <input type="text" id="bName" placeholder="ناوی لق بنووسە (بۆ نموونە: لقی هەولێر)">
         <button id="saveBtn" onclick="saveBranch()">تۆمارکردنی لق ✅</button>
     </div>
 
     <div class="box">
-        <h3>📍 لقەکان</h3>
+        <h3>📍 لقە تۆمارکراوەکان</h3>
         <div id="bList">خەریکە بار دەکرێت...</div>
     </div>
-    <a href="dashboard.html" style="display:block; text-align:center; color:#666; text-decoration:none;">🏠 گەڕانەوە بۆ داشبۆرد</a>
+
+    <a href="dashboard.html" class="back-link">🏠 گەڕانەوە بۆ داشبۆرد</a>
 </div>
 
 <script>
-    // زانیارییەکانی Supabase
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     
-    // دروستکردنی کڵایێنت بە ڕێگایەکی پارێزراوتر بۆ گیتھاب
-    const _supabase = supabase.createClient(SB_URL, SB_KEY, {
-        auth: { persistSession: true }
-    });
+    // دروستکردنی کڵایێنت بە شێوەیەک کە گیتھاب ڕێگری لێنەکات
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    async function loadData() {
+    // فەنکشنی بارکردنی لقەکان
+    async function loadBranches() {
         const msg = document.getElementById('statusMsg');
         const list = document.getElementById('bList');
         
@@ -55,34 +63,34 @@
             const { data, error } = await _supabase
                 .from('branches')
                 .select('*')
-                .order('id', { ascending: true });
+                .order('created_at', { ascending: false });
 
             if (error) {
-                console.error("Error loading branches:", error);
                 msg.className = "status err";
                 msg.innerText = "هەڵە: " + error.message;
-                list.innerHTML = "نەتوانرا داتا بار بکرێت.";
+                list.innerHTML = "<p style='color:red;'>نەتوانرا داتا بار بکرێت</p>";
             } else {
                 msg.className = "status ok";
-                msg.innerText = "پەیوەندی چالاکە ✅ (" + data.length + ") لق هەیە";
+                msg.innerText = "پەیوەندی چالاکە ✅ " + data.length + " لق هەیە";
                 
                 if (data.length === 0) {
-                    list.innerHTML = "هیچ لقێک پاشەکەوت نەکراوە.";
+                    list.innerHTML = "<p style='text-align:center; color:#888;'>هیچ لقێک نییە</p>";
                 } else {
                     list.innerHTML = data.map(b => `
                         <div class="branch-item">
                             <span>📍 ${b.branch_name}</span>
-                            <small style="color: #888;">ID: ${b.id}</small>
+                            <small style="color:#94a3b8;">ID: ${b.id}</small>
                         </div>
                     `).join('');
                 }
             }
         } catch (err) {
             msg.className = "status err";
-            msg.innerText = "کێشەیەک لە سێرڤەر هەیە.";
+            msg.innerText = "کێشەی ئینتەرنێت یان سێرڤەر";
         }
     }
 
+    // فەنکشنی پاشەکەوتکردن
     async function saveBranch() {
         const nameInput = document.getElementById('bName');
         const name = nameInput.value.trim();
@@ -105,18 +113,20 @@
                 alert("تۆمار نەکرا: " + error.message);
             } else {
                 nameInput.value = "";
-                await loadData(); // نوێکردنەوەی لیستەکە
+                // بانگکردنەوەی لیستەکە دوای سەرکەوتن
+                await loadBranches();
             }
         } catch (err) {
-            alert("هەڵەیەک ڕوویدا لە کاتی ناردن.");
+            alert("هەڵەیەکی چاوەڕواننەکراو ڕوویدا");
         } finally {
             btn.disabled = false;
             btn.innerText = "تۆمارکردنی لق ✅";
         }
     }
 
-    // بانگکردنی داتا لە کاتی کردنەوەی لاپەڕە
-    window.onload = loadData;
+    // گەرەنتی کردنی باربوونی داتا لە کاتی کردنەوەی لاپەڕە
+    document.addEventListener('DOMContentLoaded', loadBranches);
+
 </script>
 </body>
 </html>
