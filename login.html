@@ -2,72 +2,64 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>R - چوونە ژوورەوە و بەڕێوەبردن</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R - بەڕێوەبردن</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #4260e7; --s: #3498db; --bg: #f4f7fe; --success: #27ae60; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; direction: rtl; padding: 20px; box-sizing: border-box; }
-        .login-box { background: #ffffff; padding: 35px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; border-bottom: 8px solid var(--p); margin-top: 50px; }
-        .logo-circle { width: 70px; height: 70px; background: linear-gradient(135deg, var(--p), var(--s)); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 35px; font-weight: bold; }
-        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #edf2f7; border-radius: 12px; box-sizing: border-box; text-align: center; outline: none; background: #f8fafc; font-family: inherit; }
-        button { width: 100%; padding: 14px; background: var(--p); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; font-family: inherit; }
-        button:hover { opacity: 0.9; }
-        #adminPanel { display: none; width: 100%; max-width: 800px; margin-top: 30px; }
-        .admin-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; border-right: 5px solid var(--p); }
-        .section-title { font-weight: bold; color: var(--p); margin-bottom: 15px; display: block; font-size: 18px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; background: white; border-radius: 10px; overflow: hidden; }
+        :root { --p: #4260e7; --bg: #f4f7fe; --success: #27ae60; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; direction: rtl; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #edf2f7; border-radius: 10px; text-align: center; outline: none; }
+        button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        #adminPanel { display: none; max-width: 800px; width: 100%; }
+        .admin-card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: right; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; margin-top: 10px; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        th { background: #f8f9fa; color: #555; }
-        .logout-btn { background: #e74c3c; width: auto; padding: 8px 20px; }
+        th { background: #f8f9fa; }
     </style>
 </head>
 <body>
 
-    <div id="loginSection" class="login-box">
-        <div class="logo-circle">R</div>
-        <h2 style="margin-bottom:20px;">بەخێربێیتەوە</h2>
+    <div id="loginSection" class="card">
+        <h2 style="color:var(--p)">چوونە ژوورەوە</h2>
         <input type="text" id="username" placeholder="ناوی بەکارهێنەر">
         <input type="password" id="password" placeholder="پاسوۆرد">
         <button id="loginBtn" onclick="login()">چوونە ژوورەوە</button>
-        <div style="margin-top:20px; color:#a0aec0; font-size:12px;">ڕێبین سیستم - وەشانی بەڕێوەبەر</div>
     </div>
 
     <div id="adminPanel">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h2 style="color:var(--p);">⚙️ کۆنتڕۆڵی گشتی سیستم</h2>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>⚙️ کۆنتڕۆڵی ڕێبین سیستم</h2>
+            <button onclick="logout()" style="width:auto; background:#e74c3c;">Logout</button>
         </div>
 
         <div class="admin-card">
-            <span class="section-title">🏢 زیادکردنی لق (کڕیار)</span>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="branchName" placeholder="ناوی لق بۆ نموونە: لقی سلێمانی">
-                <button onclick="addBranch()" style="width: 150px; background: var(--success);">تۆمارکردن</button>
+            <b style="color:var(--p)">🏢 زیادکردنی لق</b>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input type="text" id="branchName" placeholder="ناوی لق">
+                <button onclick="addBranch()" style="width:120px; background:var(--success);">تۆمارکردن</button>
             </div>
         </div>
 
         <div class="admin-card">
-            <span class="section-title">👤 دروستکردنی ئەکاونتی نوێ</span>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <b style="color:var(--p)">👤 دروستکردنی بەکارهێنەر</b>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
                 <input type="text" id="fName" placeholder="ناوی تەواو">
                 <input type="text" id="uName" placeholder="ناوی لۆگین">
                 <input type="password" id="uPass" placeholder="پاسوۆرد">
-                <select id="uBranch"><option value="">بارکردنی لقەکان...</option></select>
+                <select id="uBranch"></select>
                 <select id="uRole">
                     <option value="Staff">کاشێر (Staff)</option>
                     <option value="Admin">بەڕێوەبەر (Admin)</option>
                 </select>
-                <button onclick="addUser()" style="background: var(--p); grid-column: span 2;">تۆمارکردنی بەکارهێنەر ✅</button>
+                <button onclick="addUser()" style="grid-column: span 2;">دروستکردن ✅</button>
             </div>
         </div>
 
         <div class="admin-card">
-            <span class="section-title">📋 بەکارهێنەرانی ئێستا</span>
+            <b style="color:var(--p)">📋 لیستی بەکارهێنەران</b>
             <table>
-                <thead>
-                    <tr><th>ناوی تەواو</th><th>لق</th><th>دەسەڵات</th><th>کردار</th></tr>
-                </thead>
+                <thead><tr><th>ناو</th><th>لق</th><th>پلە</th><th>سڕینەوە</th></tr></thead>
                 <tbody id="userListBody"></tbody>
             </table>
         </div>
@@ -81,23 +73,17 @@
     async function login() {
         const u = document.getElementById('username').value.trim();
         const p = document.getElementById('password').value.trim();
-        const btn = document.getElementById('loginBtn');
-
-        if(!u || !p) return alert("تکایە خانەکان پڕ بکەرەوە");
-        btn.disabled = true; btn.innerText = "خەریکی پشکنینە...";
-
+        
         const { data, error } = await _supabase.from('system_users').select('*, branches(branch_name)').eq('username', u).eq('password', p).maybeSingle();
 
         if (error || !data) {
-            alert("ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە!");
-            btn.disabled = false; btn.innerText = "چوونە ژوورەوە";
+            alert("ناوی بەکارهێنەر یان پاسۆرد هەڵەیە!");
             return;
         }
 
+        localStorage.setItem("rebeenAuth", "true");
         localStorage.setItem("userPosition", data.position);
         localStorage.setItem("userName", data.full_name);
-        localStorage.setItem("userBranchName", data.branches ? data.branches.branch_name : "بێ لق");
-        localStorage.setItem("rebeenAuth", "true");
 
         if (data.position === "Admin") {
             document.getElementById('loginSection').style.display = "none";
@@ -110,73 +96,49 @@
     }
 
     async function addBranch() {
-        const name = document.getElementById('branchName').value.trim();
-        if(!name) return alert("ناو بنووسە");
-        const { error } = await _supabase.from('branches').insert([{ branch_name: name }]);
-        if(!error) { 
-            alert("لقەکە زیاد کرا ✅"); 
-            document.getElementById('branchName').value = "";
-            loadBranches(); 
-        }
+        const name = document.getElementById('branchName').value;
+        await _supabase.from('branches').insert([{ branch_name: name }]);
+        document.getElementById('branchName').value = "";
+        loadBranches();
     }
 
     async function loadBranches() {
         const { data } = await _supabase.from('branches').select('*');
-        const select = document.getElementById('uBranch');
-        if(data) {
-            select.innerHTML = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join('');
-        }
+        document.getElementById('uBranch').innerHTML = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join('');
     }
 
     async function addUser() {
-        const f = document.getElementById('fName').value.trim();
-        const u = document.getElementById('uName').value.trim();
-        const p = document.getElementById('uPass').value.trim();
+        const f = document.getElementById('fName').value;
+        const u = document.getElementById('uName').value;
+        const p = document.getElementById('uPass').value;
         const b = document.getElementById('uBranch').value;
         const r = document.getElementById('uRole').value;
-
-        if(!f || !u || !p || !b) return alert("هەموو خانەکان پێویستن");
-
-        const { error } = await _supabase.from('system_users').insert([{
-            full_name: f, username: u, password: p, branch_id: b, position: r
-        }]);
         
-        if(!error) { 
-            alert("بەکارهێنەر دروست کرا ✅"); 
-            document.getElementById('fName').value = "";
-            document.getElementById('uName').value = "";
-            document.getElementById('uPass').value = "";
-            loadUsers(); 
-        } else {
-            alert("هەڵە: ڕەنگە ئەم ناوە پێشتر بەکار هاتبێت");
-        }
+        await _supabase.from('system_users').insert([{ full_name: f, username: u, password: p, branch_id: b, position: r }]);
+        alert("دروست کرا!");
+        loadUsers();
     }
 
     async function loadUsers() {
         const { data } = await _supabase.from('system_users').select('*, branches(branch_name)');
-        if(data) {
-            document.getElementById('userListBody').innerHTML = data.map(u => `
-                <tr>
-                    <td>${u.full_name}</td>
-                    <td>${u.branches ? u.branches.branch_name : 'بێ لق'}</td>
-                    <td><b>${u.position}</b></td>
-                    <td><button onclick="deleteUser(${u.id})" style="background:none; color:red; font-size:18px; border:none; cursor:pointer;">🗑️</button></td>
-                </tr>
-            `).join('');
-        }
+        document.getElementById('userListBody').innerHTML = data.map(u => `
+            <tr>
+                <td>${u.full_name}</td>
+                <td>${u.branches ? u.branches.branch_name : 'بێ لق'}</td>
+                <td>${u.position}</td>
+                <td><button onclick="deleteUser(${u.id})" style="background:none; color:red; width:auto; margin:0;">🗑️</button></td>
+            </tr>
+        `).join('');
     }
 
     async function deleteUser(id) {
-        if(confirm("دڵنیای لە سڕینەوەی ئەم بەکارهێنەرە؟")) {
+        if(confirm("دڵنیای؟")) {
             await _supabase.from('system_users').delete().eq('id', id);
             loadUsers();
         }
     }
 
-    function logout() {
-        localStorage.clear();
-        location.reload();
-    }
+    function logout() { localStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
