@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ڕێبین سیستم | بەڕێوەبەری گشتی</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --main: #2c3e50; --accent: #e67e22; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; direction: rtl; }
+        .sidebar { width: 250px; background: var(--main); height: 100vh; position: fixed; color: white; padding: 20px; }
+        .main-content { margin-right: 270px; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        button { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
+        th { background: #f8f9fa; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; color: white; }
+        .badge-admin { background: #e74c3c; }
+        .badge-cashier { background: #3498db; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>ڕێبین سیستم</h2>
+    <hr>
+    <p>بەخێربێیت کاک ڕێبین</p>
+    <ul style="list-style: none; padding: 0;">
+        <li style="padding: 10px 0; border-bottom: 1px solid #444;">📊 داشبۆردی گشتی</li>
+        <li style="padding: 10px 0; border-bottom: 1px solid #444;">🏢 بەڕێوەبردنی لقەکان</li>
+        <li style="padding: 10px 0; border-bottom: 1px solid #444;">👤 بەکارهێنەران و پێرمشن</li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="card">
+        <h3>🏢 زیادکردنی لقی نوێ (کڕیاری نوێ)</h3>
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label>ناوی لق</label>
+                <input type="text" id="branchName" placeholder="بۆ نموونە: مارکێتی ئاسۆ">
+            </div>
+            <div style="flex: 1;">
+                <label>شوێن</label>
+                <input type="text" id="branchLoc" placeholder="هەولێر - گەڕەکی ڕاستی">
+            </div>
+            <div style="align-self: flex-end;">
+                <button onclick="addBranch()">تۆمارکردن</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>👤 دروستکردنی بەکارهێنەر و دیاریکردنی دەسەڵات</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+            <div>
+                <label>ناوی بەکارهێنەر</label>
+                <input type="text" id="uName">
+            </div>
+            <div>
+                <label>کۆدی نهێنی</label>
+                <input type="password" id="uPass">
+            </div>
+            <div>
+                <label>لق</label>
+                <select id="uBranch"></select>
+            </div>
+            <div>
+                <label>دەسەڵات (Permission)</label>
+                <select id="uRole">
+                    <option value="admin">Admin (هەموو دەسەڵاتێک)</option>
+                    <option value="manager">Manager (تەنها مەخزەن و وەسڵ)</option>
+                    <option value="cashier" selected>Cashier (تەنها فرۆشتن)</option>
+                </select>
+            </div>
+        </div>
+        <button style="margin-top: 15px; background: var(--accent);" onclick="addUser()">دروستکردنی ئەکاونت</button>
+    </div>
+
+    <div class="card">
+        <h3>📋 لیستی بەکارهێنەرانی چالاک</h3>
+        <table id="userTable">
+            <thead>
+                <tr>
+                    <th>ناو</th>
+                    <th>لق</th>
+                    <th>دەسەڵات</th>
+                    <th>دواین چالاکی</th>
+                    <th>کردار</th>
+                </tr>
+            </thead>
+            <tbody id="userListBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // لێرە پەیوەندی بە داتابەیسەکەتەوە دەکەین
+    const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
+    const SB_KEY = 'YOUR_KEY_HERE'; 
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    async function addBranch() {
+        const name = document.getElementById('branchName').value;
+        const loc = document.getElementById('branchLoc').value;
+        const { data, error } = await _supabase.from('branches').insert([{ branch_name: name, location: loc }]);
+        if(!error) { alert("لقەکە زیاد کرا ✅"); loadBranches(); }
+    }
+
+    async function loadBranches() {
+        const { data } = await _supabase.from('branches').select('*');
+        document.getElementById('uBranch').innerHTML = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join('');
+    }
+
+    async function addUser() {
+        const user = document.getElementById('uName').value;
+        const pass = document.getElementById('uPass').value;
+        const branch = document.getElementById('uBranch').value;
+        const role = document.getElementById('uRole').value;
+
+        const { error } = await _supabase.from('users').insert([{
+            username: user, password: pass, branch_id: branch, role: role
+        }]);
+        if(!error) { alert("بەکارهێنەر دروست کرا ✅"); loadUsers(); }
+    }
+
+    async function loadUsers() {
+        const { data } = await _supabase.from('users').select('*, branches(branch_name)');
+        document.getElementById('userListBody').innerHTML = data.map(u => `
+            <tr>
+                <td>${u.username}</td>
+                <td>${u.branches.branch_name}</td>
+                <td><span class="badge badge-${u.role}">${u.role}</span></td>
+                <td>ئێستا</td>
+                <td><button style="background:red; padding:5px;">سڕینەوە</button></td>
+            </tr>
+        `).join('');
+    }
+
+    loadBranches();
+    loadUsers();
+</script>
+</body>
+</html>
