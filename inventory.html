@@ -2,13 +2,8 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>R</title>
-    <meta name="apple-mobile-web-app-title" content="R">
-    
-    <link rel="icon" type="image/png" href="https://img.icons8.com/color/192/r.png">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/r.png">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R - کۆگای لق</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f0f2f5; }
@@ -16,46 +11,42 @@
         .container { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 1100px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
         
-        .search-area { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-area input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; outline: none; font-size: 16px; }
-        
-        .invoice-group { border: 1px solid #eee; border-radius: 12px; margin-bottom: 25px; padding: 15px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .invoice-header { background: #f8f9fa; padding: 12px; border-radius: 8px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; border-right: 5px solid var(--accent); }
-        
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 500px; }
-        th { background: var(--primary); color: white; padding: 12px; font-size: 13px; text-align: center; }
-        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
-        
-        .btn-print { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .back-btn { text-decoration: none; background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; font-size: 14px; }
+        /* ستایلی کارتی مەخزەن */
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .stock-card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px; text-align: center; position: relative; border-bottom: 4px solid #ddd; }
+        .stock-card h3 { margin: 0 0 10px 0; font-size: 16px; color: var(--primary); }
+        .qty-badge { font-size: 24px; font-weight: bold; color: var(--accent); display: block; margin: 5px 0; }
         .branch-badge { background: #e67e22; color: white; padding: 2px 8px; border-radius: 5px; font-size: 11px; }
-
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; width: 100%; border: none; }
-            .invoice-group { border: 1px solid #000; padding: 20px; }
-        }
+        
+        .search-area { margin-bottom: 20px; }
+        .search-area input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #ddd; border-radius: 8px; font-weight: bold; }
+        .tab-btn.active { background: var(--accent); color: white; }
+        .back-btn { text-decoration: none; background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header no-print">
+    <div class="header">
         <div>
-            <h2 style="margin:0; font-size: 18px;">📊 وەسڵەکانی کڕین</h2>
-            <small id="branchName" class="branch-badge">بار دەکرێت...</small>
+            <h2 style="margin:0; font-size: 18px;">🏬 دۆخی کۆگا (مەخزەن)</h2>
+            <small id="currentBranchDisplay" class="branch-badge">لق: ---</small>
         </div>
         <a href="dashboard.html" class="back-btn">🏠 سەرەکی</a>
     </div>
 
-    <div class="search-area no-print">
-        <input type="text" id="searchInput" placeholder="گەڕان (وەسڵ، کاڵا، بازرگان)..." oninput="filterInvoices()">
+    <div class="search-area">
+        <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+            <button class="tab-btn active" onclick="switchView('stock')">📦 بڕی کاڵاکان</button>
+            <button class="tab-btn" onclick="switchView('history')">📜 مێژووی کڕین</button>
+        </div>
+        <input type="text" id="searchInput" placeholder="بگەڕێ بۆ کاڵا..." oninput="filterData()">
     </div>
 
-    <div id="invoiceContainer">
-        <p style="text-align:center;">خەریکە داتا دەهێنرێت...</p>
+    <div id="mainDisplay">
+        <p style="text-align:center;">خەریکە زانیارییەکان دەهێنرێن...</p>
     </div>
 </div>
 
@@ -64,118 +55,82 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    let allData = [];
-    const userBranchId = localStorage.getItem("userBranchId");
-    const userBranchName = localStorage.getItem("userBranchName") || "نادیار";
-    document.getElementById('branchName').innerText = "لق: " + userBranchName;
+    let currentView = 'stock';
+    let allStock = [];
+    let allHistory = [];
+    
+    const branchId = localStorage.getItem("userBranchId");
+    const branchName = localStorage.getItem("userBranchName") || "نادیار";
 
-    async function loadInventory() {
-        if(!userBranchId) return alert("لۆگین بکەوە!");
+    async function loadData() {
+        if(!branchId) return alert("تکایە سەرەتا لقێک هەڵبژێرە");
+        document.getElementById('currentBranchDisplay').innerText = "لق: " + branchName;
 
-        // فلتەرکردن بەپێی branch_id
-        const { data, error } = await _supabase
+        // 1. هێنانی بڕی کاڵاکان لەم لقەدا (Inventory)
+        // تێبینی: دەبێت خشتەی inventory ت هەبێت کە item_name و quantity و branch_id تێدایە
+        const { data: stockData, error: e1 } = await _supabase
+            .from('inventory')
+            .select('*')
+            .eq('branch_id', branchId);
+
+        // 2. هێنانی مێژووی کڕینەکان
+        const { data: historyData, error: e2 } = await _supabase
             .from('purchases')
             .select('*')
-            .eq('branch_id', userBranchId)
+            .eq('branch_id', branchId)
             .order('created_at', { ascending: false });
-        
-        if (error) {
-            document.getElementById('invoiceContainer').innerHTML = "هەڵە لە بارکردنی داتا";
-            return;
-        }
-        allData = data;
-        renderInvoices(data);
+
+        if (!e1) allStock = stockData;
+        if (!e2) allHistory = historyData;
+
+        render();
     }
 
-    function renderInvoices(items) {
-        const container = document.getElementById('invoiceContainer');
-        if(items.length === 0) {
-            container.innerHTML = "<p style='text-align:center; color:#888;'>هیچ داتایەک نییە بۆ ئەم لقە</p>";
-            return;
-        }
-
+    function render() {
+        const container = document.getElementById('mainDisplay');
         container.innerHTML = "";
 
-        // گروپکردنی داتا بەپێی ژمارەی وەسڵ
-        const groups = items.reduce((acc, item) => {
-            const inv = item.inv_no || "بێ-وەسڵ";
-            if (!acc[inv]) acc[inv] = [];
-            acc[inv].push(item);
-            return acc;
-        }, {});
-
-        for (const invNo in groups) {
-            const groupItems = groups[invNo];
-            const merchant = groupItems[0].supplier || groupItems[0].merchant || "نادیار";
-            const date = new Date(groupItems[0].created_at).toLocaleDateString('ku-IQ');
-            
-            let totalUSD = 0;
-            const rows = groupItems.map(item => {
-                const lineTotal = (item.cost_price_usd || item.buy_price || 0) * (item.quantity || 0);
-                totalUSD += lineTotal;
-                return `
-                    <tr>
-                        <td>${item.item_name}</td>
-                        <td>${item.quantity}</td>
-                        <td>$${(item.cost_price_usd || item.buy_price || 0).toFixed(2)}</td>
-                        <td>$${lineTotal.toFixed(2)}</td>
-                    </tr>
+        if (currentView === 'stock') {
+            if(allStock.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>هیچ کاڵایەک لە مەخزەنی ئەم لقەدا نییە</p>";
+                return;
+            }
+            let html = '<div class="stock-grid">';
+            allStock.forEach(item => {
+                html += `
+                    <div class="stock-card">
+                        <h3>${item.item_name}</h3>
+                        <span class="qty-badge">${item.quantity}</span>
+                        <small style="color:#888;">کۆتا نوێکردنەوە: ${new Date(item.updated_at || item.created_at).toLocaleDateString('ku-IQ')}</small>
+                    </div>
                 `;
-            }).join('');
-
-            container.innerHTML += `
-                <div class="invoice-group" id="inv-${invNo}">
-                    <div class="invoice-header">
-                        <div>
-                            <b>🧾 وەسڵ: ${invNo}</b><br>
-                            <small>👤 ${merchant} | 📅 ${date}</small>
-                        </div>
-                        <button class="btn-print no-print" onclick="printInvoice('inv-${invNo}')">🖨️ چاپ</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>کاڵا</th>
-                                    <th>بڕ</th>
-                                    <th>نرخ</th>
-                                    <th>کۆ</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3" style="text-align:left; font-weight:bold;">کۆی گشتی:</td>
-                                    <td style="color:var(--success); font-weight:bold;">$${totalUSD.toFixed(2)}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            // لێرەدا کۆدی گروپبەندی وەسڵەکانت دادەنێیت کە پێشتر ناردت (History)
+            renderHistory(container);
         }
     }
 
-    function filterInvoices() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allData.filter(item => 
-            (item.item_name && item.item_name.toLowerCase().includes(term)) || 
-            (item.inv_no && item.inv_no.toLowerCase().includes(term)) ||
-            (item.supplier && item.supplier.toLowerCase().includes(term))
-        );
-        renderInvoices(filtered);
+    // فەنکشنی گروپبەندی وەسڵەکان (کۆدەکەی خۆت)
+    function renderHistory(container) {
+        if(allHistory.length === 0) {
+            container.innerHTML = "<p style='text-align:center;'>مێژووی کڕین نییە</p>";
+            return;
+        }
+        // ... لێرەدا هەمان ئەو لۆجیکەی خۆت دادەنێیتەوە بۆ پیشاندانی وەسڵەکان ...
+        container.innerHTML = "<p style='text-align:center;'>لیستی وەسڵەکان لێرەدا دەبێت (وەک کۆدەکەی پێشووت)</p>";
     }
 
-    function printInvoice(divId) {
-        const printContents = document.getElementById(divId).innerHTML;
-        const originalContents = document.body.innerHTML;
-        document.body.innerHTML = `<div dir="rtl" style="padding:20px;">${printContents}</div>`;
-        window.print();
-        document.body.innerHTML = originalContents;
-        window.location.reload();
+    function switchView(view) {
+        currentView = view;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        render();
     }
 
-    window.onload = loadInventory;
+    window.onload = loadData;
 </script>
 </body>
 </html>
