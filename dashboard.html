@@ -2,89 +2,51 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ڕێبین سیستم | داشبۆرد</title>
+    <title>ڕێبین سیستم - داشبۆرد</title>
     <style>
-        :root { --p: #2c3e50; --s: #34495e; --accent: #e67e22; --text: white; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; direction: rtl; background: #f4f7f6; }
-        
-        /* سایدبار */
-        .sidebar { width: 260px; background: var(--p); height: 100vh; color: var(--text); padding: 20px; position: fixed; box-sizing: border-box; }
-        .sidebar h2 { border-bottom: 1px solid #455a64; padding-bottom: 10px; font-size: 20px; }
-        .sidebar ul { list-style: none; padding: 0; margin-top: 20px; }
-        .sidebar ul li { padding: 12px; cursor: pointer; border-radius: 8px; transition: 0.3s; margin-bottom: 5px; }
-        .sidebar ul li:hover { background: var(--s); }
-        
-        /* بەشی ناوەڕۆک */
-        .main-content { margin-right: 260px; padding: 30px; width: 100%; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .user-info { font-weight: bold; color: var(--p); }
-        
-        /* ستایڵی تایبەت بۆ دوگمەی ئەدمین */
-        .admin-btn { border: 2px solid var(--accent) !important; color: var(--accent) !important; margin-top: 20px; font-weight: bold; text-align: center; }
-        .admin-btn:hover { background: var(--accent) !important; color: white !important; }
-        
+        /* ستایلی داشبۆردەکەت لێرە دابنێ - من ستایلێکی سادە دادەنێم */
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7fe; margin: 0; padding: 20px; direction: rtl; }
+        .header { background: #4260e7; color: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); background: #edf2f7; }
         .logout-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <h2>ڕێبین سیستم</h2>
-        <ul id="menuList">
-            <li>🏠 سەرەتا</li>
-            <li>📦 کۆگا</li>
-            <li>💰 فرۆشتن</li>
-            <li>🧾 وەسڵەکان</li>
-            </ul>
-        <button class="logout-btn" style="width: 100%; margin-top: 30px;" onclick="logout()">چوونە دەرەوە</button>
+    <div class="header">
+        <div>
+            <h2>بەخێربێیت، <span id="displayUserName">...</span></h2>
+            <p>بەشی بەڕێوەبردن</p>
+        </div>
+        <button class="logout-btn" onclick="logout()">چوونە دەرەوە</button>
     </div>
 
-    <div class="main-content">
-        <div class="header">
-            <div class="user-info">
-                بەخێربێیت: <span id="displayUserName">...</span> 
-                (<span id="displayBranch" style="color: var(--accent);">...</span>)
-            </div>
-            <div style="font-size: 14px; color: #7f8c8d;" id="currentDate"></div>
-        </div>
-
-        <div style="margin-top: 30px;">
-            <h1>داشبۆردی سەرەکی</h1>
-            <p>لێرەوە دەتوانیت کارەکانی سیستمەکە بەڕێوە ببەیت.</p>
-        </div>
+    <div class="grid">
+        <div class="card" onclick="alert('کۆگا دەکرێتەوە...')">📦 کۆگا</div>
+        <div class="card" onclick="alert('فرۆشتن دەکرێتەوە...')">💰 فرۆشتن</div>
+        <div class="card" onclick="alert('ڕاپۆرتەکان دەکرێتەوە...')">📊 ڕاپۆرتەکان</div>
+        <div id="adminLink" class="card" style="display:none; border: 2px dashed #4260e7;" onclick="window.location.href='login.html'">⚙️ ڕێکخستنی کارمەند</div>
     </div>
 
     <script>
-        window.onload = function() {
-            // ١. پشکنینی لۆگین
-            if (localStorage.getItem("rebeenAuth") !== "true") {
-                window.location.replace("index.html");
-                return;
-            }
+        // پشکنینی لۆگین
+        if (localStorage.getItem("rebeenAuth") !== "true") {
+            window.location.href = "login.html";
+        }
 
-            // ٢. نیشاندانی زانیاری بەکارهێنەر
-            document.getElementById('displayUserName').innerText = localStorage.getItem("userName");
-            document.getElementById('displayBranch').innerText = localStorage.getItem("userBranchName");
-            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('ku-IQ');
+        // نیشاندانی ناوی بەکارهێنەر
+        document.getElementById("displayUserName").innerText = localStorage.getItem("userName");
 
-            // ٣. ئەگەر بەکارهێنەرەکە ئەدمین بوو، دوگمەی بەڕێوەبردن دروست بکە
-            const userPos = localStorage.getItem("userPosition");
-            if (userPos === "Admin") {
-                const menu = document.getElementById('menuList');
-                const adminBtn = document.createElement("li");
-                adminBtn.className = "admin-btn";
-                adminBtn.innerHTML = "⚙️ بەڕێوەبردنی گشتی";
-                adminBtn.onclick = function() {
-                    window.location.href = "admin.html";
-                };
-                menu.appendChild(adminBtn);
-            }
-        };
+        // ئەگەر ئەدمین بوو، دوگمەی ڕێکخستنی کارمەندی پیشان بدە
+        if (localStorage.getItem("userPosition") === "Admin") {
+            document.getElementById("adminLink").style.display = "block";
+        }
 
         function logout() {
             localStorage.clear();
-            window.location.replace("index.html");
+            window.location.href = "login.html";
         }
     </script>
 </body>
