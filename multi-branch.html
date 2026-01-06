@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R - بەڕێوەبردنی لقەکان</title>
-    
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline';">
-
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
     <style>
         :root { --primary: #2c3e50; --accent: #3498db; --bg: #f0f2f5; --success: #2ecc71; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
         .container { max-width: 500px; margin: auto; }
         .header { background: var(--primary); color: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
         .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 15px; background: var(--success); color: white; border: none; cursor: pointer; border-radius: 12px; font-weight: bold; font-size: 16px; width: 100%; }
+        button { width: 100%; padding: 15px; background: var(--success); color: white; border: none; cursor: pointer; border-radius: 12px; font-weight: bold; font-size: 16px; }
         .status { font-size: 13px; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-weight: bold; }
         .err { background: #fee2e2; color: #991b1b; }
         .ok { background: #dcfce7; color: #166534; }
@@ -31,7 +27,7 @@
 
     <div class="box">
         <input type="text" id="bName" placeholder="ناوی لق بنووسە...">
-        <button onclick="saveBranch()">تۆمارکردن ✅</button>
+        <button id="saveBtn" onclick="saveBranch()">تۆمارکردن ✅</button>
     </div>
 
     <div class="box">
@@ -44,6 +40,8 @@
 <script>
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
+    
+    // دروستکردنی کڵایێنت بەبێ کێشە بۆ گیتھاب
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     async function loadData() {
@@ -57,16 +55,24 @@
             list.innerHTML = data.map(b => `<div class="branch-item"><span>📍 ${b.branch_name}</span><small>ID: ${b.id}</small></div>`).join('');
         } catch (e) {
             msg.className = "status err";
-            msg.innerText = "❌ هەڵە: " + e.message;
+            msg.innerText = "❌ کێشە: " + e.message;
         }
     }
 
     async function saveBranch() {
         const name = document.getElementById('bName').value.trim();
         if(!name) return;
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        
         const { error } = await _supabase.from('branches').insert([{ branch_name: name }]);
-        if(error) alert(error.message);
-        else { document.getElementById('bName').value = ""; loadData(); }
+        
+        if(error) alert("هەڵە: " + error.message);
+        else {
+            document.getElementById('bName').value = "";
+            loadData();
+        }
+        btn.disabled = false;
     }
 
     window.onload = loadData;
