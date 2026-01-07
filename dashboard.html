@@ -56,9 +56,11 @@
     <div class="sidebar" id="sidebar">
         <h2 style="text-align:center; color:var(--p);">R-SYSTEM</h2>
         <div class="nav-item" onclick="go('dash')">🏠 داشبۆرد</div>
-        <div class="nav-item" onclick="go('add_m')">➕ دروستکردنی بازرگان</div>
-        <div class="nav-item" onclick="go('list_m')">📋 لیستی بازرگانان</div>
-        <div class="nav-item" onclick="go('branch')">🏢 لقی نوێ</div>
+        <div class="nav-item" onclick="window.location.href='add_supplier.html'">➕ دروستکردنی بازرگان</div>
+        <div class="nav-item" onclick="window.location.href='suppliers.html'">📋 لیستی بازرگانان</div>
+        
+        <div class="nav-item" onclick="window.location.href='branch.html'">🏢 لقی نوێ</div>
+        
         <div class="nav-item" onclick="go('krin')">📥 کڕین</div>
         <div class="nav-item" onclick="go('froshtn')">💰 فرۆشتن</div>
         <div class="nav-item" onclick="go('koga')">📦 کۆگا</div>
@@ -95,28 +97,6 @@
                 <div class="card" style="border-right-color: var(--o);"><h3>قەرزی لای خەڵک</h3><b>٠ د.ع</b></div>
                 <div class="card" style="border-right-color: var(--d);"><h3>قەرزی بازرگان</h3><b>٠ د.ع</b></div>
             </div>
-        </div>
-
-        <div id="sec_add_m" class="section">
-            <h2>➕ تۆمارکردنی بازرگانی نوێ</h2>
-            <div class="form-grid">
-                <input type="text" placeholder="ناوی بازرگان">
-                <input type="text" placeholder="مۆبایل">
-                <input type="text" placeholder="ناونیشان">
-                <button class="btn btn-p">تۆمارکردن ✅</button>
-            </div>
-        </div>
-
-        <div id="sec_list_m" class="section">
-            <h2>📋 لیستی بازرگانان</h2>
-            <table>
-                <thead>
-                    <tr><th>ناو</th><th>مۆبایل</th><th>ناونیشان</th><th>قەرز ($)</th><th>مێژوو</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>کۆمپانیای ئاریا</td><td>٠٧٥٠...</td><td>هەولێر</td><td>٥٠٠$</td><td><button class="btn">👁️ بینین</button></td></tr>
-                </tbody>
-            </table>
         </div>
 
         <div id="sec_other" class="section"><h2>ئەم بەشە بەم زووانە تەواو دەبێت...</h2></div>
