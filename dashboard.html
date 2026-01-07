@@ -9,6 +9,7 @@
         :root { --p: #4361ee; --bg: #f8faff; --w: #ffffff; --s: #2ec4b6; --d: #e71d36; --o: #ff9f1c; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; direction: rtl; display: flex; overflow-x: hidden; }
 
+        /* Sidebar */
         .sidebar { 
             width: 280px; background: var(--w); height: 100vh; position: fixed; right: -285px; top: 0; 
             box-shadow: -5px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 1000; padding: 20px;
@@ -17,15 +18,18 @@
         .nav-item { padding: 12px; margin: 5px 0; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; color: #444; font-weight: bold; text-decoration: none; }
         .nav-item:hover { background: #f0f4ff; color: var(--p); }
 
+        /* Main Content */
         .main { width: 100%; padding: 30px; transition: 0.4s; }
         .top-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 25px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 30px; }
         
         .dollar-box { background: #fff4e6; padding: 10px 15px; border-radius: 15px; border: 1px dashed var(--o); font-weight: bold; }
         .dollar-box input { width: 85px; padding: 5px; border: 1px solid var(--o); border-radius: 8px; text-align: center; }
 
+        /* Content Sections */
         .section { display: none; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); }
         .active-section { display: block; }
 
+        /* Dashboard Cards */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 20px; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border-right: 6px solid var(--p); }
         .card h3 { margin: 0; font-size: 14px; color: #888; }
@@ -49,13 +53,15 @@
         
         <a href="add_supplier.html" class="nav-item">➕ دروستکردنی بازرگان</a>
         <a href="suppliers.html" class="nav-item">📋 لیستی بازرگانان</a>
-        <a href="branch.html" class="nav-item">🏢 لقی نوێ</a>
+        <a href="multi-branch.html" class="nav-item">🏢 لقی نوێ</a>
         
         <div class="nav-item" onclick="go('krin')">📥 کڕین</div>
         <div class="nav-item" onclick="go('froshtn')">💰 فرۆشتن</div>
         <div class="nav-item" onclick="go('koga')">📦 کۆگا</div>
         <div class="nav-item" onclick="go('item')">🛠️ دروستکردنی کەرەستە</div>
         <div class="nav-item" onclick="go('xarji')">💸 خەرجی</div>
+        <div class="nav-item" onclick="go('debt_c')">📉 قەرزی کڕیار</div>
+        <div class="nav-item" onclick="go('debt_m')">📈 قەرزی بازرگان</div>
         <hr>
         <div class="nav-item" onclick="logout()" style="color:var(--d);">🚪 چوونە دەرەوە</div>
     </div>
@@ -75,6 +81,8 @@
             <div class="grid">
                 <div class="card" style="border-right-color: var(--s);"><h3>کۆی کڕین</h3><b>٠ د.ع</b></div>
                 <div class="card"><h3>کۆی فرۆشتن</h3><b>٠ د.ع</b></div>
+                <div class="card" style="border-right-color: #8b5cf6;"><h3>قازانج</h3><b>٠ د.ع</b></div>
+                <div class="card" style="border-right-color: var(--o);"><h3>قەرزی لای خەڵک</h3><b>٠ د.ع</b></div>
                 <div class="card" style="border-right-color: var(--d);"><h3>قەرزی بازرگان</h3><b>٠ د.ع</b></div>
             </div>
         </div>
@@ -88,7 +96,6 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // ئەم فەنکشنە تەنها بۆ ئەو بەشانەیە کە هەر لەناو داشبۆردەکەن نەک فایلی تر
         function go(target) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
             let id = 'sec_' + target;
