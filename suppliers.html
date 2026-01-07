@@ -2,130 +2,140 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>پڕۆفایلی بازرگانان</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کەشف حیسابی بازرگانان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --p: #2c3e50; --s: #3498db; --bg: #f4f7f6; --danger: #e74c3c; --success: #27ae60; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); direction: rtl; padding: 20px; margin: 0; }
-        .container { max-width: 1300px; margin: auto; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        :root { --p: #4361ee; --s: #2ec4b6; --bg: #f8faff; --danger: #e71d36; --success: #2ec4b6; --text: #2d3748; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); direction: rtl; margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text); }
         
-        /* Sidebar List */
-        .sidebar { background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); height: 85vh; overflow-y: auto; }
-        .sidebar-header { padding: 20px; background: var(--p); color: white; border-radius: 15px 15px 0 0; position: sticky; top: 0; }
-        .sup-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
-        .sup-item:hover { background: #f0f7ff; }
-        .sup-item.active { background: var(--s); color: white; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .back-btn { text-decoration: none; background: var(--p); color: white; padding: 10px 20px; border-radius: 12px; font-weight: bold; font-size: 14px; transition: 0.3s; }
+        .back-btn:hover { opacity: 0.9; transform: scale(1.05); }
 
-        /* Content Area */
-        .main-content { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); min-height: 85vh; }
-        .stats { display: flex; gap: 15px; margin-bottom: 20px; }
-        .stat-box { flex: 1; padding: 15px; background: #f8f9fa; border-radius: 10px; text-align: center; border: 1px solid #eee; }
+        .layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 25px; flex: 1; overflow: hidden; max-width: 1600px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+
+        /* Sidebar Supplier List */
+        .sidebar { background: white; border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
+        .sidebar-header { padding: 20px; background: #f8faff; border-bottom: 1px solid #eee; font-weight: bold; color: var(--p); font-size: 18px; text-align: center; }
+        .sup-list { overflow-y: auto; flex: 1; padding: 10px; }
+        .sup-item { padding: 15px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.3s; border-right: 5px solid transparent; background: #fff; border: 1px solid #f0f0f0; }
+        .sup-item:hover { background: #f0f4ff; border-right-color: var(--p); }
+        .sup-item.active { background: #eef2ff; border-right-color: var(--p); border-color: var(--p); }
+
+        /* Main Details Area */
+        .main-card { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow-y: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { padding: 20px; background: #f8faff; border-radius: 18px; text-align: center; border: 1px solid #eef2ff; }
+        .stat-box small { color: #718096; display: block; margin-bottom: 8px; font-size: 13px; }
+        .stat-box b { font-size: 20px; color: var(--text); }
+
+        .invoice-item { 
+            display: flex; justify-content: space-between; align-items: center; padding: 18px; 
+            border-radius: 15px; margin-bottom: 12px; border: 1px solid #f1f1f1; transition: 0.2s;
+        }
+        .inv-debt { border-right: 6px solid var(--danger); background: #fff5f5; }
+        .inv-paid { border-right: 6px solid var(--success); background: #f0fff4; }
         
-        .invoice-card { border: 1px solid #eee; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #ccc; }
-        .debt { border-right-color: var(--danger); }
-        .paid { border-right-color: var(--success); }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .unpaid-bg { background: #fee2e2; color: #dc2626; }
-        .paid-bg { background: #dcfce7; color: #16a34a; }
+        .badge { padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        .bg-red { background: #fed7d7; color: #c53030; }
+        .bg-green { background: #c6f6d5; color: #2f855a; }
+
+        @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidebar { height: 300px; } }
     </style>
 </head>
 <body>
 
-<div style="max-width:1300px; margin: 0 auto 15px auto; display:flex; justify-content:space-between; align-items:center;">
-    <h2 style="margin:0;">👥 بەڕێوەبردنی حیساباتی بازرگانان</h2>
-    <button onclick="location.href='dashboard.html'" style="padding:10px 20px; border-radius:8px; border:none; background:var(--p); color:white; cursor:pointer;">🏠 گەڕانەوە</button>
+<div class="top-bar">
+    <h2 style="margin:0; color:var(--p);">📋 کەشف حیسابی بازرگانان</h2>
+    <a href="dashboard.html" class="back-btn">⬅️ گەڕانەوە بۆ داشبۆرد</a>
 </div>
 
-<div class="container">
+<div class="layout">
     <div class="sidebar">
-        <div class="sidebar-header">بازرگانە تۆمارکراوەکان</div>
-        <div id="supplierList">بار دەکرێت...</div>
+        <div class="sidebar-header">لیستی بازرگانان</div>
+        <div id="supplierList" class="sup-list">
+            <p style="text-align:center; padding:20px; color:#999;">بار دەکرێت...</p>
+        </div>
     </div>
 
-    <div class="main-content" id="detailsArea">
-        <div style="text-align:center; margin-top:150px; color:#999;">
-            <h3>تکایە بازرگانێک هەڵبژێرە بۆ بینینی کەشف حیساب</h3>
+    <div class="main-card" id="detailsArea">
+        <div style="text-align:center; margin-top:100px; color:#cbd5e0;">
+            <img src="https://cdn-icons-png.flaticon.com/512/1532/1532624.png" width="100" style="opacity: 0.1; margin-bottom: 20px;">
+            <h3 style="color:#a0aec0;">تکایە ناوی بازرگانێک هەڵبژێرە</h3>
+            <p>بۆ بینینی وردەکاری وەسڵەکان و کۆی قەرزەکان</p>
         </div>
     </div>
 </div>
 
 <script>
+    // بەستنەوە بە سوپەبەییسەکەی خۆت
     const SB_URL = 'https://kgwgwymiucelrdeefzca.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2d3eW1pdWNlbHJkZWVmemNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczMDAyMDMsImV4cCI6MjA4Mjg3NjIwM30.3lPJzLqkSD-Z6nRB7Dai9DzsUy6kNLRGUQGFY4ef8bI';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // ١. هێنانی هەموو بازرگانەکان لە خشتەی suppliers
     async function loadSuppliers() {
-        const { data: suppliers, error } = await _supabase.from('suppliers').select('*').order('name');
-        if (error) return console.error(error);
-
+        const { data: suppliers } = await _supabase.from('suppliers').select('*').order('name');
         const listDiv = document.getElementById('supplierList');
-        listDiv.innerHTML = suppliers.map(s => `
-            <div class="sup-item" onclick="viewProfile('${s.name}', this)">
-                <strong>${s.name}</strong>
-                <div style="font-size:11px; opacity:0.7;">${s.category || 'گشتی'}</div>
-            </div>
-        `).join('');
-
-        // پشکنین: ئەگەر لە لاپەڕەی ناساندنەوە هاتبێت بە ناوێکەوە
-        const urlParams = new URLSearchParams(window.location.search);
-        const autoName = urlParams.get('name');
-        if (autoName) {
-            viewProfile(autoName);
+        
+        if (suppliers) {
+            listDiv.innerHTML = suppliers.map(s => `
+                <div class="sup-item" onclick="viewProfile('${s.name}', this)">
+                    <div style="font-weight:bold; color:#2d3748;">${s.name}</div>
+                    <div style="font-size:12px; color:#718096; margin-top:4px;">📦 ${s.category || 'گشتی'}</div>
+                </div>
+            `).join('');
         }
     }
 
-    // ٢. بینینی پڕۆفایل و مێژووی مامەڵەکان
     async function viewProfile(name, element) {
-        if(element) {
-            document.querySelectorAll('.sup-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
+        document.querySelectorAll('.sup-item').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
 
         const detailsArea = document.getElementById('detailsArea');
-        detailsArea.innerHTML = "<h4>خەریکە مێژووی مامەڵەکان دەهێنرێن...</h4>";
+        detailsArea.innerHTML = "<div style='text-align:center; padding:50px;'><div class='spinner'></div> خەریکە داتاکان دەهێنرێن...</div>";
 
-        // هێنانی کڕینەکان لە خشتەی purchases
-        const { data: invoices } = await _supabase.from('purchases')
+        const { data: purchases } = await _supabase.from('purchases')
             .select('*')
             .eq('supplier_name', name)
             .order('created_at', { ascending: false });
 
-        let totalPurchases = 0;
-        let totalDebt = 0;
+        let totalAmount = 0;
+        let debtAmount = 0;
 
-        let html = invoices.map(inv => {
-            totalPurchases += inv.total_price_usd;
-            if(inv.is_debt) totalDebt += inv.total_price_usd;
-            
+        let itemsHtml = (purchases || []).map(p => {
+            totalAmount += p.total_price_usd || 0;
+            if(p.is_debt) debtAmount += p.total_price_usd || 0;
+
             return `
-                <div class="invoice-card ${inv.is_debt ? 'debt' : 'paid'}">
+                <div class="invoice-item ${p.is_debt ? 'inv-debt' : 'inv-paid'}">
                     <div>
-                        <strong>📦 ${inv.item_name}</strong><br>
-                        <small>📅 ${new Date(inv.created_at).toLocaleDateString()}</small>
+                        <div style="font-weight:bold; font-size:16px;">${p.item_name}</div>
+                        <small style="color:#718096;">📅 ${new Date(p.created_at).toLocaleDateString('ku-IQ')}</small>
                     </div>
                     <div style="text-align:left;">
-                        <span style="font-weight:bold;">${inv.total_price_usd.toLocaleString()} $</span><br>
-                        <span class="badge ${inv.is_debt ? 'unpaid-bg' : 'paid-bg'}">${inv.is_debt ? 'قەرز' : 'نەقد'}</span>
+                        <div style="font-weight:bold; font-size:18px; color:var(--text);">$${(p.total_price_usd || 0).toLocaleString()}</div>
+                        <span class="badge ${p.is_debt ? 'bg-red' : 'bg-green'}">${p.is_debt ? '🔴 قەرز' : '🟢 نەقد'}</span>
                     </div>
                 </div>
             `;
         }).join('');
 
         detailsArea.innerHTML = `
-            <div style="border-bottom:2px solid #eee; padding-bottom:15px; margin-bottom:20px;">
-                <h2 style="margin:0; color:var(--p);">${name}</h2>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-box"><span>کۆی کڕین</span><br><strong>${totalPurchases.toLocaleString()} $</strong></div>
-                <div class="stat-box" style="color:var(--danger)"><span>قەرزی ماوە</span><br><strong>${totalDebt.toLocaleString()} $</strong></div>
-                <div class="stat-box"><span>وەسڵەکان</span><br><strong>${invoices.length}</strong></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; border-bottom:2px solid #f7fafc; padding-bottom:15px;">
+                <h2 style="margin:0; color:var(--p); font-size:24px;">${name}</h2>
+                <button onclick="window.print()" style="background:#edf2f7; border:none; padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:bold; color:#4a5568;">🖨️ چاپی کەشف حیساب</button>
             </div>
 
-            <h3 style="margin-bottom:15px;">📜 مێژووی مامەڵەکان</h3>
-            <div style="max-height: 500px; overflow-y: auto;">
-                ${html || '<p style="text-align:center; color:#999; margin-top:50px;">هیچ مامەڵەیەک تۆمار نەکراوە بۆ ئەم بازرگانە.</p>'}
+            <div class="stats-grid">
+                <div class="stat-box"><small>کۆی گشتی مامەڵە</small><b>$${totalAmount.toLocaleString()}</b></div>
+                <div class="stat-box" style="border-bottom: 4px solid var(--danger)"><small>کۆی قەرزی ماوە</small><b style="color:var(--danger)">$${debtAmount.toLocaleString()}</b></div>
+                <div class="stat-box"><small>ژمارەی وەسڵەکان</small><b>${purchases ? purchases.length : 0} وەسڵ</b></div>
+            </div>
+
+            <h3 style="margin: 25px 0 15px 0; color:#4a5568; display:flex; align-items:center; gap:10px;">📜 مێژووی مامەڵەکان</h3>
+            <div style="padding-left:5px;">
+                ${itemsHtml || '<div style="text-align:center; padding:60px; color:#a0aec0; background:#f8faff; border-radius:20px;">هیچ مامەڵەیەک تۆمار نەکراوە.</div>'}
             </div>
         `;
     }
